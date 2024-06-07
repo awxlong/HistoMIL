@@ -1,7 +1,9 @@
 """
 config local machine and user with all files of a cohort
 """
-
+import os
+import sys
+sys.path.append(os.getcwd())
 localcohort_name = "COAD"
 #--------------------------> init machine and person
 from HistoMIL.DATA.Cohort.location import Locations
