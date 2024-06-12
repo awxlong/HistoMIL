@@ -138,3 +138,6 @@ dmypy.json
 
 # API
 *.env
+
+# cmds
+cmds.txt

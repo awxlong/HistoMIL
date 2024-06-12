@@ -6,7 +6,14 @@ import os
 from HistoMIL import logger
 
 class Locations:
-    def __init__(self,root:str,sub_dirs:dict,is_build=False):
+    def __init__(self,root:str,sub_dirs:dict,is_build=False, slide_hpc=None):
+        """
+        root:str - directory where all data or experimetns will be stored
+        sub_dirs:dict - subdirectories per Data or Experiments to store relevant intermediate outputs, e.g., tissue segmentation indices
+        T
+        """
+    
+        self.slide_hpc = slide_hpc
         self.root = root
         self.is_build = is_build
         self.is_exist(self.root)
