@@ -55,7 +55,7 @@ def setup_config(args):
         user.wandb_api_key = os.getenv('WANDB_API_KEY')
         # hf_api_key = os.getenv('HF_READ_KEY')
         # login(token=hf_api_key) # no need to initalize this now 
-        pdb.set_trace()
+        # pdb.set_trace()
         # save as pickle
         loc = exp_locs.abs_loc("user")
         with open(f"/{loc}/{localcohort_name}_machine_config.pkl", 'wb') as f:

@@ -1,5 +1,5 @@
 """
-use pre-process to train a model
+Preprocessing the WSIs, which include tissue segmentation, patching (also called tiling or tessellation) and feature extraction
 """
 # avoid pandas warning
 import pandas as pd

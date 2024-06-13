@@ -11,6 +11,7 @@ class Locations:
         root:str - directory where all data or experimetns will be stored
         sub_dirs:dict - subdirectories per Data or Experiments to store relevant intermediate outputs, e.g., tissue segmentation indices
         T
+        is_build:bool - ignores existing directories and creates new ones if not. 
         """
     
         self.slide_hpc = slide_hpc
