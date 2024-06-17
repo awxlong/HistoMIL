@@ -48,6 +48,10 @@ class Patches(Items):
     def loc(self):
         folder = str(self.wsi_loc.parent).split("/")[-1]
         fname  = self.wsi_loc.name
+        subdir = self.db_loc.abs_loc("patch")+f"{self.paras.patch_size[0]}_{self.paras.step_size}/"
+        if not os.path.exists(subdir):
+            os.makedirs(subdir)
+            logger.info(f" Built {subdir}")
         return Path(self.db_loc.abs_loc("patch")+f"/{self.paras.patch_size[0]}_{self.paras.step_size}/{folder}.{fname}.h5")
 
     def calc(self,slide:WholeSlideImage,tissue:TissueMask,paras:PatchParas):

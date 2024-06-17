@@ -58,6 +58,10 @@ class Features(Items):
         assert self.model_name is not None
         folder = str(self.wsi_loc.parent).split("/")[-1]
         fname  = self.wsi_loc.name
+        subdir = self.db_loc.abs_loc("feature")+f"/{self.model_name}/"
+        if not os.path.exists(subdir):
+            os.makedirs(subdir)
+            logger.info(f" Built {subdir}")
         return Path(self.db_loc.abs_loc("feature")+f"/{self.model_name}/"+folder+"."+fname+".pt")
 
     def calc(self,
@@ -135,13 +139,13 @@ class Features_extractor:
         self.paras = paras
         self.device = paras.device
         self.trans = paras.trans
-        self.model_name = paras.model_name
+        self.model_name = paras.model_name # default 'resnet18'
 
 
         self.feats = None
         self.c_label = None
         self.supported_model_list = timm.list_models(pretrained=True)
-
+        self.supported_model_list = [name.split('.')[0] for name in self.supported_model_list] # in MacOS the model names end with '.a1_1nik'
     def process(self,slide:WholeSlideImage,patches:Patches):
         # with pytorch dataloader
         with torch.no_grad():
@@ -164,17 +168,25 @@ class Features_extractor:
         model_instance = self.paras.model_instance#["model_instance"]
         if model_instance is not None:
             # init infer model from a customised model
-            assert self.paras.img_size is not None and self.paras.out_dim is not None
+            # assert self.paras.img_size is not None and self.paras.out_dim is not None
+            # self.model = model_instance.to(self.device)
+            # self.img_size = self.paras.img_size
+            # self.out_dim  = self.paras.out_dim'
+            
             self.model = model_instance.to(self.device)
-            self.img_size = self.paras.img_size
-            self.out_dim  = self.paras.out_dim
+            self.model.eval()
+            self.paras.img_size,self.paras.out_dim = self._model_dims()
+            self.img_size, self.out_dim = self.paras.img_size,self.paras.out_dim 
+            # pdb.set_trace()
+            assert self.paras.img_size is not None and self.paras.out_dim is not None
+            
         else:
             # init model from pretrained timm
             assert self.model_name in self.supported_model_list
             logger.debug("Feature:: Building pre-trained part from timm pkg.")
             self.model = timm.create_model(self.model_name, pretrained=True, num_classes=0)
             self.model.to(self.device)
-
+            self.model.eval()
             self.img_size = self.paras.img_size
             self.out_dim  = self.paras.out_dim
             if self.img_size is None or self.out_dim is None:

@@ -43,7 +43,7 @@ def setup_config(args):
                                         "temp":"Temp/",
                                         "user":"User/",
                                         },
-                             is_build = True)
+                             is_build = True) 
 
 
         # pdb.set_trace()

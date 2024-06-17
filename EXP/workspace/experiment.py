@@ -81,7 +81,7 @@ class Experiment:
         """
         if self.paras.main_data_source =="slide":
             logger.info("Exp:: Initialise slide-based data cohort")
-            self.paras.collector_para.feature.model_name = self.paras.trainer_para.backbone_name
+            # self.paras.collector_para.feature.model_name = self.paras.trainer_para.backbone_name
             self.data_cohort = DataCohort(data_locs=self.machine.data_locs,
                                         exp_locs=self.machine.exp_locs,
                                         cohort_para=self.paras.cohort_para,)
