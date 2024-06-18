@@ -19,7 +19,7 @@ from dotenv import load_dotenv
 
 def setup_config(args):
         localcohort_name = args.cohort_name # e.g. "BRCA" for breast cancer
-        data_dir = f"{args.data_dir}{localcohort_name}/" # e.g. /SAN/ugi/WSI_Trans/BRCA/
+        data_dir = f"{args.data_dir}{localcohort_name}/" # e.g. /SAN/ugi/WSI_Trans/DATA/BRCA/
 
         
         #--------------------------> init machine and person
