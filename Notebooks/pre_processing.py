@@ -53,7 +53,7 @@ def preprocessing(args):
     preprocess_env.cohort_para.pid_name = args.pid_name # "PatientID"
     preprocess_env.cohort_para.targets = args.targets_name # e.g. "HRD"
     preprocess_env.cohort_para.targets_idx = 0
-    preprocess_env.cohort_para.label_dict = {"negative":0,"positive":1} # args.label_dict # e.g. "{"HRD":0,"HRP":1}""
+    preprocess_env.cohort_para.label_dict = args.label_dict # e.g. "{'HRD':0,'HRP':1}" # SINGLE quotations
     preprocess_env.cohort_para.task_additional_idx = ["slide_nb" ,"tissue_nb", "patch_nb" ,"feature_nb"] # AN: have to specify this 
 
     #preprocess_env.cohort_para.update_localcohort = True
@@ -61,7 +61,7 @@ def preprocessing(args):
 
     # #----------------> model
     # slide-level parameters
-    preprocess_env.collector_para.slide
+    print(preprocess_env.collector_para.slide)
 
     # tissue-level parameters
     print(preprocess_env.collector_para.tissue)
@@ -107,6 +107,11 @@ def main():
     preprocessing(args)
 if __name__ == "__main__":
     main()
+
+
+## SAMPLE COMMAND FOR CALLING THIS FUNCTION
+# ## specify gigapath
+# python HistoMIL/Notebooks/pre_processing.py --exp-name 'preprocessing-debug' --project-name 'g0-arrest' --wandb-entity-name 'cell-x' --localcohort-name 'CRC' --task-name 'g0-arrest' --pid-name 'PatientID' --targets-name 'g0_arrest' --cohort-dir '/Users/awxlong/Desktop/my-studies/hpc_exps/' --split-ratio 0.99 0.01 --step-size 224 --backbone-name 'prov-gigapath'
 
 
 

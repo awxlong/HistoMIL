@@ -53,6 +53,11 @@ def dict_type(string):
         raise argparse.ArgumentTypeError(f"Invalid dict value: {string}")
     if not isinstance(value, dict):
         raise argparse.ArgumentTypeError(f"Value {value} is not a dict")
+    for key, val in value.items():
+        if not isinstance(key, str):
+            raise argparse.ArgumentTypeError(f"Key {key} in the dictionary is not a string")
+        if not isinstance(val, int):
+            raise argparse.ArgumentTypeError(f"Value {val} for key {key} in the dictionary is not an integer")
     return value
 
 def str_to_int_list(string):
@@ -78,8 +83,8 @@ def get_args_preprocessing():
         "--pid-name", type=str, default='PatientID', help="Column name of patient ID, e.g. PatientID")
     parser.add_argument(
         "--targets-name", help="list of column names of the target prediction, e.g., g0_arrest hrd rs", nargs='+')
-    # parser.add_argument(
-    #     "--label-dict", type=dict_type, help="Dictionary mapping target values to binary values, e.g. {HRD:0,HRP:1}")
+    parser.add_argument(
+        "--label-dict", type=dict_type, help="Dictionary mapping target values to binary values, e.g. {'HRD':0,'HRP':1}, SINGLE quotations for keys")
     parser.add_argument(
         "--dataset-name", type=str, help="Name of the dataset")
     parser.add_argument(
