@@ -1,7 +1,9 @@
 """
 Preprocessing the WSIs, which include tissue segmentation, patching (also called tiling or tessellation) and feature extraction
 """
+### Setting path for HistoMIL
 import os
+import pdb
 import sys
 sys.path.append(os.getcwd())
 
@@ -58,15 +60,61 @@ def preprocessing(args):
     #----------------> pre-processing
 
     # #----------------> model
+    # slide-level parameters
+    preprocess_env.collector_para.slide
+
+    # tissue-level parameters
+    print(preprocess_env.collector_para.tissue)
+
+    # patch-level parameters
+    preprocess_env.collector_para.patch.step_size = args.step_size # 224
+    preprocess_env.collector_para.patch.patch_size = (args.step_size, args.step_size) 
+    print(preprocess_env.collector_para.patch)
+
+    # feature-extraction parameters
+    # by default uses resnet18
+    if args.backbone_name:
+        preprocess_env.collector_para.feature.model_name = args.backbone_name # 'prov-gigapath'
+        preprocess_env.collector_para.feature.model_instance = BACKBONES[args.backbone_name] # timm.create_model("hf_hub:prov-gigapath/prov-gigapath", pretrained=True)
+    print(preprocess_env.collector_para.feature)
+
+    #----------------> dataset
+    preprocess_env.dataset_para.dataset_name = args.dataset_name # "DNAD_L2"
+    preprocess_env.dataset_para.concepts = args.concepts_name # default ['slide', 'tissue', 'patch', 'feature']
+    preprocess_env.dataset_para.split_ratio = args.split_ratio # e.g [0.99,0.01]
+    
+    
+    machine_cohort_loc = f"{args.cohort_dir}/User/{args.localcohort_name}_machine_config.pkl"
+    with open(machine_cohort_loc, "rb") as f:   # Unpickling
+        [data_locs, exp_locs, machine,user] = pickle.load(f)
+    preprocess_env.data_locs = data_locs
+    preprocess_env.exp_locs = exp_locs
+    
+    #--------------------------> setup experiment
+    logger.info("setup preprocessing experiment")
+    
+    exp = Experiment(env_paras=preprocess_env)
+    exp.setup_machine(machine=machine,user=user)
+    logger.info("setup data")
+    exp.init_cohort()
+    logger.info("pre-processing..")
+    # pdb.set_trace()
+    exp.cohort_slide_preprocessing(concepts = preprocess_env.dataset_para.concepts,
+                                    is_fast = True, force_calc = False)
+
+def main():
+    args = get_args_preprocessing()
+    preprocessing(args)
+if __name__ == "__main__":
+    main()
+
+
+
+# #################----> for ssl
     # preprocess_env.trainer_para.method_type = "patch_learning"
     # preprocess_env.trainer_para.model_name = "moco" # 
     # from HistoMIL.MODEL.Image.SSL.paras import SSLParas
     # preprocess_env.trainer_para.model_para = SSLParas()
-    #----------------> dataset
-    preprocess_env.dataset_para.dataset_name = args.dataset_name # "DNAD_L2"
-    preprocess_env.dataset_para.concepts = args.concepts_name # default ['slide', 'tissue', 'patch', 'feature']
-    preprocess_env.dataset_para.split_ratio = [0.99,0.01] # args.split_ratio # e.g [0.99,0.01]
-    # #################----> for ssl
     # preprocess_env.trainer_para.model_para.ssl_dataset_para.batch_size = 16
     # preprocess_env.trainer_para.model_para.ssl_dataset_para.label_dict = {"HRD":0,"HRP":1}
     # preprocess_env.trainer_para.model_para.ssl_dataset_para.example_file = "example/example.png"
@@ -93,29 +141,3 @@ def preprocessing(args):
     # #preprocess_env.trainer_para.with_logger = None #without wandb to debug
     #--------------------------> init machine and person
     #--------------------------> init machine and person
-    
-    machine_cohort_loc = f"{args.cohort_dir}/User/{args.localcohort_name}_machine_config.pkl"
-    with open(machine_cohort_loc, "rb") as f:   # Unpickling
-        [data_locs, exp_locs, machine,user] = pickle.load(f)
-    preprocess_env.data_locs = data_locs
-    preprocess_env.exp_locs = exp_locs
-    
-    
-    #--------------------------> setup experiment
-    logger.info("setup experiment")
-    
-    exp = Experiment(env_paras=preprocess_env)
-    exp.setup_machine(machine=machine,user=user)
-    logger.info("setup data")
-    exp.init_cohort()
-    logger.info("pre-processing..")
-    exp.cohort_slide_preprocessing(concepts = preprocess_env.dataset_para.concepts,
-                                    is_fast = True, force_calc = False)
-
-def main():
-    args = get_args_preprocessing()
-    preprocessing(args)
-if __name__ == "__main__":
-    main()
-
-        

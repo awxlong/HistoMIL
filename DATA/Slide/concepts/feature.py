@@ -58,7 +58,7 @@ class Features(Items):
         assert self.model_name is not None
         folder = str(self.wsi_loc.parent).split("/")[-1]
         fname  = self.wsi_loc.name
-        subdir = self.db_loc.abs_loc("feature")+f"/{self.model_name}/"
+        subdir = self.db_loc.abs_loc("feature")+f"{self.model_name}/"
         if not os.path.exists(subdir):
             os.makedirs(subdir)
             logger.info(f" Built {subdir}")
