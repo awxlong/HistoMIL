@@ -31,8 +31,9 @@ class CohortParas(object):
         self.update_taskcohort:bool=True #::bool:: if update task cohort
         self.taskcohort_concepts_para:CollectorParas=DEFAULT_CONCEPT_PARAS
         # label csv
-        self.cohort_file:str=None  #::str:: csv file for possible label 
-        self.cohort_data_file:str=None  #::str:: csv file for possible data matrix link with pid (GeneExpressionProfile)
+        self.cohort_file:str=None  #::str:: synthethized csv file containing concepts [slide, tissue, patch and features]
+        self.cohort_task_file:str=None  #::str:: csv file for possible data matrix link with pid (GeneExpressionProfile)
+        self.task_file:str=None         #::str:: AWX: csv file containing labels 
         
         self.pid_name:str=None     #"PatientID"  #::str:: category name for PatientID
         self.targets:list=None     #  ["target1","target2"]  #::list::  list of labels can read from csv

@@ -274,7 +274,7 @@ class TaskCohort(Cohort):
         self.task_name = task_name
         self.concepts = task_concepts
 
-        self.task_file = cohort_paras.cohort_file
+        self.task_file = cohort_paras.task_file # AWX: define self.task file as task file containing label instead of cohort file containing concepts
         self.pid_name = cohort_paras.pid_name
         self.labels_name = cohort_paras.targets
 

@@ -50,6 +50,7 @@ def preprocessing(args):
     preprocess_env.cohort_para.localcohort_name = args.localcohort_name # "BRCA"
     preprocess_env.cohort_para.task_name = args.task_name               # e.g "DNAD"
     preprocess_env.cohort_para.cohort_file = f'local_cohort_{preprocess_env.cohort_para.localcohort_name}.csv' # "/DNAD/DNAD_L2.csv"
+    preprocess_env.cohort_para.task_file = f'{preprocess_env.cohort_para.localcohort_name}_{preprocess_env.cohort_para.task_name}.csv'
     preprocess_env.cohort_para.pid_name = args.pid_name # "PatientID"
     preprocess_env.cohort_para.targets = args.targets_name # e.g. "HRD"
     preprocess_env.cohort_para.targets_idx = 0
