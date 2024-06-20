@@ -19,7 +19,7 @@ from HistoMIL import logger
 ######################################################################################
 class TransMIL(nn.Module):
     def __init__(self,paras:TransMILParas):
-        super(TransMIL, self).__init__()
+        super().__init__()
         logger.info(f"init TransMIL with paras: {paras}")
         self.paras = paras
         backbone = paras.encoder_name

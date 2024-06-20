@@ -88,7 +88,7 @@ class BDLoss(nn.Module):
         only compute the loss of foreground
         ref: https://github.com/LIVIAETS/surface-loss/blob/108bd9892adca476e6cdf424124bc6268707498e/losses.py#L74
         """
-        super(BDLoss, self).__init__()
+        super().__init__()
         # self.do_bg = do_bg
 
     def forward(self, net_output, target, bound):
@@ -114,7 +114,7 @@ class SoftDiceLoss(nn.Module):
         """
 
         """
-        super(SoftDiceLoss, self).__init__()
+        super().__init__()
 
         self.square = square
         self.do_bg = do_bg
@@ -148,7 +148,7 @@ class SoftDiceLoss(nn.Module):
 
 class DC_and_BD_loss(nn.Module):
     def __init__(self, soft_dice_kwargs, bd_kwargs, aggregate="sum"):
-        super(DC_and_BD_loss, self).__init__()
+        super().__init__()
         self.aggregate = aggregate
         self.bd = BDLoss(**bd_kwargs)
         self.dc = SoftDiceLoss(apply_nonlin=softmax_helper, **soft_dice_kwargs)
@@ -178,7 +178,7 @@ class HDDTBinaryLoss(nn.Module):
         compute Hausdorff loss for binary segmentation
         https://arxiv.org/pdf/1904.10030v1.pdf        
         """
-        super(HDDTBinaryLoss, self).__init__()
+        super().__init__()
 
 
     def forward(self, net_output, target):
@@ -210,7 +210,7 @@ class HDDTBinaryLoss(nn.Module):
 
 class DC_and_HDBinary_loss(nn.Module):
     def __init__(self, soft_dice_kwargs, hd_kwargs, aggregate="sum"):
-        super(DC_and_HDBinary_loss, self).__init__()
+        super().__init__()
         self.aggregate = aggregate
         self.dc = SoftDiceLoss(apply_nonlin=softmax_helper, **soft_dice_kwargs)
         self.hd = HDDTBinaryLoss(**hd_kwargs)
@@ -249,7 +249,7 @@ class DistBinaryDiceLoss(nn.Module):
     Distance Map Loss Penalty Term for Semantic Segmentation        
     """
     def __init__(self, smooth=1e-5):
-        super(DistBinaryDiceLoss, self).__init__()
+        super().__init__()
         self.smooth = smooth
 
     def forward(self, net_output, gt):

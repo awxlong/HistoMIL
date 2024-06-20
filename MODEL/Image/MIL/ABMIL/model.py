@@ -31,7 +31,7 @@ class ABMIL(torch.nn.Module):
     '''
 
     def __init__(self, paras:AttMILParas):
-        super(ABMIL,self).__init__()
+        super().__init__()
 
         self.paras = paras
         logger.info(f"ABMIL model will be built with {paras}")
@@ -110,7 +110,7 @@ class ABMIL(torch.nn.Module):
 
 class AttentionNet(torch.nn.Module):
     def __init__(self,feature_dim:int = 2048,hidden_dim:int=512,class_nb:int=1):
-        super(AttentionNet, self).__init__()
+        super().__init__()
         self.L = feature_dim#2048 
         self.D = hidden_dim#524  
         self.K = class_nb #1

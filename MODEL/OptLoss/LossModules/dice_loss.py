@@ -90,7 +90,7 @@ class GDiceLoss(nn.Module):
         paper: https://arxiv.org/pdf/1707.03237.pdf
         tf code: https://github.com/NifTK/NiftyNet/blob/dev/niftynet/layer/loss_segmentation.py#L279
         """
-        super(GDiceLoss, self).__init__()
+        super().__init__()
 
         self.apply_nonlin = apply_nonlin
         self.smooth = smooth

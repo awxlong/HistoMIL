@@ -5,7 +5,7 @@ from HistoMIL import logger
 
 class FeatureNet(torch.nn.Module):
     def __init__(self,model_name,pretrained:bool=True):
-        super(FeatureNet, self).__init__()
+        super().__init__()
         logger.info(f"FeatureNet:: Use: {model_name} ")
         self.name = model_name
         if model_name == "pre-calculated":
