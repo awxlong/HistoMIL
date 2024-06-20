@@ -98,6 +98,8 @@ def get_args_preprocessing():
         "--backbone-name", type=str, help="Name of the backbone model for feature extraction from cropped patches, e.g., prov-gigapath")
     parser.add_argument(
         "--cohort-dir", type=str, help='Experiment directory. ')
+    parser.add_argument(
+        "--task-additional-idx", type=str, nargs='+', default=None, help='additional column names of biomarkers of interest.')
     
     parser.add_argument(
         "--seed", type=int, default=42, help="Seed to ensure reproducibility")

@@ -2,6 +2,7 @@
 Integrate informtion from CSV files
 """
 import random
+import pdb
 from HistoMIL.EXP.paras.cohort import CohortParas
 import numpy as np
 from HistoMIL import logger
@@ -274,7 +275,7 @@ class TaskCohort(Cohort):
         self.task_name = task_name
         self.concepts = task_concepts
 
-        self.task_file = cohort_paras.task_file # AWX: define self.task file as task file containing label instead of cohort file containing concepts
+        self.task_file = cohort_paras.task_file # AWX: define self.task file as task file containing label instead of cohort file containing concepts 
         self.pid_name = cohort_paras.pid_name
         self.labels_name = cohort_paras.targets
 
@@ -297,10 +298,14 @@ class TaskCohort(Cohort):
         source_table.read_table()
         # merge source table with local table
         # add source hospital name
-        content_names = self.cohort_paras.task_additional_idx+self.labels_name
+        if self.cohort_paras.task_additional_idx:
+            content_names = self.cohort_paras.task_additional_idx+self.labels_name # self.cohort_paras.task_additional_idx are additional column indeces (not names) i guess; self.task_additional_idx:str, fixed by specifying gene2k_env.cohort_para.task_additional_idx = ["slide_nb" ,"tissue_nb", "patch_nb" ,"feature_nb"] # AN: have to specify this
+        else:
+            content_names = self.labels_name 
         patinet_df = self.sort_patientID(table = source_table,pid_name=self.pid_name,labels_name=content_names)
-        self.table.df = self.merge_with_PID( df_1=local_df,
-                                            df_2=patinet_df)
+        self.table.df = self.merge_with_PID(df_1=local_df,
+                                            df_2=patinet_df).drop_duplicates()
+        # pdb.set_trace()
         # write to file
         self.save()
 

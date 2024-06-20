@@ -25,7 +25,7 @@ class CohortParas(object):
         self.local_cohort_concepts_para:CollectorParas=DEFAULT_CONCEPT_PARAS #::CollectorParas:: paras for local cohort
         self.update_localcohort:bool=False #::bool:: if update local cohort
 
-        # task_cohort: get slide info from database
+        # task_cohor t: get slide info from database
         # task related meta info
         self.task_name:str = None       #::str:: name of the task
         self.update_taskcohort:bool=True #::bool:: if update task cohort
