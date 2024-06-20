@@ -79,9 +79,12 @@ def run_mil(args):
     gene2k_env.trainer_para.model_name = model_name
     gene2k_env.trainer_para.model_para = model_para_settings[model_name]
     #----------------> trainer or analyzer
-    gene2k_env.trainer_para.backbone_name = "resnet18"
-    gene2k_env.trainer_para.additional_pl_paras.update({"accumulate_grad_batches":8})
-    gene2k_env.trainer_para.label_format = "int"#"one_hot" 
+    if args.precomputed:
+        gene2k_env.trainer_para.use_pre_calculated = True ### FOR LOADING COMPUTED FEATURES
+    else:
+        gene2k_env.trainer_para.backbone_name = "resnet18"
+        gene2k_env.trainer_para.additional_pl_paras.update({"accumulate_grad_batches":8})
+        gene2k_env.trainer_para.label_format = "int"#"one_hot" 
     #k_fold = None
 
     #--------------------------> init machine and person

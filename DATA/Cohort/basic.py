@@ -125,6 +125,7 @@ class Cohort:
         data_dict = {
                 "PatientID":P_id,
         }
+        # pdb.set_trace()
         for name in labels_name:
             data_dict.update({name:table.df[name].values.tolist()})
         
@@ -295,13 +296,14 @@ class TaskCohort(Cohort):
         """
         # get source table from a file
         source_table = tableWorker(loc = Path(f"{str(self.idx_root)}/{self.task_file}"))
-        source_table.read_table()
+        source_table.read_table() # source table is the table with g0-arrest labels
         # merge source table with local table
         # add source hospital name
         if self.cohort_paras.task_additional_idx:
             content_names = self.cohort_paras.task_additional_idx+self.labels_name # self.cohort_paras.task_additional_idx are additional column indeces (not names) i guess; self.task_additional_idx:str, fixed by specifying gene2k_env.cohort_para.task_additional_idx = ["slide_nb" ,"tissue_nb", "patch_nb" ,"feature_nb"] # AN: have to specify this
         else:
             content_names = self.labels_name 
+        # pdb.set_trace()
         patinet_df = self.sort_patientID(table = source_table,pid_name=self.pid_name,labels_name=content_names)
         self.table.df = self.merge_with_PID(df_1=local_df,
                                             df_2=patinet_df).drop_duplicates()

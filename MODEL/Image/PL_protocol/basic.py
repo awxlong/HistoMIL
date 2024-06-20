@@ -8,7 +8,7 @@ from HistoMIL.MODEL.Image.PL_protocol.utils import current_label_format,label_fo
 
 class pl_basic(pl.LightningModule):
     def __init__(self):
-        super(pl_basic,self).__init__()
+        super().__init__()
         """
         A basic class for different PL protocols:
         """
@@ -91,5 +91,7 @@ class pl_basic(pl.LightningModule):
         #----> log part
         self.log(bar_name, self.bar_metrics(probs, target.squeeze()), 
                             prog_bar=True, on_epoch=True, logger=True)
-        self.log_dict(self.valid_metrics(max_probs.squeeze() , target.squeeze()),
+        # self.log_dict(self.valid_metrics(max_probs.squeeze() , target.squeeze()),
+        #                   on_epoch = True, logger = True)
+        self.log_dict(self.valid_metrics(max_probs , target),
                           on_epoch = True, logger = True)

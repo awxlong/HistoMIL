@@ -13,14 +13,14 @@ metrics_dict = {
 }
 metrics_para_dict = {
 "classification":{
-    "accuracy": {"average": "micro"},
+    "accuracy": {"average": "micro", "task":"binary"},
     "cohen_kappa": {},
     "f1_score": {"average": "macro"},
     "recall": {"average": "macro"},
     "precision": {"average": "macro"},
     "specificity": {"average": "macro"},
 
-    "auroc": {"average": "macro"},
+    "auroc": {"average": "macro", "task":"binary"},
     "roc": {"average": "macro"},
 },
 }
