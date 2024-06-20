@@ -5,6 +5,8 @@
 #$ -j y
 #$ -N machine_config_download_COAD
 
+source /home/xuelonan/secrier_lab/python3.9.5-biomedai.source
+
 cd ~/secrier_lab/persistence/
 
 python3 HistoMIL/Notebooks/machine_config.py --cohort-name "COAD" --data-dir "/SAN/ugi/WSI_Trans/DATA/" --exp-dir "/home/xuelonan/secrier_lab/persistence/" --api-dir "/home/xuelonan/secrier_lab/persistence/HistoMIL/" 
