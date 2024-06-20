@@ -20,39 +20,43 @@ logging.basicConfig(
     ]
 )
 
-
-
-#--------------------------> task setting
-task_name = "example_mil"
-#--------------------------> model setting
+import os
+import pdb
+import sys
+sys.path.append(os.getcwd())
+import pickle
+from args import get_args_mil
 
 from HistoMIL.MODEL.Image.MIL.TransMIL.paras import TransMILParas
-# for transmil
-model_para_transmil = TransMILParas()
-model_para_transmil.feature_size=512
-model_para_transmil.n_classes=2
-model_para_transmil.norm_layer=nn.LayerNorm
-# for dsmil
 from HistoMIL.MODEL.Image.MIL.DSMIL.paras import DSMILParas
-model_para_dsmil = DSMILParas()
-model_para_dsmil.feature_dim = 512 #resnet18
-model_para_dsmil.p_class = 2
-model_para_dsmil.b_class = 2
-model_para_dsmil.dropout_r = 0.5
+from HistoMIL.EXP.paras.env import EnvParas
+from HistoMIL.EXP.workspace.experiment import Experiment
 
-model_name = "TransMIL"  # or "TransMIL" or "ABMIL"
+def run_mil(args):
+    #--------------------------> task setting
+    task_name = "example_mil"
+    #--------------------------> model setting
 
-model_para_settings = {"TransMIL":model_para_transmil,
-                       "DSMIL":model_para_dsmil} 
+    # for transmil
+    model_para_transmil = TransMILParas()
+    model_para_transmil.feature_size=512
+    model_para_transmil.n_classes=2
+    model_para_transmil.norm_layer=nn.LayerNorm
+    # for dsmil
 
+    model_para_dsmil = DSMILParas()
+    model_para_dsmil.feature_dim = 512 #resnet18
+    model_para_dsmil.p_class = 2
+    model_para_dsmil.b_class = 2
+    model_para_dsmil.dropout_r = 0.5
 
+    model_name = "TransMIL"  # or "TransMIL" or "ABMIL"
 
-if __name__ == '__main__':
-
-    
+    model_para_settings = {"TransMIL":model_para_transmil,
+                        "DSMIL":model_para_dsmil} 
 
     #--------------------------> parameters
-    from HistoMIL.EXP.paras.env import EnvParas
+    
     gene2k_env = EnvParas()
     gene2k_env.exp_name = f"{model_name}_{task_name}"
     gene2k_env.project = "gene2k_fast" 
@@ -79,28 +83,38 @@ if __name__ == '__main__':
     gene2k_env.trainer_para.additional_pl_paras.update({"accumulate_grad_batches":8})
     gene2k_env.trainer_para.label_format = "int"#"one_hot" 
     #k_fold = None
+
     #--------------------------> init machine and person
-    import pickle
-    machine_cohort_loc = "Path/to/BRCA_machine_config.pkl"
+    machine_cohort_loc = f"{args.cohort_dir}/User/{args.localcohort_name}_machine_config.pkl"
     with open(machine_cohort_loc, "rb") as f:   # Unpickling
         [data_locs,exp_locs,machine,user] = pickle.load(f)
     gene2k_env.data_locs = data_locs
     gene2k_env.exp_locs = exp_locs
 
-
     #--------------------------> setup experiment
-    if __name__ == "__main__":
+    logging.info("setup MIL experiment")
+    
+    exp = Experiment(env_paras=gene2k_env)
+    exp.setup_machine(machine=machine,user=user)
+    logging.info("setup data")
+    exp.init_cohort()
+    logging.info("setup trainer..")
+    exp.setup_experiment(main_data_source="slide",
+                        need_train=True)
 
-            logging.info("setup experiment")
-            from HistoMIL.EXP.workspace.experiment import Experiment
-            exp = Experiment(env_paras=gene2k_env)
-            exp.setup_machine(machine=machine,user=user)
-            logging.info("setup data")
-            exp.init_cohort()
-            logging.info("setup trainer..")
-            exp.setup_experiment(main_data_source="slide",
-                                need_train=True)
+    exp.exp_worker.train()
 
-            exp.exp_worker.train()
+if __name__ == '__main__':
+    args = get_args_mil()
+    run_mil(args)
+    
+
+    
+
+
+    
+    
+
+            
 
 

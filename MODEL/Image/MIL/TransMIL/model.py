@@ -58,7 +58,7 @@ class TransMIL(nn.Module):
         #print(h.shape)
         #---->cls_token
         B = h.shape[0]
-        cls_tokens = self.cls_token.expand(B, -1, -1).cuda()
+        cls_tokens = self.cls_token.expand(B, -1, -1)
         h = torch.cat((cls_tokens, h), dim=1)
         #print(h.shape)
         #---->Translayer x1
