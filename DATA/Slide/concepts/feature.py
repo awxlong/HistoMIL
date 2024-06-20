@@ -148,6 +148,7 @@ class Features_extractor:
         self.supported_model_list = [name.split('.')[0] for name in self.supported_model_list] # in MacOS the model names end with '.a1_1nik'
     def process(self,slide:WholeSlideImage,patches:Patches):
         # with pytorch dataloader
+        self.model.eval()
         with torch.no_grad():
             feats=[]
             self.get_dataloader(slide=slide,
