@@ -15,7 +15,7 @@ from HistoMIL.EXP.paras.trainer import PLTrainerParas
 from HistoMIL.DATA.Cohort.data import DataCohort
 from HistoMIL.DATA.Database.dataset import create_slide_dataset
 
-
+import pdb
 class pl_base_trainer:
     """
     base class for pl trainer pipeline
@@ -93,6 +93,7 @@ class pl_base_trainer:
         logger.info("Trainer:: Start training....")
         trainloader = self.data_pack["trainloader"]
         valloader = self.data_pack["testloader"]
+        pdb.set_trace()
         self.trainer.fit(model=self.pl_model, 
                 train_dataloaders=trainloader,
                 val_dataloaders=valloader)
