@@ -8,7 +8,7 @@ A simple dataset class for a bag of patches
 import random
 import sys
 from HistoMIL import logger
-from turtle import pos
+# from turtle import pos
 
 
 
