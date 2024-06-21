@@ -107,8 +107,8 @@ def get_args_preprocessing():
     #     "--id", type=str, default='0001', help="Unique ID of the user")
     # parser.add_argument(
     #     "--username", default='draco',type=str, help="Unique name of the experimenter")
-    # parser.add_argument(
-    #     "--api-dir", default='/Users/awxlong/Desktop/my-studies/hpc_exps/HistoMIL/',type=str, help="Directory where API.env for storing API keys is saved")
+    parser.add_argument(
+        "--api-dir",type=str, help="Directory where API.env for storing API keys is saved")
     
     args = parser.parse_args()
 

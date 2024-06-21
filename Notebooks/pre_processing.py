@@ -33,6 +33,9 @@ import logging
 logger.setLevel(logging.INFO)
 
 from args import get_args_preprocessing
+from huggingface_hub import login
+from dotenv import load_dotenv
+
 
 
 BACKBONES = {
@@ -76,6 +79,9 @@ def preprocessing(args):
     # feature-extraction parameters
     # by default uses resnet18
     if args.backbone_name:
+        load_dotenv(dotenv_path=f'{args.api_dir}API.env')
+        hf_api_key = os.getenv('HF_READ_KEY')
+        login(token=hf_api_key)
         preprocess_env.collector_para.feature.model_name = args.backbone_name                # e.g. 'prov-gigapath'
         preprocess_env.collector_para.feature.model_instance = BACKBONES[args.backbone_name] # timm.create_model("hf_hub:prov-gigapath/prov-gigapath", pretrained=True)
     print(preprocess_env.collector_para.feature)
