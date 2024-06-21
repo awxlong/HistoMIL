@@ -33,7 +33,10 @@ from args import get_args_preprocessing
 from huggingface_hub import login
 from dotenv import load_dotenv
 
-
+BACKBONES = {
+'uni': "hf_hub:MahmoodLab/UNI",
+'prov-gigapath' : "hf_hub:prov-gigapath/prov-gigapath"
+}
 
 
 def preprocessing(args):
@@ -42,10 +45,6 @@ def preprocessing(args):
     hf_api_key = os.getenv('HF_READ_KEY')
     login(token=hf_api_key)
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    BACKBONES = {
-    'uni': timm.create_model("hf_hub:MahmoodLab/UNI", pretrained=True).to(device),
-    'prov-gigapath' : timm.create_model("hf_hub:prov-gigapath/prov-gigapath", pretrained=True).to(device)
-    }
     
 
     preprocess_env = EnvParas()
@@ -84,7 +83,9 @@ def preprocessing(args):
     # by default uses resnet18
     if args.backbone_name:
         preprocess_env.collector_para.feature.model_name = args.backbone_name                # e.g. 'prov-gigapath'
-        preprocess_env.collector_para.feature.model_instance = BACKBONES[args.backbone_name] # timm.create_model("hf_hub:prov-gigapath/prov-gigapath", pretrained=True)
+        with torch.cuda.amp.autocast():
+            preprocess_env.collector_para.feature.model_instance = timm.create_model(BACKBONES[args.backbone_name], pretrained=True).to(device).half()
+        preprocess_env.collector_para.feature.model_instance.eval()
     print(preprocess_env.collector_para.feature)
 
     #----------------> dataset

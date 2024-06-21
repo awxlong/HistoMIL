@@ -3,7 +3,7 @@
 #$ -l h_rt=72:00:00 
 #$ -S /bin/bash
 #$ -j y
-#$ -N preprocess_with_gigapath
+#$ -N preprocess_with_uni
 
 cd secrier_lab/persistence/
 source /home/xuelonan/secrier_lab/python3.9.5-biomedai.source
