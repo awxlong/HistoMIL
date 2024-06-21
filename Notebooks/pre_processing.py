@@ -44,7 +44,7 @@ def preprocessing(args):
     load_dotenv(dotenv_path=f'{args.api_dir}API.env')
     hf_api_key = os.getenv('HF_READ_KEY')
     login(token=hf_api_key)
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    # device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     
 
     preprocess_env = EnvParas()
@@ -83,8 +83,8 @@ def preprocessing(args):
     # by default uses resnet18
     if args.backbone_name:
         preprocess_env.collector_para.feature.model_name = args.backbone_name                # e.g. 'prov-gigapath'
-        with torch.cuda.amp.autocast():
-            preprocess_env.collector_para.feature.model_instance = timm.create_model(BACKBONES[args.backbone_name], pretrained=True).to(device).half()
+        # with torch.cuda.amp.autocast():
+        preprocess_env.collector_para.feature.model_instance = timm.create_model(BACKBONES[args.backbone_name], pretrained=True)# .to(device).half()
         preprocess_env.collector_para.feature.model_instance.eval()
     print(preprocess_env.collector_para.feature)
 

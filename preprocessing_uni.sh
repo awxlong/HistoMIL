@@ -3,6 +3,7 @@
 #$ -l h_rt=72:00:00 
 #$ -S /bin/bash
 #$ -j y
+#$ -l gpu=true
 #$ -N preprocess_with_uni
 
 cd secrier_lab/persistence/
