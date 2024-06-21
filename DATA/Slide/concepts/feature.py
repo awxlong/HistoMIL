@@ -16,8 +16,11 @@ from PIL import Image
 from timm.data import resolve_data_config
 from timm.data.transforms_factory import create_transform
 from torch.utils.data import Dataset,DataLoader
+import multiprocessing
 
+multiprocessing.set_start_method('spawn', force=True)
 
+import pdb
 #############################################################################
 #               import within package
 #############################################################################
@@ -154,6 +157,7 @@ class Features_extractor:
             self.get_dataloader(slide=slide,
                                 patches=patches,
                                 )
+            # pdb.set_trace()
             for i, x in enumerate(self.dataloader, 0):
                 if i%100==0: logger.info(f"{i}/{len(self.dataloader)}")
                 x = x.to(self.device)
@@ -223,10 +227,12 @@ class Features_extractor:
                           img_size=self.img_size,
                           trans=self.trans,
                           is_train=False)
-
+        # pdb.set_trace()
         self.dataloader = DataLoader(dataset, 
                                      batch_size=self.paras.batch_size,
-                                     shuffle=False)
+                                     shuffle=False,
+                                     num_workers=8,
+                                     pin_memory=True)
 
     def fit_cluster(self,):
         from sklearn.cluster import KMeans
@@ -285,6 +291,7 @@ class Featset(Dataset):
         # get transform
         if self.trans is not None:
             img = self.trans(img)#,is_train=self.is_train)#.unsqueeze(0)
+        # pdb.set_trace()
         return img
 
     def __getitem__(self, idx):
