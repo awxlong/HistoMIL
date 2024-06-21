@@ -93,7 +93,7 @@ class pl_base_trainer:
         logger.info("Trainer:: Start training....")
         trainloader = self.data_pack["trainloader"] 
         valloader = self.data_pack["testloader"]
-        # pdb.set_trace()
+        pdb.set_trace()
         self.trainer.fit(model=self.pl_model, 
                 train_dataloaders=trainloader,
                 val_dataloaders=valloader)
@@ -120,7 +120,7 @@ class pl_base_trainer:
         l_example = list(label_dict.keys())[0]
         if type(l_example) != list:l_example = [l_example] # make sure it is a list otherwise it will not have shape
         label_example = np.array(l_example) # convert to np array
-
+        # pdb.set_trace()
         # check target format
         target_format = self.trainer_para.label_format
 
