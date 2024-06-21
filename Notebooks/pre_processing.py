@@ -22,9 +22,6 @@ import pickle
 import timm
 
 
-
-
-
 # HistoMIL imports
 from HistoMIL.EXP.paras.env import EnvParas
 from HistoMIL.EXP.workspace.experiment import Experiment
@@ -44,10 +41,10 @@ def preprocessing(args):
     load_dotenv(dotenv_path=f'{args.api_dir}API.env')
     hf_api_key = os.getenv('HF_READ_KEY')
     login(token=hf_api_key)
-    
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     BACKBONES = {
     'UNI': "Not Implemented",
-    'prov-gigapath' : timm.create_model("hf_hub:prov-gigapath/prov-gigapath", pretrained=True)
+    'prov-gigapath' : timm.create_model("hf_hub:prov-gigapath/prov-gigapath", pretrained=True).to(device)
     }
     
 

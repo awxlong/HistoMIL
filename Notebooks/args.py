@@ -149,18 +149,20 @@ def get_args_mil():
     parser.add_argument(
         "--dataset-name", type=str, help="Name of the dataset")
     parser.add_argument(
-        "--concepts-name", nargs='+', default=['slide', 'tissue', 'patch', 'feature'], help="Name of the preprocessing stages, default is slide, tissue, patch, feature in this order")
+        "--concepts-name", nargs='+', default=['slide', 'patch', 'feature'], help="Name of concepts to be used, default is slide, patch, feature in this order")
     parser.add_argument(
         "--split-ratio", nargs='+', type=float, default=[0.99, 0.01], help="list of values indicating split ratio of the dataset (values MUST sum to 1), default, 99% training to 1% validation")
     ### Model arguments
     parser.add_argument(
         "--step-size", type=int, help="Step-size taken to crop the segmented tissue, and it's the SAME as patch size, e.g., 224")
     parser.add_argument(
-        "--backbone-name", type=str, help="Name of the backbone model for feature extraction from cropped patches, e.g., prov-gigapath")
+        "--precomputed", default=None, type=str, help="Name of the backbone model used for feature extraction in the preprocessing stage. These precomputed features can be reused for training the MIL model, e.g. prov-gigapath")
     parser.add_argument(
         "--cohort-dir", type=str, help='Experiment directory. ')
     parser.add_argument(
         "--task-additional-idx", type=str, nargs='+', default=None, help='additional column names of biomarkers of interest.')
+    parser.add_argument(
+        "--num-workers", type=int, default=8, help='number of workers to specify in pytorch dataloader')
     
     parser.add_argument(
         "--seed", type=int, default=42, help="Seed to ensure reproducibility")
@@ -169,7 +171,7 @@ def get_args_mil():
     # parser.add_argument(
     #     "--username", default='draco',type=str, help="Unique name of the experimenter")
     # parser.add_argument(
-    #     "--api-dir", default='/Users/awxlong/Desktop/my-studies/hpc_exps/HistoMIL/',type=str, help="Directory where API.env for storing API keys is saved")
+    #     "--api-dir",type=str, help="Directory where API.env for storing API keys is saved")
     
     args = parser.parse_args()
 

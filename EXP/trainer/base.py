@@ -93,7 +93,7 @@ class pl_base_trainer:
         logger.info("Trainer:: Start training....")
         trainloader = self.data_pack["trainloader"] 
         valloader = self.data_pack["testloader"]
-        pdb.set_trace()
+        # pdb.set_trace()
         self.trainer.fit(model=self.pl_model, 
                 train_dataloaders=trainloader,
                 val_dataloaders=valloader)
