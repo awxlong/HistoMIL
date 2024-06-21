@@ -3,7 +3,9 @@ import timm
 import torch
 from huggingface_hub import login
 from dotenv import load_dotenv
-load_dotenv(dotenv_path=f'{args.api_dir}API.env')
+import os
+
+load_dotenv(dotenv_path=f'/home/xuelonan/secrier_lab/persistence/HistoMIL/API.env')
 hf_api_key = os.getenv('HF_READ_KEY')
 login(token=hf_api_key)
 

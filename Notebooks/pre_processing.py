@@ -43,7 +43,7 @@ def preprocessing(args):
     login(token=hf_api_key)
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     BACKBONES = {
-    'UNI': "Not Implemented",
+    'uni': timm.create_model("hf_hub:MahmoodLab/UNI", pretrained=True).to(device),
     'prov-gigapath' : timm.create_model("hf_hub:prov-gigapath/prov-gigapath", pretrained=True).to(device)
     }
     
