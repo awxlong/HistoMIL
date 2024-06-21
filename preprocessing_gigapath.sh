@@ -5,7 +5,7 @@
 #$ -j y
 #$ -N preprocess_with_gigapath
 
-
+cd secrier_lab/persistence/
 source /home/xuelonan/secrier_lab/python3.9.5-biomedai.source
 source /share/apps/source_files/cuda/cuda-11.2.source
 
