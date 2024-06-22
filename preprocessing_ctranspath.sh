@@ -1,10 +1,10 @@
-#$ -l tmem=8G
-#$ -l h_vmem=10G
+#$ -l tmem=16G
+#$ -l h_vmem=16G
 #$ -l h_rt=72:00:00 
 #$ -S /bin/bash
 #$ -j y
 #$ -l gpu=true
-#$ -N preprocess_with_uni
+#$ -N preprocess_with_ctranspath
 cd secrier_lab/persistence/
 source /home/xuelonan/secrier_lab/python3.8.5-biomedai.source
 source /share/apps/source_files/cuda/cuda-10.2.source

@@ -233,9 +233,11 @@ class LocalCohort(Cohort):
             usbale_concepts:list: list of concepts that have data
         """
         df = self.table.df
+        # pdb.set_trace()
         for name in usbale_concepts:
             df = df[df[name]==True]
-        return df
+        # pdb.set_trace()
+        return self.table.df
 
 
 class TaskCohort(Cohort):
