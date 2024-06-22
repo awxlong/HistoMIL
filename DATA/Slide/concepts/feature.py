@@ -232,8 +232,8 @@ class Features_extractor:
         self.dataloader = DataLoader(dataset, 
                                      batch_size=self.paras.batch_size,
                                      shuffle=False,
-                                     num_workers=8,
-                                     pin_memory=True)
+                                     num_workers=0,
+                                     pin_memory=False)
 
     def fit_cluster(self,):
         from sklearn.cluster import KMeans
