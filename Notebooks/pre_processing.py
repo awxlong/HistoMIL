@@ -34,9 +34,24 @@ from huggingface_hub import login
 from dotenv import load_dotenv
 
 BACKBONES = {
-'uni': "hf_hub:MahmoodLab/UNI",
-'prov-gigapath' : "hf_hub:prov-gigapath/prov-gigapath"
+    'uni': {
+        'model_name': "hf_hub:MahmoodLab/UNI",
+        'init_values': 1e-5,
+        'dynamic_img_size': True
+    },
+    'prov-gigapath': {
+        'model_name': "hf_hub:prov-gigapath/prov-gigapath"
+    }
 }
+
+def create_model_from_backbones(model_key):
+    model_config = BACKBONES.get(model_key)
+    if not model_config:
+        raise ValueError(f"Model {model_key} not found in available BACKBONES.")
+    
+    model_name = model_config.pop('model_name')
+    model = timm.create_model(model_name, **model_config)
+    return model
 
 
 def preprocessing(args):
@@ -84,7 +99,7 @@ def preprocessing(args):
     if args.backbone_name:
         preprocess_env.collector_para.feature.model_name = args.backbone_name                # e.g. 'prov-gigapath'
         # with torch.cuda.amp.autocast():
-        preprocess_env.collector_para.feature.model_instance = timm.create_model(BACKBONES[args.backbone_name], pretrained=True).to(device)
+        preprocess_env.collector_para.feature.model_instance = create_model_from_backbones(args.backbone_name).to(device) # timm.create_model(BACKBONES[args.backbone_name], pretrained=True).to(device)
         preprocess_env.collector_para.feature.model_instance.eval()
     print(preprocess_env.collector_para.feature)
 
