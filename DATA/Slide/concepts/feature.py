@@ -183,7 +183,7 @@ class Features_extractor:
             # pdb.set_trace()
             # self.paras.img_size,self.paras.out_dim = self._model_dims()
             self.img_size, self.out_dim = self.paras.img_size,self.paras.out_dim 
-            # pdb.set_trace()
+            # pdb.set_trace()   
             assert self.paras.img_size is not None and self.paras.out_dim is not None
             
         else:
