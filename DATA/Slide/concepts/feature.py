@@ -180,7 +180,8 @@ class Features_extractor:
             
             self.model = model_instance.to(self.device)
             self.model.eval()
-            self.paras.img_size,self.paras.out_dim = self._model_dims()
+            # pdb.set_trace()
+            # self.paras.img_size,self.paras.out_dim = self._model_dims()
             self.img_size, self.out_dim = self.paras.img_size,self.paras.out_dim 
             # pdb.set_trace()
             assert self.paras.img_size is not None and self.paras.out_dim is not None

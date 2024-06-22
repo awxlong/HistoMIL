@@ -44,6 +44,11 @@ BACKBONES = {
     }
 }
 
+FEAT_DIMS = {
+    'uni': 1024,
+    'prov-gigapath': 1536
+}
+
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     
 
@@ -104,6 +109,8 @@ def preprocessing(args):
         # with torch.cuda.amp.autocast():
         preprocess_env.collector_para.feature.model_instance = create_model_from_backbones(args.backbone_name) # .to(device) # timm.create_model(BACKBONES[args.backbone_name], pretrained=True).to(device)
         preprocess_env.collector_para.feature.model_instance.eval()
+        preprocess_env.collector_para.feature.img_size = (args.step_size, args.step_size)
+        preprocess_env.collector_para.feature.out_dim = FEAT_DIMS[args.backbone_name]
     print(preprocess_env.collector_para.feature)
 
     #----------------> dataset
