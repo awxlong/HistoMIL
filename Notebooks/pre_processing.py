@@ -41,12 +41,16 @@ BACKBONES = {
     },
     'prov-gigapath': {
         'model_name': "hf_hub:prov-gigapath/prov-gigapath"
+    },
+    'ctranspath': {
+        'model_name': "hf_hub:1aurent/swin_tiny_patch4_window7_224.CTransPath"
     }
 }
 
 FEAT_DIMS = {
     'uni': 1024,
-    'prov-gigapath': 1536
+    'prov-gigapath': 1536,
+    'ctranspath': 768,
 }
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
