@@ -58,9 +58,11 @@ def create_model_from_backbones(model_key):
         raise ValueError(f"Model {model_key} not found in available BACKBONES.")
     
     model_name = model_config.pop('model_name')
-    with torch.cuda.amp.autocast():
-        model = timm.create_model(model_name, **model_config).half() 
+    # with torch.cuda.amp.autocast():
+    model = timm.create_model(model_name, **model_config) # .half() 
+    torch.cuda.empty_cache()
     model.to(device)
+
     return model
 
 
