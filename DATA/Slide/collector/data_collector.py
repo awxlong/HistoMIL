@@ -42,6 +42,7 @@ default_concept_keys = list(DEFAULT_CONCEPT_DICT.keys())
 ##############################################################################
 DEFAULT_CONCEPT_TYPE = DEFAULT_CONCEPT_DICT.keys()
 
+import pdb
 class WSICollector(DataCollector):
     
     def __init__(self,db_loc:Locations,
@@ -131,6 +132,7 @@ class WSICollector(DataCollector):
         elif name == "tissue":
             self.tissue.get(self.slide,force_calc=force_calc)
         elif name == "patch":
+            # pdb.set_trace()
             self.patch.get(self.slide,self.tissue,force_calc=force_calc)
         elif name == "feature":
             self.feature.get(self.slide,self.patch,force_calc=force_calc)

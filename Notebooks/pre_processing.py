@@ -142,7 +142,7 @@ def preprocessing(args):
     logger.info("pre-processing..")
     # pdb.set_trace()
     exp.cohort_slide_preprocessing(concepts = preprocess_env.dataset_para.concepts,
-                                    is_fast = True, force_calc = False)
+                                    is_fast = True, force_calc = True)
 
 def main():
     args = get_args_preprocessing()
