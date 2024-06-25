@@ -7,6 +7,7 @@ import pdb
 import sys
 sys.path.append(os.getcwd())
 
+import math
 import pandas as pd
 pd.options.mode.chained_assignment = None  # default='warn' # avoid pandas warning
 import torch
@@ -92,7 +93,37 @@ def split_for_arrayjob(args):
     exp.init_cohort()
     logger.info("initiating splitting ...")
 
-    
+    idx = args.array_split_idx
+    cohort_name = preprocess_env.cohort_para.localcohort_name
+    task_name = preprocess_env.cohort_para.task_name
+    root = f'{args.cohort_dir}Data/'
+    df1 = pd.read_csv(f'{root}{preprocess_env.cohort_para.cohort_file}')
+    df2 = pd.read_csv(f'{root}{preprocess_env.cohort_para.task_file}')
+    # pdb.set_trace()
+    # Merge the dataframes on PatientID
+    merged_df = pd.merge(df1, df2, on=preprocess_env.cohort_para.pid_name).drop_duplicates()
+
+    # Calculate the number of rows for each part
+    total_rows = len(merged_df)
+    rows_per_part = math.ceil(total_rows / idx)
+
+    # Split and save the data
+    for i in range(idx):
+        start_idx = i * rows_per_part
+        end_idx = min((i + 1) * rows_per_part, total_rows)
+        
+        # Split the merged dataframe
+        part_df = merged_df.iloc[start_idx:end_idx]
+        
+        # Split df1
+        part_df1 = part_df[df1.columns]
+        part_df1.to_csv(f'{root}local_cohort_{cohort_name}_{i+1}.csv', index=False)
+        
+        # Split df2
+        part_df2 = part_df[['PatientID', f'{task_name}']]
+        part_df2.to_csv(f'{root}{cohort_name}_{task_name}_{i+1}.csv', index=False)
+        print(f"Files {root}{cohort_name}_{task_name}_{i+1}.csv and {root}local_cohort_{cohort_name}_{i+1}.csv have been split and saved successfully.")
+        
     
 def main():
     args = get_args_split_array_job()

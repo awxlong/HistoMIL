@@ -99,8 +99,6 @@ def get_args_split_array_job():
         "--task-additional-idx", type=str, nargs='+', default=None, help='additional column names of biomarkers of interest.')
     parser.add_argument(
         "--seed", type=int, default=42, help="Seed to ensure reproducibility")
-    parser.add_argument(
-        "--api-dir",type=str, help="Directory where API.env for storing API keys is saved")
     
     parser.add_argument(
         "--array-split-idx",type=int, help="Index indicating in how many parts will dataset be split for passing into array jobs in the cluster, e.g., 5 for splitting dataset into 5 parts")
@@ -166,7 +164,7 @@ def get_args_preprocessing():
     parser.add_argument(
         "--api-dir",type=str, help="Directory where API.env for storing API keys is saved")
     parser.add_argument(
-        "--array-job-idx",type=int, default=None, help="Directory where API.env for storing API keys is saved")
+        "--array-job-idx",type=int, default=None, help="Index of the split dataset file. OPTIONAL, this is for array job submission in the cluster")
 
     args = parser.parse_args()
 

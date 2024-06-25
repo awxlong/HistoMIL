@@ -9,6 +9,7 @@ from HistoMIL.DATA.Slide.collector.data_collector import read_wsi_collector
 
 from HistoMIL.EXP.paras.env import EnvParas
 
+import pdb
 class Experiment:
     def __init__(self,env_paras:EnvParas) -> None:
         self.paras = env_paras  
@@ -66,6 +67,7 @@ class Experiment:
         else:
             logger.info(f"Exp:: pre-processing all data in local cohort for concepts {concepts}")
             df = self.data_cohort.local_cohort.table.df
+        pdb.set_trace()
         logger.info(f"Exp:: pre-processing with paras:\n{self.paras.collector_para}")
         cohort_pre_processing(  df=df,
                                 data_locs=self.machine.data_locs,#model only consider one data loc

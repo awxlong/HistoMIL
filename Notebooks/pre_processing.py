@@ -86,8 +86,12 @@ def preprocessing(args):
     #----------------> cohort
     preprocess_env.cohort_para.localcohort_name = args.localcohort_name # "BRCA"
     preprocess_env.cohort_para.task_name = args.task_name               # e.g "DNAD"
-    preprocess_env.cohort_para.cohort_file = f'local_cohort_{preprocess_env.cohort_para.localcohort_name}.csv'                         # e.g. local_cohort_CRC.csv, this is created automatically, and contains folder, filename, slide_nb, tissue_nb, etc. 
-    preprocess_env.cohort_para.task_file = f'{preprocess_env.cohort_para.localcohort_name}_{preprocess_env.cohort_para.task_name}.csv' # e.g. CRC_g0_arrest.csv, which has PatientID matched with g0_arrest labels
+    if args.array_job_idx:
+        preprocess_env.cohort_para.cohort_file = f'local_cohort_{preprocess_env.cohort_para.localcohort_name}_{args.array_job_idx}.csv'                         # e.g. local_cohort_CRC.csv, this is created automatically, and contains folder, filename, slide_nb, tissue_nb, etc. 
+        preprocess_env.cohort_para.task_file = f'{preprocess_env.cohort_para.localcohort_name}_{preprocess_env.cohort_para.task_name}_{args.array_job_idx}.csv' # e.g. CRC_g0_arrest.csv, which has PatientID matched with g0_arrest labels
+    else:
+        preprocess_env.cohort_para.cohort_file = f'local_cohort_{preprocess_env.cohort_para.localcohort_name}.csv'                         # e.g. local_cohort_CRC.csv, this is created automatically, and contains folder, filename, slide_nb, tissue_nb, etc. 
+        preprocess_env.cohort_para.task_file = f'{preprocess_env.cohort_para.localcohort_name}_{preprocess_env.cohort_para.task_name}.csv' # e.g. CRC_g0_arrest.csv, which has PatientID matched with g0_arrest labels
     preprocess_env.cohort_para.pid_name = args.pid_name     # "PatientID" # the column with which to merge tables
     preprocess_env.cohort_para.targets = args.targets_name  # e.g. "g0_arrest"  # the column name of interest, supply as a list
     preprocess_env.cohort_para.targets_idx = 0              # don't know what this is
@@ -141,7 +145,13 @@ def preprocessing(args):
     exp.init_cohort()
     logger.info("pre-processing..")
     # pdb.set_trace()
-    exp.cohort_slide_preprocessing(concepts = preprocess_env.dataset_para.concepts,
+    if args.array_job_idx:
+        local_cohort_idx_file = pd.read_csv(f'{args.cohort_dir}Data/{preprocess_env.cohort_para.cohort_file}')
+        exp.cohort_slide_preprocessing(concepts = preprocess_env.dataset_para.concepts,
+                                    is_fast = True, force_calc = False,
+                                    df=local_cohort_idx_file)
+    else:
+        exp.cohort_slide_preprocessing(concepts = preprocess_env.dataset_para.concepts,
                                     is_fast = True, force_calc = False)
 
 def main():

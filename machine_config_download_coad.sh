@@ -1,6 +1,6 @@
 #$ -l tmem=4G
-#$ -l h_vmem=5G
-#$ -l h_rt=5:00:00 
+#$ -l h_vmem=4G
+#$ -l h_rt=3:00:00 
 #$ -S /bin/bash
 #$ -j y
 #$ -N machine_config_download_COAD
