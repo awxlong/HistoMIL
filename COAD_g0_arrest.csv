@@ -5,7 +5,6 @@ TCGA-AD-6895,negative
 TCGA-AA-3560,positive
 TCGA-CM-6680,negative
 TCGA-AA-A01D,positive
-TCGA-AA-A01X,positive
 TCGA-G4-6311,negative
 TCGA-AA-3675,positive
 TCGA-AA-3939,positive
@@ -429,7 +428,6 @@ TCGA-NH-A50U,negative
 TCGA-G4-6322,negative
 TCGA-F4-6463,negative
 TCGA-CM-6163,negative
-TCGA-F4-6569,negative
 TCGA-AA-3989,positive
 TCGA-AA-A00W,positive
 TCGA-DM-A1DA,negative

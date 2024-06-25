@@ -13,13 +13,9 @@ import torch
 torch.multiprocessing.set_sharing_strategy('file_system') # avoid multiprocessing problem
 import warnings
 warnings.filterwarnings("ignore", category=DeprecationWarning) # stop skimage warning
-import imageio.core.util
-import skimage 
 def ignore_warnings(*args, **kwargs):
     pass
-imageio.core.util._precision_warn = ignore_warnings
 import pickle
-import timm
 
 
 # HistoMIL imports
@@ -29,9 +25,8 @@ from HistoMIL import logger
 import logging
 logger.setLevel(logging.INFO)
 
-from args import get_args_preprocessing
-from huggingface_hub import login
-from dotenv import load_dotenv
+from args import get_args_split_array_job
+
 
 
 
@@ -95,19 +90,15 @@ def split_for_arrayjob(args):
     exp.setup_machine(machine=machine,user=user)
     logger.info("setup data")
     exp.init_cohort()
-    logger.info("pre-processing..")
-    # pdb.set_trace()
-    # exp.cohort_slide_preprocessing(concepts = preprocess_env.dataset_para.concepts,
-    #                                 is_fast = True, force_calc = False)
+    logger.info("initiating splitting ...")
 
+    
+    
 def main():
-    args = get_args_preprocessing()
+    args = get_args_split_array_job()
     split_for_arrayjob(args)
 if __name__ == "__main__":
     main()
 
 
 ## SAMPLE COMMAND FOR CALLING THIS FUNCTION
-# ## specify gigapath
-# python HistoMIL/Notebooks/pre_processing.py --exp-name 'preprocessing-debug' --project-name 'g0-arrest' --wandb-entity-name 'cell-x' --localcohort-name 'CRC' --task-name 'g0-arrest' --pid-name 'PatientID' --targets-name 'g0_arrest' --cohort-dir '/Users/awxlong/Desktop/my-studies/hpc_exps/' --split-ratio 0.99 0.01 --step-size 224 --backbone-name 'prov-gigapath'
-
