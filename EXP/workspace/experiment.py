@@ -67,7 +67,7 @@ class Experiment:
         else:
             logger.info(f"Exp:: pre-processing all data in local cohort for concepts {concepts}")
             df = self.data_cohort.local_cohort.table.df
-        pdb.set_trace()
+        # pdb.set_trace()
         logger.info(f"Exp:: pre-processing with paras:\n{self.paras.collector_para}")
         cohort_pre_processing(  df=df,
                                 data_locs=self.machine.data_locs,#model only consider one data loc
