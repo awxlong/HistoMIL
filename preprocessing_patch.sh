@@ -17,7 +17,6 @@ python3 HistoMIL/Notebooks/pre_processing.py --exp-name 'preprocessing' \
                             --cohort-dir '/home/xuelonan/secrier_lab/persistence/' \
                             --split-ratio 0.99 0.01 \
                             --step-size 224 \
-                            --backbone-name 'uni' \
                             --label-dict "{'negative':0,'positive':1}" \
                             --api-dir "/home/xuelonan/secrier_lab/persistence/HistoMIL/" \
-                            --concepts-name 'slide', 'tissue', 'patch'
+                            --concepts-name 'slide' 'tissue' 'patch'
