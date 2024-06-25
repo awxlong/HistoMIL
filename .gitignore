@@ -145,3 +145,4 @@ cmds.txt
 # jupyter notebooks
 dependencies.ipynb
 visualize.ipynb
+split_csv_for_array.ipynb

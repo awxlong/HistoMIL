@@ -33,49 +33,12 @@ from args import get_args_preprocessing
 from huggingface_hub import login
 from dotenv import load_dotenv
 
-BACKBONES = {
-    'uni': {
-        'model_name': "hf_hub:MahmoodLab/UNI",
-        'init_values': 1e-5,
-        'dynamic_img_size': True
-    },
-    'prov-gigapath': {
-        'model_name': "hf_hub:prov-gigapath/prov-gigapath"
-    },
-    'ctranspath': {
-        'model_name': "hf_hub:1aurent/swin_tiny_patch4_window7_224.CTransPath"
-    }
-}
-
-FEAT_DIMS = {
-    'uni': 1024,
-    'prov-gigapath': 1536,
-    'ctranspath': 768,
-}
-
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    
-
-def create_model_from_backbones(model_key):
-    model_config = BACKBONES.get(model_key)
-    if not model_config:
-        raise ValueError(f"Model {model_key} not found in available BACKBONES.")
-    
-    model_name = model_config.pop('model_name')
-    # with torch.cuda.amp.autocast():
-    model = timm.create_model(model_name, **model_config) # .half() 
-    torch.cuda.empty_cache()
-    model.to(device)
-
-    return model
 
 
-def preprocessing(args):
-
-    load_dotenv(dotenv_path=f'{args.api_dir}API.env')
-    hf_api_key = os.getenv('HF_READ_KEY')
-    login(token=hf_api_key)
-    
+def split_for_arrayjob(args):
+    '''
+    please see args.py for an explanation of what each argument means
+    '''
 
     preprocess_env = EnvParas()
 
@@ -111,13 +74,6 @@ def preprocessing(args):
 
     # feature-extraction parameters
     # by default uses resnet18
-    if args.backbone_name:
-        preprocess_env.collector_para.feature.model_name = args.backbone_name                # e.g. 'prov-gigapath'
-        # with torch.cuda.amp.autocast():
-        preprocess_env.collector_para.feature.model_instance = create_model_from_backbones(args.backbone_name) # .to(device) # timm.create_model(BACKBONES[args.backbone_name], pretrained=True).to(device)
-        preprocess_env.collector_para.feature.model_instance.eval()
-        preprocess_env.collector_para.feature.img_size = (args.step_size, args.step_size)
-        preprocess_env.collector_para.feature.out_dim = FEAT_DIMS[args.backbone_name]
     print(preprocess_env.collector_para.feature)
 
     #----------------> dataset
@@ -141,12 +97,12 @@ def preprocessing(args):
     exp.init_cohort()
     logger.info("pre-processing..")
     # pdb.set_trace()
-    exp.cohort_slide_preprocessing(concepts = preprocess_env.dataset_para.concepts,
-                                    is_fast = True, force_calc = False)
+    # exp.cohort_slide_preprocessing(concepts = preprocess_env.dataset_para.concepts,
+    #                                 is_fast = True, force_calc = False)
 
 def main():
     args = get_args_preprocessing()
-    preprocessing(args)
+    split_for_arrayjob(args)
 if __name__ == "__main__":
     main()
 
@@ -155,36 +111,3 @@ if __name__ == "__main__":
 # ## specify gigapath
 # python HistoMIL/Notebooks/pre_processing.py --exp-name 'preprocessing-debug' --project-name 'g0-arrest' --wandb-entity-name 'cell-x' --localcohort-name 'CRC' --task-name 'g0-arrest' --pid-name 'PatientID' --targets-name 'g0_arrest' --cohort-dir '/Users/awxlong/Desktop/my-studies/hpc_exps/' --split-ratio 0.99 0.01 --step-size 224 --backbone-name 'prov-gigapath'
 
-
-
-# #################----> for ssl
-    # preprocess_env.trainer_para.method_type = "patch_learning"
-    # preprocess_env.trainer_para.model_name = "moco" # 
-    # from HistoMIL.MODEL.Image.SSL.paras import SSLParas
-    # preprocess_env.trainer_para.model_para = SSLParas()
-    # preprocess_env.trainer_para.model_para.ssl_dataset_para.batch_size = 16
-    # preprocess_env.trainer_para.model_para.ssl_dataset_para.label_dict = {"HRD":0,"HRP":1}
-    # preprocess_env.trainer_para.model_para.ssl_dataset_para.example_file = "example/example.png"
-    # preprocess_env.trainer_para.model_para.ssl_dataset_para.is_weight_sampler = True
-    # preprocess_env.trainer_para.model_para.ssl_dataset_para.force_balance_val = True
-    # preprocess_env.trainer_para.model_para.ssl_dataset_para.add_dataloader = {
-    #                                                     "pin_memory":True,
-    #                                                     "drop_last":True,
-    #                                                     }
-
-    # from HistoMIL.DATA.Database.data_aug import SSL_DataAug
-    # # specifu data aug or use default can be found at paras
-    # preprocess_env.trainer_para.model_para.ssl_dataset_para.img_size = (512,512)
-    # add_data_aug_paras = preprocess_env.trainer_para.model_para.ssl_dataset_para.add_data_aug_paras
-    # trans_factory = SSL_DataAug(**add_data_aug_paras)
-    # preprocess_env.trainer_para.model_para.ssl_dataset_para.transfer_fn = trans_factory.get_trans_fn
-    # #----------------> trainer or analyzer
-    # preprocess_env.trainer_para.label_format = "int"#"one_hot" 
-    # preprocess_env.trainer_para.additional_pl_paras={
-    #                 #---------> paras for pytorch lightning trainner
-    #                 "accumulate_grad_batches":16, # mil need accumulated grad
-    #                 "accelerator":"auto",#accelerator='gpu', devices=1,
-    #             }
-    # #preprocess_env.trainer_para.with_logger = None #without wandb to debug
-    #--------------------------> init machine and person
-    #--------------------------> init machine and person
