@@ -39,7 +39,7 @@ from HistoMIL.EXP.workspace.experiment import Experiment
 MDL_TO_FEATURE_DIMS = {
     'prov-gigapath': 1536, 
     'resnet18': 512,
-    'UNI': 42,
+    'uni': 1024,
 }
 
 def run_mil(args):
@@ -92,7 +92,7 @@ def run_mil(args):
         gene2k_env.trainer_para.backbone_name = "resnet18"
         gene2k_env.trainer_para.additional_pl_paras.update({"accumulate_grad_batches":8})
         gene2k_env.trainer_para.label_format = "int"#"one_hot"  # change here for regression?
-    #debug_env.cohort_para.update_localcohort = True
+    gene2k_env.cohort_para.update_localcohort = True ## update local_cohort file
     #----------------> pre-processing
     #----------------> dataset
     gene2k_env.dataset_para.dataset_name = args.dataset_name # e.g. "DNAD_L2"
@@ -121,7 +121,7 @@ def run_mil(args):
     ))
 
     wandb.init(project=gene2k_env.project, 
-               entity=gene2k_env.entity)
+               entity=gene2k_env.entity)   ### ADD THIS IN CLUSTER
     
     #--------------------------> setup experiment
     logging.info("setup MIL experiment")
@@ -131,8 +131,14 @@ def run_mil(args):
     logging.info("setup data")
     exp.init_cohort()
     logging.info("setup trainer..")
+    
+    # exp.paras.trainer_para.k_fold = 2 ### REMOVE THIS FOR CLUSTER
+    print(exp.paras.trainer_para)
+
+    # pdb.set_trace()
     exp.setup_experiment(main_data_source="slide",
                         need_train=True)
+    # pdb.set_trace()
 
     exp.exp_worker.train()
 

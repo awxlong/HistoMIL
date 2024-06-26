@@ -98,9 +98,11 @@ class Cohort:
             folder = self.table.df["folder"][i]
             fname = self.table.df["filename"][i]
             C = WSICollector(db_loc=data_locs,wsi_loc=folder+"/"+fname,paras=self.concept_paras)
+            
             for name in concepts:
                 # feature need to specify model_name
                 C_flag,C_nb = C.with_saved_data(name=name)
+                # pdb.set_trace()
                 #print(f" {fname} concept {name} is {C_flag}")
                 self.table.df[name][i]=C_flag
                 self.table.df[name+"_nb"][i]=C_nb

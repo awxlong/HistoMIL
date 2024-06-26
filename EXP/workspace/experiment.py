@@ -117,6 +117,7 @@ class Experiment:
         label_name = self.data_cohort.task_cohort.labels_name[0]
         # shuffle original data frome
         self.data_cohort.cohort_shuffle()
+        # pdb.set_trace()
         self.data_cohort.split_train_phase(ratio=ratio,
                                             label_name=label_name,
                                             K_fold=self.paras.trainer_para.k_fold,

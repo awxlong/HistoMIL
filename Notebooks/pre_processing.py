@@ -129,7 +129,7 @@ def preprocessing(args):
     preprocess_env.dataset_para.concepts = args.concepts_name    # default ['slide', 'tissue', 'patch', 'feature']
     preprocess_env.dataset_para.split_ratio = args.split_ratio   # e.g [0.99,0.01]
     
-    
+    preprocess_env.cohort_para.update_localcohort = True
     machine_cohort_loc = f"{args.cohort_dir}/User/{args.localcohort_name}_machine_config.pkl"
     with open(machine_cohort_loc, "rb") as f:   # Unpickling
         [data_locs, exp_locs, machine,user] = pickle.load(f)
