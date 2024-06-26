@@ -3,9 +3,10 @@
 #$ -S /bin/bash
 #$ -j y
 #$ -l gpu=true
-#$ -N preprocess_with_gigapath
+#$ -N load_gigapath_arrayjob_testing
+#$ -t 1-3
 
-cd secrier_lab/persistence/
+cd secrier_lab/persistence/HistoMIL
 source /home/xuelonan/secrier_lab/python3.8.5-biomedai.source
 source /share/apps/source_files/cuda/cuda-10.2.source
 

@@ -4,6 +4,9 @@
 #$ -j y
 #$ -l gpu=true
 #$ -N preprocess_with_gigapath_array_job
+#$ -t 1-5
+
+
 echo "Running on host: $(hostname)"
 echo "Starting at: $(date)"
 cd secrier_lab/persistence/
