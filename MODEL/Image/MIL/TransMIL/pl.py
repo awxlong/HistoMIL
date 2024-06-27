@@ -17,7 +17,7 @@ from HistoMIL.MODEL.Image.MIL.TransMIL.paras import TransMILParas
 ####################################################################################
 #      pl protocol class
 ####################################################################################
-class  pl_TransMIL(pl_MIL):
+class pl_TransMIL(pl_MIL):
     #---->init
     def __init__(self, 
                 data_paras:DatasetParas,# dataset para
@@ -25,7 +25,7 @@ class  pl_TransMIL(pl_MIL):
                 trainer_paras:PLTrainerParas,# trainer para
                 model_para:TransMILParas,# model para
                 ):
-        super(pl_TransMIL, self).__init__(data_paras,
+        super().__init__(data_paras,
                                     opt_paras,
                                     trainer_paras,
                                     model_para)

@@ -85,7 +85,8 @@ def run_mil(args):
     #---------------> collector parameters and trainer / analyzer
     if args.precomputed:
         gene2k_env.trainer_para.use_pre_calculated = True ### FOR LOADING COMPUTED FEATURES
-        gene2k_env.collector_para.feature.model_name=args.precomputed # if i want to reuse precomputed prov-gigapath 
+        gene2k_env.trainer_para.backbone_name = args.precomputed
+        gene2k_env.collector_para.feature.model_name = args.precomputed # if i want to reuse precomputed prov-gigapath 
         gene2k_env.collector_para.patch.step_size = args.step_size
         gene2k_env.collector_para.patch.patch_size = (args.step_size,  args.step_size)
     else:
@@ -120,8 +121,8 @@ def run_mil(args):
         api_key=user.wandb_api_key  
     ))
 
-    wandb.init(project=gene2k_env.project, 
-               entity=gene2k_env.entity)   ### ADD THIS IN CLUSTER
+    # wandb.init(project=gene2k_env.project, 
+    #            entity=gene2k_env.entity)   ### ADD THIS IN CLUSTER
     
     #--------------------------> setup experiment
     logging.info("setup MIL experiment")
@@ -132,13 +133,14 @@ def run_mil(args):
     exp.init_cohort()
     logging.info("setup trainer..")
     
-    # exp.paras.trainer_para.k_fold = 2 ### REMOVE THIS FOR CLUSTER
+    exp.paras.trainer_para.k_fold = 2 ### REMOVE THIS FOR CLUSTER
     print(exp.paras.trainer_para)
 
     # pdb.set_trace()
     exp.setup_experiment(main_data_source="slide",
                         need_train=True)
-    # pdb.set_trace()
+    # exp.paras.trainer_para.backbone_name = args.precomputed
+    pdb.set_trace()
 
     exp.exp_worker.train()
 
