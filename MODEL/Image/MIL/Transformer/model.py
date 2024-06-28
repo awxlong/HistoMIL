@@ -11,7 +11,8 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 #-----------> external network modules 
-from HistoMIL.MODEL.Image.MIL.utils import Attention, FeedForward, PreNorm
+from HistoMIL.MODEL.Image.MIL.utils import Attention, FeedForward, PreNorm, FeatureNet
+from HistoMIL.MODEL.Image.MIL.Transformer.paras import TransformerParas
 # from HistoMIL import logger
 
 import pdb
@@ -48,38 +49,58 @@ class TransformerBlocks(nn.Module):
 class Transformer(BaseAggregator):
     def __init__(
         self,
-        *,
-        num_classes,
-        input_dim=2048,
-        dim=512,
-        depth=2,
-        heads=8,
-        mlp_dim=512,
-        pool='cls',
-        dim_head=64,
-        dropout=0.,
-        emb_dropout=0.,
-        pos_enc=None,
+        paras:TransformerParas
     ):
         super(BaseAggregator, self).__init__()
-        assert pool in {
+        assert paras.pool in {
             'cls', 'mean'
         }, 'pool type must be either cls (class token) or mean (mean pooling)'
-
-        self.projection = nn.Sequential(nn.Linear(input_dim, heads*dim_head, bias=True), nn.ReLU())
-        self.mlp_head = nn.Sequential(nn.LayerNorm(mlp_dim), nn.Linear(mlp_dim, num_classes))
-        self.transformer = TransformerBlocks(dim, depth, heads, dim_head, mlp_dim, dropout)
-
-        self.pool = pool
-        self.cls_token = nn.Parameter(torch.randn(1, 1, dim))
-
-        self.norm = nn.LayerNorm(dim)
-        self.dropout = nn.Dropout(emb_dropout)
         
-        self.pos_enc = pos_enc
+        self.transformer_paras = paras
+        self.projection = nn.Sequential(nn.Linear(paras.pretrained_input_dim, paras.heads * paras.dim_head, bias=True), nn.ReLU())
+        self.mlp_head = nn.Sequential(nn.LayerNorm(paras.mlp_dim), nn.Linear(paras.mlp_dim, paras.num_classes))
+        self.transformer = TransformerBlocks(paras.dim, paras.depth, paras.heads, paras.dim_head, paras.mlp_dim, paras.dropout)
+
+        self.pool = paras.pool
+        self.cls_token = nn.Parameter(torch.randn(1, 1, paras.dim))
+
+        self.norm = nn.LayerNorm(paras.dim)
+        self.dropout = nn.Dropout(paras.emb_dropout)
+        
+        self.pos_enc = paras.pos_enc
+
+        if paras.pretrained_weights:
+            self.load_pretrained_weights()
+            print(f"Successfully loaded pretrained weights {paras.pretrained_weights}")
+        
+        #--------> feature encoder
+        self.encoder = FeatureNet(paras.encoder_name)
+
+        # Add a projection layer if input_dim != pretrained networks' input_dim
+        if paras.input_dim != paras.pretrained_input_dim:
+            self.input_projection = nn.Linear(paras.input_dim, paras.pretrained_input_dim)
+        else:
+            self.input_projection = nn.Identity()
+
+    def load_pretrained_weights(self):
+        pretrained_weights_dir = 'pretrained_weights/'
+        state_dict = torch.load(f'{pretrained_weights_dir}{self.transformer_paras.pretrained_weights}')
+        # Remove the 'model.' prefix from the keys
+        new_state_dict = {}
+        for k, v in state_dict.items():
+            new_key = k.replace('model.', '')
+            new_state_dict[new_key] = v
+        new_state_dict.pop('criterion.pos_weight', None)
+        # pdb.set_trace()
+        self.load_state_dict(new_state_dict, strict=True)
 
     def forward(self, x, coords=None, register_hook=False):
         b, _, _ = x.shape
+        #--------> feature encoder
+        x = self.encoder(x)
+
+        # Project input if necessary
+        x = self.input_projection(x)
 
         x = self.projection(x)
 
@@ -98,22 +119,18 @@ class Transformer(BaseAggregator):
 
 
 if __name__ == "__main__":
-    model_config = {'heads': 8, 
-                'dim_head': 64, 
-                'dim': 512, 
-                'mlp_dim': 512, 
-                'input_dim':768,
-                'num_classes':1}
-    model = Transformer(**model_config)
-    state_dict = torch.load('pretrained_weights/MSI_high_CRC_model.pth')
+    # model_config = {'heads': 8, 
+    #             'dim_head': 64, 
+    #             'dim': 512, 
+    #             'mlp_dim': 512, 
+    #             'input_dim':768,
+    #             'num_classes':1}
+    default_paras = TransformerParas(input_dim=1024, pretrained_weights='MSI_high_CRC_model.pth', encoder_name='pre-calculated')
+    
+    model = Transformer(default_paras)
 
-    # Remove the 'model.' prefix from the keys
-    new_state_dict = {}
-    for k, v in state_dict.items():
-        new_key = k.replace('model.', '')
-        new_state_dict[new_key] = v
-    new_state_dict.pop('criterion.pos_weight', None)
+    
     # pdb.set_trace()
     # Load the modified state dictionary into your model
-    model.load_state_dict(new_state_dict)
-    pdb.set_trace()
+    # model.load_state_dict(new_state_dict)
+    # pdb.set_trace()
