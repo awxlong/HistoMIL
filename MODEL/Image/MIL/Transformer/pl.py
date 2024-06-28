@@ -6,17 +6,14 @@ import torchmetrics
 import wandb
 from matplotlib import pyplot as plt
 
-from paras import get_loss, get_optimizer, get_scheduler
-from HistoMIL.MODEL.Image.MIL.Transformer.paras import TransformerParas
+from HistoMIL.MODEL.Image.MIL.Transformer.paras import TransformerParas, get_loss, get_optimizer, get_scheduler, DEFAULT_TRANSFORMER_PARAS
 from HistoMIL.MODEL.Image.MIL.Transformer.model import Transformer
-
-DEFAULT_PARAS = TransformerParas(input_dim=1024, pretrained_weights='MSI_high_CRC_model.pth', encoder_name='pre-calculated')
-    
-
-class ClassifierLightning(pl.LightningModule):
-    def __init__(self, paras:TransformerParas = DEFAULT_PARAS):
+   
+import pdb
+class pl_Transformer(pl.LightningModule):
+    def __init__(self, paras:TransformerParas = DEFAULT_TRANSFORMER_PARAS):
         super().__init__()
-        self.config = paras
+        self.paras = paras
         self.model = Transformer(paras)
         self.criterion = get_loss(paras.criterion, pos_weight=paras.pos_weight
                                  ) if paras.task == "binary" else get_loss(paras.criterion)
@@ -79,8 +76,8 @@ class ClassifierLightning(pl.LightningModule):
             task=paras.task, num_classes=paras.num_classes
         )
 
-    def forward(self, x, *args):
-        logits = self.model(x, *args)
+    def forward(self, x):
+        logits = self.model(x)
         return logits
 
     def configure_optimizers(self, ):
@@ -90,20 +87,24 @@ class ClassifierLightning(pl.LightningModule):
             lr=self.lr,
             wd=self.wd,
         )
-        if self.config.lr_scheduler:
+        if self.paras.lr_scheduler:
             scheduler = get_scheduler(
-                self.config.lr_scheduler,
+                self.paras.lr_scheduler,
                 optimizer,
-                **self.config.lr_scheduler_config,
+                **self.paras.lr_scheduler_config,
             )
             return [optimizer], [scheduler]
         else:
             return [optimizer]
 
     def training_step(self, batch, batch_idx):
-        x, coords, y, _, _ = batch  # x = features, coords, y = labels, tiles, patient
-        logits = self.forward(x, coords)
-        if self.config.task == "binary":
+        # pdb.set_trace()
+        # x, coords, y, _, _ = batch  # x = features, coords, y = labels, tiles, patient
+        x, y = batch  # x = features, y = labels
+        
+        logits = self.forward(x)
+        # pdb.set_trace()
+        if self.paras.task == "binary":
             loss = self.criterion(logits, y.unsqueeze(0).float())
             probs = torch.sigmoid(logits)
             preds = torch.round(probs)
@@ -111,7 +112,7 @@ class ClassifierLightning(pl.LightningModule):
             loss = self.criterion(logits, y)
             preds = torch.argmax(logits, dim=1, keepdim=True)
 
-        if self.config.task == "binary":
+        if self.paras.task == "binary":
             self.acc_train(preds, y.unsqueeze(1))
         else:
             probs = torch.softmax(logits, dim=1)
@@ -122,9 +123,10 @@ class ClassifierLightning(pl.LightningModule):
         return loss
 
     def validation_step(self, batch, batch_idx):
-        x, coords, y, _, _ = batch  # x = features, coords, y = labels, tiles, patient
-        logits = self.forward(x, coords)
-        if self.config.task == "binary":
+        # pdb.set_trace()
+        x, y = batch  # x = features, y = labels 
+        logits = self.forward(x)
+        if self.paras.task == "binary":
             y = y.unsqueeze(1)
             loss = self.criterion(logits, y.float())
             probs = torch.sigmoid(logits)
@@ -174,7 +176,7 @@ class ClassifierLightning(pl.LightningModule):
         x, coords, y, _, patient = batch  # x = features, coords, y = labels, tiles, patient
         logits = self.forward(x, coords)
 
-        if self.config.task == "binary":
+        if self.paras.task == "binary":
             y = y.unsqueeze(1)
             loss = self.criterion(logits, y.float())
             probs = torch.sigmoid(logits)

@@ -83,7 +83,7 @@ class Transformer(BaseAggregator):
             self.input_projection = nn.Identity()
 
     def load_pretrained_weights(self):
-        pretrained_weights_dir = 'pretrained_weights/'
+        pretrained_weights_dir =  self.transformer_paras.pretrained_weights_dir# 'pretrained_weights/'
         state_dict = torch.load(f'{pretrained_weights_dir}{self.transformer_paras.pretrained_weights}')
         # Remove the 'model.' prefix from the keys
         new_state_dict = {}

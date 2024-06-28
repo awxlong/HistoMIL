@@ -31,8 +31,12 @@ import wandb
 
 from args import get_args_mil
 
+### Getting parameters for MIL model architectures/algorithms
 from HistoMIL.MODEL.Image.MIL.TransMIL.paras import TransMILParas
 from HistoMIL.MODEL.Image.MIL.DSMIL.paras import DSMILParas
+from HistoMIL.MODEL.Image.MIL.Transformer.paras import TransformerParas, DEFAULT_TRANSFORMER_PARAS
+
+
 from HistoMIL.EXP.paras.env import EnvParas
 from HistoMIL.EXP.workspace.experiment import Experiment
 
@@ -44,7 +48,6 @@ MDL_TO_FEATURE_DIMS = {
 
 def run_mil(args):
     #--------------------------> task setting
-    # task_name = "example_mil"
     #--------------------------> model setting
 
     # for transmil
@@ -52,18 +55,25 @@ def run_mil(args):
     model_para_transmil.feature_size = MDL_TO_FEATURE_DIMS[args.precomputed]
     model_para_transmil.n_classes=2
     model_para_transmil.norm_layer=nn.LayerNorm
+    
     # for dsmil
-
     model_para_dsmil = DSMILParas()
     model_para_dsmil.feature_dim = MDL_TO_FEATURE_DIMS[args.precomputed]
     model_para_dsmil.p_class = 2
     model_para_dsmil.b_class = 2
     model_para_dsmil.dropout_r = 0.5
 
-    model_name = "TransMIL"  # or "TransMIL" or "ABMIL"
+    # for Transformer
+    DEFAULT_TRANSFORMER_PARAS.input_dim =  MDL_TO_FEATURE_DIMS[args.precomputed]
+    DEFAULT_TRANSFORMER_PARAS.pretrained_weights_dir = args.pretrained_weights_dir
+    DEFAULT_TRANSFORMER_PARAS.pretrained_weights = args.pretrained_weights_name    # default is MSI_high_CRC_model.pth 
+
+
+    model_name = args.mil_algorithm  # options are "TransMIL", "ABMIL", "DSMIL" or "Transformer"
 
     model_para_settings = {"TransMIL":model_para_transmil,
-                        "DSMIL":model_para_dsmil} 
+                           "DSMIL":model_para_dsmil,
+                           'Transformer':DEFAULT_TRANSFORMER_PARAS} 
 
     #--------------------------> parameters
     
@@ -86,7 +96,7 @@ def run_mil(args):
     if args.precomputed:
         gene2k_env.trainer_para.use_pre_calculated = True ### FOR LOADING COMPUTED FEATURES
         gene2k_env.trainer_para.backbone_name = args.precomputed
-        gene2k_env.collector_para.feature.model_name = args.precomputed # if i want to reuse precomputed prov-gigapath 
+        gene2k_env.collector_para.feature.model_name = args.precomputed # if i want to reuse precomputed prov-gigapath # this model_name is different to the model_name below
         gene2k_env.collector_para.patch.step_size = args.step_size
         gene2k_env.collector_para.patch.patch_size = (args.step_size,  args.step_size)
     else:
@@ -115,11 +125,11 @@ def run_mil(args):
     gene2k_env.data_locs = data_locs
     gene2k_env.exp_locs = exp_locs
     #---------------> wandb 
-    wandb.setup(settings=wandb.Settings(
-        _disable_stats=True,
-        disable_git=True,
-        api_key=user.wandb_api_key  
-    ))
+    # wandb.setup(settings=wandb.Settings(
+    #     _disable_stats=True,
+    #     disable_git=True,
+    #     api_key=user.wandb_api_key  
+    # ))
 
     # wandb.init(project=gene2k_env.project, 
     #            entity=gene2k_env.entity)   ### ADD THIS IN CLUSTER
@@ -140,7 +150,7 @@ def run_mil(args):
     exp.setup_experiment(main_data_source="slide",
                         need_train=True)
     # exp.paras.trainer_para.backbone_name = args.precomputed
-    pdb.set_trace()
+    # pdb.set_trace()
 
     exp.exp_worker.train()
 

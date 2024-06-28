@@ -219,6 +219,13 @@ def get_args_mil():
         "--task-additional-idx", type=str, nargs='+', default=None, help='additional column names of biomarkers of interest.')
     parser.add_argument(
         "--num-workers", type=int, default=8, help='number of workers to specify in pytorch dataloader')
+    parser.add_argument(
+        "--mil-algorithm", type=str, help='Name of the MIL algorithm/model that is used, e.g., TransMIL, DSMIL, ABMIL, Transformer')
+    parser.add_argument(
+        "--pretrained-weights-dir", type=str, help='Directory where the pretrained-weights are stored for the MIL model')
+    parser.add_argument(
+        "--pretrained-weights-name", type=str, help='Filename (e.g. ending in .pth) of the pretrained weights to be loaded to the MIL model, e.g. MSI_high_CRC_model.pth')
+    
     
     parser.add_argument(
         "--seed", type=int, default=42, help="Seed to ensure reproducibility")
@@ -234,6 +241,7 @@ def get_args_mil():
     
     # assert args.data_dir.endswith(os.path.sep)
     assert args.cohort_dir.endswith(os.path.sep)
+    assert args.pretrained_weights_dir.endswith(os.path.sep)
 
     # args.conf_version = args.data_dir.split(os.path.sep)[-2]
     # args.name = args.name + f"-{args.conf_version}"

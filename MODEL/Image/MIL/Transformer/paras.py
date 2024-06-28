@@ -37,14 +37,18 @@ class TransformerParas:
     dropout:float = 0.
     emb_dropout:float = 0.
     pos_enc:nn.Module = None
+    pretrained_weights_dir = ''
     pretrained_weights: str = attr.ib(default=None, validator=attr.validators.optional(attr.validators.in_(AVAILABLE_WEIGHTS)))
     encoder_name:str = 'pre-calculated' # by default we'll be using the foundational models for feature extraction, so we avoid SSL
-    task = 'binary'
+    task:str = 'binary'
     criterion:str = 'BCEWithLogitsLoss'
     pos_weight = torch.ones(1)
     lr:float = 2.0e-05
     wd:float = 2.0e-05
-    
+    optimizer = 'AdamW'
+    lr_scheduler = 'CosineAnnealingLR'
+    lr_scheduler_config = {'T_max':50, 'eta_min':1e-6}
+
     def __attrs_post_init__(self):
         super().__init__()
         # pdb.set_trace()
@@ -99,3 +103,5 @@ def get_scheduler(name, optimizer, *args, **kwargs):
         raise ValueError(f"Invalid scheduler name: {name}")
 
 
+DEFAULT_TRANSFORMER_PARAS = TransformerParas(input_dim=1024, task='binary', \
+                                             pretrained_weights='MSI_high_CRC_model.pth', encoder_name='pre-calculated')
