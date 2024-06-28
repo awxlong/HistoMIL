@@ -160,8 +160,8 @@ class Experiment:
             self.exp_worker.set_cohort(self.data_cohort)
             self.exp_worker.get_datapack(self.machine,self.paras.collector_para)
 
-            self.exp_worker.build_model()
-            self.exp_worker.build_trainer()
+            self.exp_worker.build_model()       # creates model from available implementations
+            self.exp_worker.build_trainer()     # sets up trainer configurations such as wandb and learning rate
 
             # update paras
             self.paras.dataset_para=self.exp_worker.dataset_para

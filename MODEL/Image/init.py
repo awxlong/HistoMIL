@@ -37,8 +37,11 @@ def create_img_model(train_paras:PLTrainerParas,
                             opt_paras=optloss_paras,
                             trainer_paras=train_paras,
                             model_para=model_para)
+        elif model_name == 'Transformer':
+            from HistoMIL.MODEL.Image.MIL.Transformer.pl import pl_Transformer
+            pl_model = pl_Transformer()
     else:
-        raise ValueError("model name not aviliable")
+        raise ValueError("model name not availiable")
     return pl_model
 
 def create_img_mode_paras(train_paras:PLTrainerParas,):
