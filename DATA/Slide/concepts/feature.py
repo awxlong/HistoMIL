@@ -79,7 +79,7 @@ class Features(Items):
         self.extractor = Features_extractor(paras=paras)
         
         self.extractor._init_model()
-
+        
         self.extractor.process(slide=slide,patches=patches)
 
         self.feature_embedding = self.extractor.feats
