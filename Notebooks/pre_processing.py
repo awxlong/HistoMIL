@@ -44,6 +44,10 @@ BACKBONES = {
     },
     'ctranspath': {
         'model_name': "hf_hub:1aurent/swin_tiny_patch4_window7_224.CTransPath"
+    },
+    'resnet50':{
+        'model_name': "resnet50",
+        "num_classes": 0
     }
 }
 
@@ -51,6 +55,7 @@ FEAT_DIMS = {
     'uni': 1024,
     'prov-gigapath': 1536,
     'ctranspath': 768,
+    'resnet50': 2048
 }
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
