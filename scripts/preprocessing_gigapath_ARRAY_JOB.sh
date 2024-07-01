@@ -1,17 +1,17 @@
-#$ -l tmem=17G
-#$ -l h_rt=72:00:00 
+#$ -l tmem=18G
+#$ -l h_rt=96:00:00 
 #$ -S /bin/bash
 #$ -j y
 #$ -l gpu=true
 #$ -N preprocess_with_gigapath_array_job
-#$ -t 1-5
+#$ -t 4
 
 
 echo "Running on host: $(hostname)"
 echo "Starting at: $(date)"
 cd secrier_lab/persistence/
 source /home/xuelonan/secrier_lab/python3.8.5-biomedai.source
-source /share/apps/source_files/cuda/cuda-10.2.source
+source /share/apps/source_files/cuda/cuda-10.2.source # check if cuda 12.4 avoids the a40 error
 python3 HistoMIL/Notebooks/pre_processing.py --exp-name 'preprocessing_gigapath' \
                                              --project-name 'g0-arrest' \
                                              --wandb-entity-name 'cell-x' \

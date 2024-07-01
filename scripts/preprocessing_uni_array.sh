@@ -4,7 +4,7 @@
 #$ -j y
 #$ -l gpu=true
 #$ -N preprocess_with_uni_array_job
-#$ -t 1-5
+#$ -t 3-5
 
 echo "Running on host: $(hostname)"
 echo "Starting at: $(date)"

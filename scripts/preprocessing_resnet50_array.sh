@@ -4,7 +4,7 @@
 #$ -j y
 #$ -l gpu=true
 #$ -N preprocess_with_resnet50_array_job
-#$ -t 1-5
+#$ -t 1
 
 echo "Running on host: $(hostname)"
 echo "Starting at: $(date)"
