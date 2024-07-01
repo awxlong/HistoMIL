@@ -125,14 +125,14 @@ def run_mil(args):
     gene2k_env.data_locs = data_locs
     gene2k_env.exp_locs = exp_locs
     #---------------> wandb 
-    # wandb.setup(settings=wandb.Settings(
-    #     _disable_stats=True,
-    #     disable_git=True,
-    #     api_key=user.wandb_api_key  
-    # ))
+    wandb.setup(settings=wandb.Settings(
+        _disable_stats=True,
+        disable_git=True,
+        api_key=user.wandb_api_key  
+    ))
 
-    # wandb.init(project=gene2k_env.project, 
-    #            entity=gene2k_env.entity)   ### ADD THIS IN CLUSTER
+    wandb.init(project=gene2k_env.project, 
+               entity=gene2k_env.entity)   ### ADD THIS IN CLUSTER
     
     #--------------------------> setup experiment
     logging.info("setup MIL experiment")
@@ -143,7 +143,7 @@ def run_mil(args):
     exp.init_cohort()
     logging.info("setup trainer..")
     
-    exp.paras.trainer_para.k_fold = 2 ### REMOVE THIS FOR CLUSTER
+    # exp.paras.trainer_para.k_fold = 2 ### REMOVE THIS FOR CLUSTER
     print(exp.paras.trainer_para)
 
     # pdb.set_trace()
