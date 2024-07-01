@@ -127,7 +127,7 @@ def run_mil(args):
     #---------------> wandb 
     wandb.setup(settings=wandb.Settings(
         _disable_stats=True,
-        disable_git=True,
+        # disable_git=True,
         api_key=user.wandb_api_key  
     ))
 
