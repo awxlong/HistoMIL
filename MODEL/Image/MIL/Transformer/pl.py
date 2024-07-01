@@ -91,8 +91,9 @@ class pl_Transformer(pl.LightningModule):
             scheduler = get_scheduler(
                 self.paras.lr_scheduler,
                 optimizer,
-                **self.paras.lr_scheduler_config,
+                self.paras.lr_scheduler_config,
             )
+            # pdb.set_trace()
             return [optimizer], [scheduler]
         else:
             return [optimizer]
@@ -231,3 +232,6 @@ class pl_Transformer(pl.LightningModule):
             wandb.log({"confusion_matrix/test": wandb.Image(cm)})
 
         self.cm_test.reset()
+
+    def lr_scheduler_step(self, scheduler, optimizer_idx, metric):
+        scheduler.step()

@@ -132,4 +132,4 @@ if __name__ == "__main__":
     # Load the modified state dictionary into your model
     model.load_state_dict(new_state_dict)
     model.load_state_dict(torch.load('MSI_high_CRC_model.pth'), strict=False)
-    pdb.set_trace()
+    # pdb.set_trace()

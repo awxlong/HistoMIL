@@ -144,6 +144,7 @@ python-dateutil==2.8.1
 python-javabridge==4.0.0rc2
 pythonping==1.0.16
 pytools==2021.2.6
+pytorch-lightning==1.7.1
 pytz==2020.1
 PyWavelets==1.1.1
 PyYAML==5.3.1
@@ -190,8 +191,8 @@ tifffile==2020.8.13
 timm==1.0.7
 tk==0.1.0
 tomli==2.0.1
-torch==1.8.1
-torchvision==0.9.1
+torch==2.3.0
+torchvision==0.18.0
 tqdm==4.59.0
 typing-extensions==3.7.4.3
 umap-learn==0.5.3
