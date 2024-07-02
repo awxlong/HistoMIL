@@ -127,6 +127,8 @@ class pl_Transformer(pl.LightningModule):
         # pdb.set_trace()
         x, y = batch  # x = features, y = labels 
         logits = self.forward(x)
+        print(y)
+        print(y.shape)
         if self.paras.task == "binary":
             y = y.unsqueeze(1)
             loss = self.criterion(logits, y.float())
@@ -134,13 +136,16 @@ class pl_Transformer(pl.LightningModule):
         else:
             loss = self.criterion(logits, y)
             probs = torch.softmax(logits, dim=1)
-
+        print(y)
+        print(probs.shape)
+        print(y.shape)
         self.acc_val(probs, y)
         self.auroc_val(probs, y)
         self.f1_val(probs, y)
         self.precision_val(probs, y)
         self.recall_val(probs, y)
         self.specificity_val(probs, y)
+        # pdb.set_trace()
         self.cm_val(probs, y)
 
         self.log("loss/val", loss, prog_bar=True)
