@@ -175,6 +175,7 @@ class pl_Transformer(pl.LightningModule):
 
     def test_step(self, batch, batch_idx, dataloader_idx=0):
         x, y = batch  # x = features, coords, y = labels, tiles, patient
+        # pdb.set_trace()
         logits = self.forward(x)
 
         if self.paras.task == "binary":

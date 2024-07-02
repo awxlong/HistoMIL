@@ -33,7 +33,7 @@ class PLTrainerParas(object):
     ckpt_para = { #-----------> paras for pytorch_lightning.callbacks.ModelCheckpoint
                     "save_top_k":1,
                     "mode":"max",
-                   "monitor":"auroc",}
+                   "monitor":"auroc/val",}
 
     additional_pl_paras={
                 #---------> paras for pytorch lightning trainner

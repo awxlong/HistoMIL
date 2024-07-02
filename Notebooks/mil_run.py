@@ -114,7 +114,8 @@ def run_mil(args):
     gene2k_env.trainer_para.model_name = model_name
     gene2k_env.trainer_para.model_para = model_para_settings[model_name]
     
-        
+    # --------------> Logging metrics
+    # gene2k_env.trainer_para.ckpt_para
     #k_fold = None
     
 

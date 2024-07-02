@@ -16,8 +16,7 @@ def get_available_device():
         return "mps"
     else:
         return "cpu"
-
-device = get_available_device()
+    
 
 ##############################################################################
 #           para for slide
