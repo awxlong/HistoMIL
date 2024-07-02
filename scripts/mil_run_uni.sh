@@ -14,7 +14,7 @@ python3 HistoMIL/Notebooks/mil_run.py --exp-name 'mil-pretrained-MSI' \
                                       --targets-name 'g0_arrest' \
                                       --cohort-dir '/home/xuelonan/secrier_lab/persistence/' \
                                       --split-ratio 0.8 0.2 --step-size 224 --precomputed 'uni' \
-                                      --label-dict "{'negative':0,'positive':1}" \
+                                      --label-dict "{'0':0,'1':1}" \
                                       --mil-algorithm "Transformer" \
                                       --pretrained-weights-dir '/home/xuelonan/secrier_lab/persistence/HistoMIL/MODEL/Image/MIL/Transformer/pretrained_weights/' \
                                       --pretrained-weights-name 'MSI_high_CRC_model.pth'
