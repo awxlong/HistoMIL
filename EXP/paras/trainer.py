@@ -39,5 +39,7 @@ class PLTrainerParas(object):
                 #---------> paras for pytorch lightning trainner
                 #"accumulate_grad_batches":8, # mil need accumulated grad
                 "accelerator":"auto",#accelerator='gpu', devices=1,
+                'enable_progress_bar': True, 
+                'enable_model_summary': True,
             }
     

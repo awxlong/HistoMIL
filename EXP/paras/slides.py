@@ -9,6 +9,15 @@ from HistoMIL.DATA.Slide.concepts.WholeSlideImage import WholeSlideImage
 import torch
 from HistoMIL.DATA.Database.data_aug import naive_transforms,only_naive_transforms
 
+def get_available_device():
+    if torch.cuda.is_available():
+        return "cuda"
+    elif torch.backends.mps.is_available():
+        return "mps"
+    else:
+        return "cpu"
+
+device = get_available_device()
 
 ##############################################################################
 #           para for slide
@@ -111,7 +120,7 @@ class FeatureParas(object):
     out_dim = None
     #-----> for inference part 
 
-    device:str = torch.device("cuda" if torch.cuda.is_available() else "cpu") # "cuda"
+    device:str = get_available_device() # torch.device("cuda" if torch.cuda.is_available() else "cpu") # "cuda"
     trans:Callable = only_naive_transforms
     
     batch_size:int = 32

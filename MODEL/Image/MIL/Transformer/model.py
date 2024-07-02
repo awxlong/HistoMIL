@@ -97,6 +97,7 @@ class Transformer(BaseAggregator):
     def forward(self, x, coords=None, register_hook=False):
         b, _, _ = x.shape
         #--------> feature encoder
+        # pdb.set_trace()
         x = self.encoder(x)
 
         # Project input if necessary

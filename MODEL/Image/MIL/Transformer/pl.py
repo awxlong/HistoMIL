@@ -174,8 +174,8 @@ class pl_Transformer(pl.LightningModule):
         self.outputs = pd.DataFrame(columns=column_names)
 
     def test_step(self, batch, batch_idx, dataloader_idx=0):
-        x, coords, y, _, patient = batch  # x = features, coords, y = labels, tiles, patient
-        logits = self.forward(x, coords)
+        x, y = batch  # x = features, coords, y = labels, tiles, patient
+        logits = self.forward(x)
 
         if self.paras.task == "binary":
             y = y.unsqueeze(1)
@@ -209,12 +209,12 @@ class pl_Transformer(pl.LightningModule):
 
         outputs = pd.DataFrame(
             data=[
-                [patient[0],
+                [
                  y.item(),
                  preds.item(),
                  logits.squeeze(), (y == preds).int().item()]
             ],
-            columns=['patient', 'ground_truth', 'prediction', 'logits', 'correct']
+            columns=[ 'ground_truth', 'prediction', 'logits', 'correct']
         )
         self.outputs = pd.concat([self.outputs, outputs], ignore_index=True)
 

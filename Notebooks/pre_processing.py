@@ -58,7 +58,17 @@ FEAT_DIMS = {
     'resnet50': 2048
 }
 
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+def get_available_device():
+    if torch.cuda.is_available():
+        return "cuda"
+    elif torch.backends.mps.is_available():
+        return "mps"
+    else:
+        return "cpu"
+
+device = get_available_device()
+
+# device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     
 
 def create_model_from_backbones(model_key):
