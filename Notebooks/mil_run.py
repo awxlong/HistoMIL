@@ -119,6 +119,14 @@ def run_mil(args):
                     "save_top_k":1,
                     "mode":"max",
                    "monitor":"auroc/val",}
+    
+    gene2k_env.trainer_para.additional_pl_paras={
+                #---------> paras for pytorch lightning trainner
+                "accumulate_grad_batches":8, # mil need accumulated grad
+                "accelerator":"auto",#accelerator='gpu', devices=1,
+                'enable_progress_bar': True, 
+                'enable_model_summary': True,
+            }
 
     # gene2k_env.opt_para.max_epochs = 1 # for debugging
 

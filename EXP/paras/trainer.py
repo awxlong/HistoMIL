@@ -33,11 +33,11 @@ class PLTrainerParas(object):
     ckpt_para = { #-----------> paras for pytorch_lightning.callbacks.ModelCheckpoint
                     "save_top_k":1,
                     "mode":"max",
-                   "monitor":"auroc/val",}
+                   "monitor":"auroc",}
 
     additional_pl_paras={
                 #---------> paras for pytorch lightning trainner
-                #"accumulate_grad_batches":8, # mil need accumulated grad
+                "accumulate_grad_batches":8, # mil need accumulated grad
                 "accelerator":"auto",#accelerator='gpu', devices=1,
                 'enable_progress_bar': True, 
                 'enable_model_summary': True,
