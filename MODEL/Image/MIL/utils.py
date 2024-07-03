@@ -280,9 +280,12 @@ class Attention(nn.Module):
         print(q.shape)
         print(k.shape)
         # pdb.set_trace()
-        dots = torch.matmul(q, k.transpose(-1, -2)) * self.scale
+        # dots = torch.matmul(q, k.transpose(-1, -2)) * self.scale
 
-        attn = self.attend(dots)
+        # attn = self.attend(dots)
+        # Using memory-efficient attention
+        attn = F.scaled_dot_product_attention(q, k, v, attn_mask=None, dropout_p=self.training and 0.1 or 0.0)
+
 
         # save self-attention maps
         self.save_attention_map(attn)

@@ -130,8 +130,9 @@ def run_mil(args):
                 'precision': 16,  # Use mixed precision
                 'enable_progress_bar': True, 
                 'enable_model_summary': True,
-                'plugins': [DDPStrategy(find_unused_parameters=False)],
-                'strategy':'ddp',
+                # 'gradient_clip_val': 0.5,
+                # 'plugins': [DDPStrategy(find_unused_parameters=False)],
+                # 'strategy':'ddp',
             }
 
     # gene2k_env.opt_para.max_epochs = 1 # for debugging
