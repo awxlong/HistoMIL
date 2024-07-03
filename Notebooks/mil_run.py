@@ -39,7 +39,8 @@ from HistoMIL.EXP.paras.env import EnvParas
 from HistoMIL.EXP.workspace.experiment import Experiment
 
 
-from pytorch_lightning.plugins import DDPPlugin
+# from pytorch_lightning.plugins import DDPPlugin
+from pytorch_lightning.strategies import DDPStrategy
 
 
 MDL_TO_FEATURE_DIMS = {
@@ -129,6 +130,8 @@ def run_mil(args):
                 'precision': 16,  # Use mixed precision
                 'enable_progress_bar': True, 
                 'enable_model_summary': True,
+                'plugins': [DDPStrategy(find_unused_parameters=False)],
+                'strategy':'ddp',
             }
 
     # gene2k_env.opt_para.max_epochs = 1 # for debugging
