@@ -292,8 +292,9 @@ class Attention(nn.Module):
         if register_hook:
             attn.register_hook(self.save_attn_gradients)
 
-        out = torch.matmul(attn, v)
-        out = rearrange(out, 'b h n d -> b n (h d)')
+        # out = torch.matmul(attn, v)
+        # out = rearrange(out, 'b h n d -> b n (h d)')
+        out = rearrange(attn, 'b h n d -> b n (h d)')
         return self.to_out(out)
 
     def save_attn_gradients(self, attn_gradients):
