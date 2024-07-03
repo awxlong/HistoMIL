@@ -23,7 +23,7 @@ python3 HistoMIL/Notebooks/pre_processing.py --exp-name 'preprocessing' \
                             --split-ratio 0.99 0.01 \
                             --step-size 224 \
                             --backbone-name 'resnet50' \
-                            --label-dict "{'negative':0,'positive':1}" \
+                            --label-dict "{0:0,1:1}" \
                             --api-dir "/home/xuelonan/secrier_lab/persistence/HistoMIL/" \
                             --array-job-idx ${SGE_TASK_ID}
 echo "Finished at: $(date)"
