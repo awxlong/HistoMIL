@@ -135,7 +135,7 @@ def run_mil(args):
                 # 'strategy':'ddp',
             }
 
-    # gene2k_env.opt_para.max_epochs = 1 # for debugging
+    gene2k_env.opt_para.max_epochs = args.n_epochs # lower than https://www.cell.com/cancer-cell/fulltext/S1535-6108(23)00278-7
 
     # pdb.set_trace()
 
