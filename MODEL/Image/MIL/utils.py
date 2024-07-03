@@ -276,8 +276,10 @@ class Attention(nn.Module):
             lambda t: rearrange(t, 'b n (h d) -> b h n d', h=self.heads), qkv
         )
 
+        
+        print(q.shape)
+        print(k.shape)
         # pdb.set_trace()
-
         dots = torch.matmul(q, k.transpose(-1, -2)) * self.scale
 
         attn = self.attend(dots)
