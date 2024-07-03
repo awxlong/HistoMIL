@@ -277,8 +277,8 @@ class Attention(nn.Module):
         )
 
         
-        print(q.shape)
-        print(k.shape)
+        # print(q.shape)
+        # print(k.shape)
         # pdb.set_trace()
         # dots = torch.matmul(q, k.transpose(-1, -2)) * self.scale
 

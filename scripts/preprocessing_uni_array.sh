@@ -1,10 +1,10 @@
 #$ -l tmem=16G
-#$ -l h_rt=72:00:00 
+#$ -l h_rt=96:00:00 
 #$ -S /bin/bash
 #$ -j y
 #$ -l gpu=true
 #$ -N preprocess_with_uni_array_job
-#$ -t 3-5
+#$ -t 1-7
 
 echo "Running on host: $(hostname)"
 echo "Starting at: $(date)"
