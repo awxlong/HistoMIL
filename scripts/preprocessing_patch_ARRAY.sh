@@ -25,5 +25,6 @@ python3 HistoMIL/Notebooks/pre_processing.py --exp-name 'preprocessing' \
                             --backbone-name 'uni' \
                             --label-dict "{0:0,1:1}" \
                             --api-dir "/home/xuelonan/secrier_lab/persistence/HistoMIL/" \
-                            --array-job-idx ${SGE_TASK_ID}
+                            --array-job-idx ${SGE_TASK_ID} \
+                            --concepts-name 'slide' 'tissue' 'patch'
 echo "Finished at: $(date)"

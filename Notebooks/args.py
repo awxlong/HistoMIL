@@ -54,8 +54,6 @@ def dict_type(string):
     if not isinstance(value, dict):
         raise argparse.ArgumentTypeError(f"Value {value} is not a dict")
     for key, val in value.items():
-        if not isinstance(key, str):
-            raise argparse.ArgumentTypeError(f"Key {key} in the dictionary is not a string")
         if not isinstance(val, int):
             raise argparse.ArgumentTypeError(f"Value {val} for key {key} in the dictionary is not an integer")
     return value
