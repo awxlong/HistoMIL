@@ -35,10 +35,12 @@ from args import get_args_mil
 from HistoMIL.MODEL.Image.MIL.TransMIL.paras import TransMILParas
 from HistoMIL.MODEL.Image.MIL.DSMIL.paras import DSMILParas
 from HistoMIL.MODEL.Image.MIL.Transformer.paras import TransformerParas, DEFAULT_TRANSFORMER_PARAS
-
-
 from HistoMIL.EXP.paras.env import EnvParas
 from HistoMIL.EXP.workspace.experiment import Experiment
+
+
+from pytorch_lightning.plugins import DDPPlugin
+
 
 MDL_TO_FEATURE_DIMS = {
     'prov-gigapath': 1536, 
@@ -124,6 +126,7 @@ def run_mil(args):
                 #---------> paras for pytorch lightning trainner
                 "accumulate_grad_batches":8, # mil need accumulated grad
                 "accelerator":"auto",#accelerator='gpu', devices=1,
+                'precision': 16,  # Use mixed precision
                 'enable_progress_bar': True, 
                 'enable_model_summary': True,
             }

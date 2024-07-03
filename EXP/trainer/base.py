@@ -82,18 +82,22 @@ class pl_base_trainer:
             
         if len(callbacks_list)>=1: trainer_additional_dict.update(
                                             {"callbacks":callbacks_list})
+        # pdb.set_trace()
         # 4. Trainer and fit
         self.trainer = pl.Trainer(default_root_dir=self.machine.exp_locs.\
                                                         abs_loc("out_files"),
                                 max_epochs=self.opt_para.max_epochs,
                                 **trainer_additional_dict
                                 )
+        
 
     def train(self):
         logger.info("Trainer:: Start training....")
         trainloader = self.data_pack["trainloader"] 
         valloader = self.data_pack["testloader"]
-        # pdb.set_trace()
+        print(f'acc_grad_batches: {self.trainer.accumulate_grad_batches} \
+              precision: {self.trainer.precision}')
+
         self.trainer.fit(model=self.pl_model, 
                 train_dataloaders=trainloader,
                 val_dataloaders=valloader)

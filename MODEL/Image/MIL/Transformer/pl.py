@@ -1,5 +1,6 @@
 import pandas as pd
 import pytorch_lightning as pl
+
 import seaborn as sns
 import torch
 import torchmetrics
@@ -8,7 +9,8 @@ from matplotlib import pyplot as plt
 
 from HistoMIL.MODEL.Image.MIL.Transformer.paras import TransformerParas, get_loss, get_optimizer, get_scheduler, DEFAULT_TRANSFORMER_PARAS
 from HistoMIL.MODEL.Image.MIL.Transformer.model import Transformer
-   
+
+
 import pdb
 class pl_Transformer(pl.LightningModule):
     def __init__(self, paras:TransformerParas = DEFAULT_TRANSFORMER_PARAS):

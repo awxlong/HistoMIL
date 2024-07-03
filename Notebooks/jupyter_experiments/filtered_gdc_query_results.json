@@ -1,0 +1,1045 @@
+{
+  "TCGA-EI-6510": {
+    "has_diagnostic_slide": true,
+    "tissue_type": "Rectum",
+    "has_clinical_xml": true,
+    "clinical_xml_count": 1,
+    "total_clinical_files": 9
+  },
+  "TCGA-DC-4749": {
+    "has_diagnostic_slide": true,
+    "tissue_type": "Rectosigmoid junction",
+    "has_clinical_xml": true,
+    "clinical_xml_count": 1,
+    "total_clinical_files": 9
+  },
+  "TCGA-AG-4007": {
+    "has_diagnostic_slide": true,
+    "tissue_type": "Colon",
+    "has_clinical_xml": true,
+    "clinical_xml_count": 1,
+    "total_clinical_files": 9
+  },
+  "TCGA-CL-5918": {
+    "has_diagnostic_slide": true,
+    "tissue_type": "Rectum",
+    "has_clinical_xml": true,
+    "clinical_xml_count": 1,
+    "total_clinical_files": 9
+  },
+  "TCGA-AG-3885": {
+    "has_diagnostic_slide": true,
+    "tissue_type": "Rectum",
+    "has_clinical_xml": true,
+    "clinical_xml_count": 1,
+    "total_clinical_files": 9
+  },
+  "TCGA-AF-3911": {
+    "has_diagnostic_slide": true,
+    "tissue_type": "Rectum",
+    "has_clinical_xml": true,
+    "clinical_xml_count": 1,
+    "total_clinical_files": 9
+  },
+  "TCGA-AG-A01Y": {
+    "has_diagnostic_slide": true,
+    "tissue_type": "Rectum",
+    "has_clinical_xml": true,
+    "clinical_xml_count": 1,
+    "total_clinical_files": 9
+  },
+  "TCGA-AF-2690": {
+    "has_diagnostic_slide": true,
+    "tissue_type": "Rectum",
+    "has_clinical_xml": true,
+    "clinical_xml_count": 1,
+    "total_clinical_files": 9
+  },
+  "TCGA-F5-6812": {
+    "has_diagnostic_slide": true,
+    "tissue_type": "Connective, subcutaneous and other soft tissues",
+    "has_clinical_xml": true,
+    "clinical_xml_count": 1,
+    "total_clinical_files": 9
+  },
+  "TCGA-EI-6511": {
+    "has_diagnostic_slide": true,
+    "tissue_type": "Rectum",
+    "has_clinical_xml": true,
+    "clinical_xml_count": 1,
+    "total_clinical_files": 9
+  },
+  "TCGA-AH-6897": {
+    "has_diagnostic_slide": true,
+    "tissue_type": "Rectosigmoid junction",
+    "has_clinical_xml": true,
+    "clinical_xml_count": 1,
+    "total_clinical_files": 9
+  },
+  "TCGA-DY-A1DF": {
+    "has_diagnostic_slide": true,
+    "tissue_type": "Rectosigmoid junction",
+    "has_clinical_xml": true,
+    "clinical_xml_count": 1,
+    "total_clinical_files": 9
+  },
+  "TCGA-AG-3892": {
+    "has_diagnostic_slide": true,
+    "tissue_type": "Rectum",
+    "has_clinical_xml": true,
+    "clinical_xml_count": 1,
+    "total_clinical_files": 9
+  },
+  "TCGA-AF-3400": {
+    "has_diagnostic_slide": true,
+    "tissue_type": "Rectosigmoid junction",
+    "has_clinical_xml": true,
+    "clinical_xml_count": 1,
+    "total_clinical_files": 9
+  },
+  "TCGA-EI-7004": {
+    "has_diagnostic_slide": true,
+    "tissue_type": "Rectosigmoid junction",
+    "has_clinical_xml": true,
+    "clinical_xml_count": 1,
+    "total_clinical_files": 9
+  },
+  "TCGA-AG-3609": {
+    "has_diagnostic_slide": true,
+    "tissue_type": "Rectosigmoid junction",
+    "has_clinical_xml": true,
+    "clinical_xml_count": 1,
+    "total_clinical_files": 9
+  },
+  "TCGA-DY-A1DG": {
+    "has_diagnostic_slide": true,
+    "tissue_type": "Rectum",
+    "has_clinical_xml": true,
+    "clinical_xml_count": 1,
+    "total_clinical_files": 9
+  },
+  "TCGA-DY-A1DE": {
+    "has_diagnostic_slide": true,
+    "tissue_type": "Rectum",
+    "has_clinical_xml": true,
+    "clinical_xml_count": 1,
+    "total_clinical_files": 9
+  },
+  "TCGA-AG-3580": {
+    "has_diagnostic_slide": true,
+    "tissue_type": "Rectosigmoid junction",
+    "has_clinical_xml": true,
+    "clinical_xml_count": 2,
+    "total_clinical_files": 10
+  },
+  "TCGA-DC-4745": {
+    "has_diagnostic_slide": true,
+    "tissue_type": "Rectosigmoid junction",
+    "has_clinical_xml": true,
+    "clinical_xml_count": 1,
+    "total_clinical_files": 9
+  },
+  "TCGA-EI-6509": {
+    "has_diagnostic_slide": true,
+    "tissue_type": "Rectum",
+    "has_clinical_xml": true,
+    "clinical_xml_count": 1,
+    "total_clinical_files": 9
+  },
+  "TCGA-AG-A002": {
+    "has_diagnostic_slide": true,
+    "tissue_type": "Rectum",
+    "has_clinical_xml": true,
+    "clinical_xml_count": 1,
+    "total_clinical_files": 9
+  },
+  "TCGA-F5-6814": {
+    "has_diagnostic_slide": true,
+    "tissue_type": "Rectum",
+    "has_clinical_xml": true,
+    "clinical_xml_count": 1,
+    "total_clinical_files": 9
+  },
+  "TCGA-F5-6811": {
+    "has_diagnostic_slide": true,
+    "tissue_type": "Rectosigmoid junction",
+    "has_clinical_xml": true,
+    "clinical_xml_count": 1,
+    "total_clinical_files": 9
+  },
+  "TCGA-AH-6544": {
+    "has_diagnostic_slide": true,
+    "tissue_type": "Rectosigmoid junction",
+    "has_clinical_xml": true,
+    "clinical_xml_count": 1,
+    "total_clinical_files": 9
+  },
+  "TCGA-AG-3890": {
+    "has_diagnostic_slide": true,
+    "tissue_type": "Rectum",
+    "has_clinical_xml": true,
+    "clinical_xml_count": 2,
+    "total_clinical_files": 10
+  },
+  "TCGA-AH-6644": {
+    "has_diagnostic_slide": true,
+    "tissue_type": "Rectosigmoid junction",
+    "has_clinical_xml": true,
+    "clinical_xml_count": 1,
+    "total_clinical_files": 9
+  },
+  "TCGA-CI-6624": {
+    "has_diagnostic_slide": true,
+    "tissue_type": "Rectum",
+    "has_clinical_xml": true,
+    "clinical_xml_count": 1,
+    "total_clinical_files": 9
+  },
+  "TCGA-AA-A01X": {
+    "has_diagnostic_slide": true,
+    "tissue_type": "Colon",
+    "has_clinical_xml": true,
+    "clinical_xml_count": 1,
+    "total_clinical_files": 9
+  },
+  "TCGA-AG-3878": {
+    "has_diagnostic_slide": true,
+    "tissue_type": "Rectum",
+    "has_clinical_xml": true,
+    "clinical_xml_count": 1,
+    "total_clinical_files": 9
+  },
+  "TCGA-AF-A56K": {
+    "has_diagnostic_slide": true,
+    "tissue_type": "Rectosigmoid junction",
+    "has_clinical_xml": true,
+    "clinical_xml_count": 1,
+    "total_clinical_files": 9
+  },
+  "TCGA-AG-3909": {
+    "has_diagnostic_slide": true,
+    "tissue_type": "Rectosigmoid junction",
+    "has_clinical_xml": true,
+    "clinical_xml_count": 1,
+    "total_clinical_files": 9
+  },
+  "TCGA-AG-3598": {
+    "has_diagnostic_slide": true,
+    "tissue_type": "Rectosigmoid junction",
+    "has_clinical_xml": true,
+    "clinical_xml_count": 1,
+    "total_clinical_files": 9
+  },
+  "TCGA-DT-5265": {
+    "has_diagnostic_slide": true,
+    "tissue_type": "Rectum",
+    "has_clinical_xml": true,
+    "clinical_xml_count": 1,
+    "total_clinical_files": 9
+  },
+  "TCGA-G5-6641": {
+    "has_diagnostic_slide": true,
+    "tissue_type": "Rectosigmoid junction",
+    "has_clinical_xml": true,
+    "clinical_xml_count": 2,
+    "total_clinical_files": 10
+  },
+  "TCGA-AF-6655": {
+    "has_diagnostic_slide": true,
+    "tissue_type": "Rectosigmoid junction",
+    "has_clinical_xml": true,
+    "clinical_xml_count": 1,
+    "total_clinical_files": 9
+  },
+  "TCGA-AG-3898": {
+    "has_diagnostic_slide": true,
+    "tissue_type": "Rectum",
+    "has_clinical_xml": true,
+    "clinical_xml_count": 1,
+    "total_clinical_files": 9
+  },
+  "TCGA-AG-3586": {
+    "has_diagnostic_slide": true,
+    "tissue_type": "Rectosigmoid junction",
+    "has_clinical_xml": true,
+    "clinical_xml_count": 1,
+    "total_clinical_files": 9
+  },
+  "TCGA-AG-A026": {
+    "has_diagnostic_slide": true,
+    "tissue_type": "Rectum",
+    "has_clinical_xml": true,
+    "clinical_xml_count": 1,
+    "total_clinical_files": 9
+  },
+  "TCGA-DC-6682": {
+    "has_diagnostic_slide": true,
+    "tissue_type": "Rectosigmoid junction",
+    "has_clinical_xml": true,
+    "clinical_xml_count": 1,
+    "total_clinical_files": 9
+  },
+  "TCGA-AF-A56L": {
+    "has_diagnostic_slide": true,
+    "tissue_type": "Rectosigmoid junction",
+    "has_clinical_xml": true,
+    "clinical_xml_count": 1,
+    "total_clinical_files": 9
+  },
+  "TCGA-AF-2691": {
+    "has_diagnostic_slide": true,
+    "tissue_type": "Rectosigmoid junction",
+    "has_clinical_xml": true,
+    "clinical_xml_count": 1,
+    "total_clinical_files": 9
+  },
+  "TCGA-DC-6160": {
+    "has_diagnostic_slide": true,
+    "tissue_type": "Rectosigmoid junction",
+    "has_clinical_xml": true,
+    "clinical_xml_count": 1,
+    "total_clinical_files": 9
+  },
+  "TCGA-F5-6863": {
+    "has_diagnostic_slide": true,
+    "tissue_type": "Rectum",
+    "has_clinical_xml": true,
+    "clinical_xml_count": 1,
+    "total_clinical_files": 9
+  },
+  "TCGA-AG-3902": {
+    "has_diagnostic_slide": true,
+    "tissue_type": "Rectosigmoid junction",
+    "has_clinical_xml": true,
+    "clinical_xml_count": 1,
+    "total_clinical_files": 9
+  },
+  "TCGA-AG-3593": {
+    "has_diagnostic_slide": true,
+    "tissue_type": "Rectosigmoid junction",
+    "has_clinical_xml": true,
+    "clinical_xml_count": 1,
+    "total_clinical_files": 9
+  },
+  "TCGA-AG-3999": {
+    "has_diagnostic_slide": true,
+    "tissue_type": "Rectosigmoid junction",
+    "has_clinical_xml": true,
+    "clinical_xml_count": 1,
+    "total_clinical_files": 9
+  },
+  "TCGA-AG-3883": {
+    "has_diagnostic_slide": true,
+    "tissue_type": "Rectum",
+    "has_clinical_xml": true,
+    "clinical_xml_count": 1,
+    "total_clinical_files": 9
+  },
+  "TCGA-EF-5830": {
+    "has_diagnostic_slide": true,
+    "tissue_type": "Rectum",
+    "has_clinical_xml": true,
+    "clinical_xml_count": 1,
+    "total_clinical_files": 9
+  },
+  "TCGA-EI-6508": {
+    "has_diagnostic_slide": true,
+    "tissue_type": "Rectum",
+    "has_clinical_xml": true,
+    "clinical_xml_count": 1,
+    "total_clinical_files": 9
+  },
+  "TCGA-AG-4005": {
+    "has_diagnostic_slide": true,
+    "tissue_type": "Rectum",
+    "has_clinical_xml": true,
+    "clinical_xml_count": 1,
+    "total_clinical_files": 9
+  },
+  "TCGA-EI-6883": {
+    "has_diagnostic_slide": true,
+    "tissue_type": "Rectum",
+    "has_clinical_xml": true,
+    "clinical_xml_count": 1,
+    "total_clinical_files": 9
+  },
+  "TCGA-DC-6154": {
+    "has_diagnostic_slide": true,
+    "tissue_type": "Rectosigmoid junction",
+    "has_clinical_xml": true,
+    "clinical_xml_count": 1,
+    "total_clinical_files": 9
+  },
+  "TCGA-AG-3726": {
+    "has_diagnostic_slide": true,
+    "tissue_type": "Rectum",
+    "has_clinical_xml": true,
+    "clinical_xml_count": 1,
+    "total_clinical_files": 9
+  },
+  "TCGA-F4-6569": {
+    "has_diagnostic_slide": true,
+    "tissue_type": "Colon",
+    "has_clinical_xml": true,
+    "clinical_xml_count": 1,
+    "total_clinical_files": 9
+  },
+  "TCGA-DC-6158": {
+    "has_diagnostic_slide": true,
+    "tissue_type": "Rectum",
+    "has_clinical_xml": true,
+    "clinical_xml_count": 1,
+    "total_clinical_files": 9
+  },
+  "TCGA-AG-A011": {
+    "has_diagnostic_slide": true,
+    "tissue_type": "Rectum",
+    "has_clinical_xml": true,
+    "clinical_xml_count": 1,
+    "total_clinical_files": 9
+  },
+  "TCGA-AF-2692": {
+    "has_diagnostic_slide": true,
+    "tissue_type": "Rectum",
+    "has_clinical_xml": true,
+    "clinical_xml_count": 1,
+    "total_clinical_files": 9
+  },
+  "TCGA-AG-3574": {
+    "has_diagnostic_slide": true,
+    "tissue_type": "Rectum",
+    "has_clinical_xml": true,
+    "clinical_xml_count": 1,
+    "total_clinical_files": 9
+  },
+  "TCGA-AG-3731": {
+    "has_diagnostic_slide": true,
+    "tissue_type": "Rectum",
+    "has_clinical_xml": true,
+    "clinical_xml_count": 1,
+    "total_clinical_files": 9
+  },
+  "TCGA-AG-A020": {
+    "has_diagnostic_slide": true,
+    "tissue_type": "Rectum",
+    "has_clinical_xml": true,
+    "clinical_xml_count": 1,
+    "total_clinical_files": 9
+  },
+  "TCGA-DC-5337": {
+    "has_diagnostic_slide": true,
+    "tissue_type": "Rectosigmoid junction",
+    "has_clinical_xml": true,
+    "clinical_xml_count": 1,
+    "total_clinical_files": 9
+  },
+  "TCGA-AG-A02G": {
+    "has_diagnostic_slide": true,
+    "tissue_type": "Rectum",
+    "has_clinical_xml": true,
+    "clinical_xml_count": 1,
+    "total_clinical_files": 9
+  },
+  "TCGA-AG-4001": {
+    "has_diagnostic_slide": true,
+    "tissue_type": "Rectosigmoid junction",
+    "has_clinical_xml": true,
+    "clinical_xml_count": 1,
+    "total_clinical_files": 9
+  },
+  "TCGA-DC-6157": {
+    "has_diagnostic_slide": true,
+    "tissue_type": "Rectosigmoid junction",
+    "has_clinical_xml": true,
+    "clinical_xml_count": 1,
+    "total_clinical_files": 9
+  },
+  "TCGA-F5-6702": {
+    "has_diagnostic_slide": true,
+    "tissue_type": "Rectosigmoid junction",
+    "has_clinical_xml": true,
+    "clinical_xml_count": 1,
+    "total_clinical_files": 9
+  },
+  "TCGA-AG-3582": {
+    "has_diagnostic_slide": true,
+    "tissue_type": "Colon",
+    "has_clinical_xml": true,
+    "clinical_xml_count": 1,
+    "total_clinical_files": 9
+  },
+  "TCGA-AG-3727": {
+    "has_diagnostic_slide": true,
+    "tissue_type": "Rectosigmoid junction",
+    "has_clinical_xml": true,
+    "clinical_xml_count": 1,
+    "total_clinical_files": 9
+  },
+  "TCGA-AG-3725": {
+    "has_diagnostic_slide": true,
+    "tissue_type": "Rectosigmoid junction",
+    "has_clinical_xml": true,
+    "clinical_xml_count": 1,
+    "total_clinical_files": 9
+  },
+  "TCGA-AF-6136": {
+    "has_diagnostic_slide": true,
+    "tissue_type": "Rectosigmoid junction",
+    "has_clinical_xml": true,
+    "clinical_xml_count": 1,
+    "total_clinical_files": 9
+  },
+  "TCGA-AG-3578": {
+    "has_diagnostic_slide": true,
+    "tissue_type": "Rectosigmoid junction",
+    "has_clinical_xml": true,
+    "clinical_xml_count": 1,
+    "total_clinical_files": 9
+  },
+  "TCGA-AF-2687": {
+    "has_diagnostic_slide": true,
+    "tissue_type": "Rectosigmoid junction",
+    "has_clinical_xml": true,
+    "clinical_xml_count": 1,
+    "total_clinical_files": 9
+  },
+  "TCGA-DC-6681": {
+    "has_diagnostic_slide": true,
+    "tissue_type": "Rectosigmoid junction",
+    "has_clinical_xml": true,
+    "clinical_xml_count": 1,
+    "total_clinical_files": 9
+  },
+  "TCGA-AG-3881": {
+    "has_diagnostic_slide": true,
+    "tissue_type": "Unknown",
+    "has_clinical_xml": true,
+    "clinical_xml_count": 1,
+    "total_clinical_files": 9
+  },
+  "TCGA-AG-3575": {
+    "has_diagnostic_slide": true,
+    "tissue_type": "Rectum",
+    "has_clinical_xml": true,
+    "clinical_xml_count": 1,
+    "total_clinical_files": 9
+  },
+  "TCGA-AG-3592": {
+    "has_diagnostic_slide": true,
+    "tissue_type": "Rectosigmoid junction",
+    "has_clinical_xml": true,
+    "clinical_xml_count": 1,
+    "total_clinical_files": 9
+  },
+  "TCGA-F5-6464": {
+    "has_diagnostic_slide": true,
+    "tissue_type": "Rectosigmoid junction",
+    "has_clinical_xml": true,
+    "clinical_xml_count": 1,
+    "total_clinical_files": 9
+  },
+  "TCGA-AF-A56N": {
+    "has_diagnostic_slide": true,
+    "tissue_type": "Rectosigmoid junction",
+    "has_clinical_xml": true,
+    "clinical_xml_count": 1,
+    "total_clinical_files": 9
+  },
+  "TCGA-EI-6514": {
+    "has_diagnostic_slide": true,
+    "tissue_type": "Rectum",
+    "has_clinical_xml": true,
+    "clinical_xml_count": 1,
+    "total_clinical_files": 9
+  },
+  "TCGA-AH-6547": {
+    "has_diagnostic_slide": true,
+    "tissue_type": "Rectosigmoid junction",
+    "has_clinical_xml": true,
+    "clinical_xml_count": 1,
+    "total_clinical_files": 9
+  },
+  "TCGA-EI-6884": {
+    "has_diagnostic_slide": true,
+    "tissue_type": "Rectum",
+    "has_clinical_xml": true,
+    "clinical_xml_count": 1,
+    "total_clinical_files": 9
+  },
+  "TCGA-AG-A02N": {
+    "has_diagnostic_slide": true,
+    "tissue_type": "Rectum",
+    "has_clinical_xml": true,
+    "clinical_xml_count": 1,
+    "total_clinical_files": 9
+  },
+  "TCGA-AG-3602": {
+    "has_diagnostic_slide": true,
+    "tissue_type": "Rectosigmoid junction",
+    "has_clinical_xml": true,
+    "clinical_xml_count": 1,
+    "total_clinical_files": 9
+  },
+  "TCGA-EI-6917": {
+    "has_diagnostic_slide": true,
+    "tissue_type": "Rectum",
+    "has_clinical_xml": true,
+    "clinical_xml_count": 1,
+    "total_clinical_files": 9
+  },
+  "TCGA-AF-2693": {
+    "has_diagnostic_slide": true,
+    "tissue_type": "Rectosigmoid junction",
+    "has_clinical_xml": true,
+    "clinical_xml_count": 1,
+    "total_clinical_files": 9
+  },
+  "TCGA-AG-3896": {
+    "has_diagnostic_slide": true,
+    "tissue_type": "Rectum",
+    "has_clinical_xml": true,
+    "clinical_xml_count": 1,
+    "total_clinical_files": 9
+  },
+  "TCGA-AG-3887": {
+    "has_diagnostic_slide": true,
+    "tissue_type": "Rectum",
+    "has_clinical_xml": true,
+    "clinical_xml_count": 1,
+    "total_clinical_files": 9
+  },
+  "TCGA-AF-5654": {
+    "has_diagnostic_slide": true,
+    "tissue_type": "Rectosigmoid junction",
+    "has_clinical_xml": true,
+    "clinical_xml_count": 1,
+    "total_clinical_files": 9
+  },
+  "TCGA-DY-A0XA": {
+    "has_diagnostic_slide": true,
+    "tissue_type": "Rectosigmoid junction",
+    "has_clinical_xml": true,
+    "clinical_xml_count": 1,
+    "total_clinical_files": 9
+  },
+  "TCGA-DY-A1DC": {
+    "has_diagnostic_slide": true,
+    "tissue_type": "Rectosigmoid junction",
+    "has_clinical_xml": true,
+    "clinical_xml_count": 1,
+    "total_clinical_files": 9
+  },
+  "TCGA-AG-3599": {
+    "has_diagnostic_slide": true,
+    "tissue_type": "Rectosigmoid junction",
+    "has_clinical_xml": true,
+    "clinical_xml_count": 1,
+    "total_clinical_files": 9
+  },
+  "TCGA-AF-6672": {
+    "has_diagnostic_slide": true,
+    "tissue_type": "Rectosigmoid junction",
+    "has_clinical_xml": true,
+    "clinical_xml_count": 1,
+    "total_clinical_files": 9
+  },
+  "TCGA-AG-A01J": {
+    "has_diagnostic_slide": true,
+    "tissue_type": "Rectum",
+    "has_clinical_xml": true,
+    "clinical_xml_count": 1,
+    "total_clinical_files": 9
+  },
+  "TCGA-EI-6507": {
+    "has_diagnostic_slide": true,
+    "tissue_type": "Rectum",
+    "has_clinical_xml": true,
+    "clinical_xml_count": 1,
+    "total_clinical_files": 9
+  },
+  "TCGA-AG-A016": {
+    "has_diagnostic_slide": true,
+    "tissue_type": "Rectum",
+    "has_clinical_xml": true,
+    "clinical_xml_count": 1,
+    "total_clinical_files": 9
+  },
+  "TCGA-EI-6506": {
+    "has_diagnostic_slide": true,
+    "tissue_type": "Rectum",
+    "has_clinical_xml": true,
+    "clinical_xml_count": 1,
+    "total_clinical_files": 9
+  },
+  "TCGA-AG-3742": {
+    "has_diagnostic_slide": true,
+    "tissue_type": "Colon",
+    "has_clinical_xml": true,
+    "clinical_xml_count": 1,
+    "total_clinical_files": 9
+  },
+  "TCGA-CL-4957": {
+    "has_diagnostic_slide": true,
+    "tissue_type": "Rectum",
+    "has_clinical_xml": true,
+    "clinical_xml_count": 1,
+    "total_clinical_files": 9
+  },
+  "TCGA-AG-A00Y": {
+    "has_diagnostic_slide": true,
+    "tissue_type": "Rectum",
+    "has_clinical_xml": true,
+    "clinical_xml_count": 1,
+    "total_clinical_files": 9
+  },
+  "TCGA-AG-4021": {
+    "has_diagnostic_slide": true,
+    "tissue_type": "Rectum",
+    "has_clinical_xml": true,
+    "clinical_xml_count": 1,
+    "total_clinical_files": 9
+  },
+  "TCGA-AG-3583": {
+    "has_diagnostic_slide": true,
+    "tissue_type": "Rectosigmoid junction",
+    "has_clinical_xml": true,
+    "clinical_xml_count": 1,
+    "total_clinical_files": 9
+  },
+  "TCGA-AG-3587": {
+    "has_diagnostic_slide": true,
+    "tissue_type": "Rectum",
+    "has_clinical_xml": true,
+    "clinical_xml_count": 1,
+    "total_clinical_files": 9
+  },
+  "TCGA-AG-4022": {
+    "has_diagnostic_slide": true,
+    "tissue_type": "Rectum",
+    "has_clinical_xml": true,
+    "clinical_xml_count": 1,
+    "total_clinical_files": 9
+  },
+  "TCGA-DY-A1DD": {
+    "has_diagnostic_slide": true,
+    "tissue_type": "Rectosigmoid junction",
+    "has_clinical_xml": true,
+    "clinical_xml_count": 1,
+    "total_clinical_files": 9
+  },
+  "TCGA-AG-A01W": {
+    "has_diagnostic_slide": true,
+    "tissue_type": "Rectum",
+    "has_clinical_xml": true,
+    "clinical_xml_count": 1,
+    "total_clinical_files": 9
+  },
+  "TCGA-DC-6156": {
+    "has_diagnostic_slide": true,
+    "tissue_type": "Rectosigmoid junction",
+    "has_clinical_xml": true,
+    "clinical_xml_count": 1,
+    "total_clinical_files": 9
+  },
+  "TCGA-AG-3882": {
+    "has_diagnostic_slide": true,
+    "tissue_type": "Colon",
+    "has_clinical_xml": true,
+    "clinical_xml_count": 1,
+    "total_clinical_files": 9
+  },
+  "TCGA-AG-3600": {
+    "has_diagnostic_slide": true,
+    "tissue_type": "Rectosigmoid junction",
+    "has_clinical_xml": true,
+    "clinical_xml_count": 1,
+    "total_clinical_files": 9
+  },
+  "TCGA-F5-6810": {
+    "has_diagnostic_slide": true,
+    "tissue_type": "Rectum",
+    "has_clinical_xml": true,
+    "clinical_xml_count": 0,
+    "total_clinical_files": 8
+  },
+  "TCGA-EI-6882": {
+    "has_diagnostic_slide": true,
+    "tissue_type": "Rectum",
+    "has_clinical_xml": true,
+    "clinical_xml_count": 1,
+    "total_clinical_files": 9
+  },
+  "TCGA-F5-6465": {
+    "has_diagnostic_slide": true,
+    "tissue_type": "Rectosigmoid junction",
+    "has_clinical_xml": true,
+    "clinical_xml_count": 1,
+    "total_clinical_files": 9
+  },
+  "TCGA-F5-6864": {
+    "has_diagnostic_slide": true,
+    "tissue_type": "Rectum",
+    "has_clinical_xml": true,
+    "clinical_xml_count": 1,
+    "total_clinical_files": 9
+  },
+  "TCGA-AG-3584": {
+    "has_diagnostic_slide": true,
+    "tissue_type": "Rectum",
+    "has_clinical_xml": true,
+    "clinical_xml_count": 1,
+    "total_clinical_files": 9
+  },
+  "TCGA-AG-4008": {
+    "has_diagnostic_slide": true,
+    "tissue_type": "Colon",
+    "has_clinical_xml": true,
+    "clinical_xml_count": 2,
+    "total_clinical_files": 10
+  },
+  "TCGA-EI-6512": {
+    "has_diagnostic_slide": true,
+    "tissue_type": "Rectum",
+    "has_clinical_xml": true,
+    "clinical_xml_count": 1,
+    "total_clinical_files": 9
+  },
+  "TCGA-F5-6813": {
+    "has_diagnostic_slide": true,
+    "tissue_type": "Connective, subcutaneous and other soft tissues",
+    "has_clinical_xml": true,
+    "clinical_xml_count": 1,
+    "total_clinical_files": 9
+  },
+  "TCGA-AG-3732": {
+    "has_diagnostic_slide": true,
+    "tissue_type": "Rectosigmoid junction",
+    "has_clinical_xml": true,
+    "clinical_xml_count": 1,
+    "total_clinical_files": 9
+  },
+  "TCGA-EI-6881": {
+    "has_diagnostic_slide": true,
+    "tissue_type": "Rectum",
+    "has_clinical_xml": true,
+    "clinical_xml_count": 1,
+    "total_clinical_files": 9
+  },
+  "TCGA-DC-6155": {
+    "has_diagnostic_slide": true,
+    "tissue_type": "Rectosigmoid junction",
+    "has_clinical_xml": true,
+    "clinical_xml_count": 1,
+    "total_clinical_files": 9
+  },
+  "TCGA-AG-3894": {
+    "has_diagnostic_slide": true,
+    "tissue_type": "Rectum",
+    "has_clinical_xml": true,
+    "clinical_xml_count": 1,
+    "total_clinical_files": 9
+  },
+  "TCGA-AG-A008": {
+    "has_diagnostic_slide": true,
+    "tissue_type": "Rectum",
+    "has_clinical_xml": true,
+    "clinical_xml_count": 1,
+    "total_clinical_files": 9
+  },
+  "TCGA-CL-5917": {
+    "has_diagnostic_slide": true,
+    "tissue_type": "Rectosigmoid junction",
+    "has_clinical_xml": true,
+    "clinical_xml_count": 1,
+    "total_clinical_files": 9
+  },
+  "TCGA-AG-A01N": {
+    "has_diagnostic_slide": true,
+    "tissue_type": "Rectum",
+    "has_clinical_xml": true,
+    "clinical_xml_count": 2,
+    "total_clinical_files": 10
+  },
+  "TCGA-AG-4015": {
+    "has_diagnostic_slide": true,
+    "tissue_type": "Colon",
+    "has_clinical_xml": true,
+    "clinical_xml_count": 1,
+    "total_clinical_files": 9
+  },
+  "TCGA-CI-6622": {
+    "has_diagnostic_slide": true,
+    "tissue_type": "Rectum",
+    "has_clinical_xml": true,
+    "clinical_xml_count": 1,
+    "total_clinical_files": 9
+  },
+  "TCGA-AG-A032": {
+    "has_diagnostic_slide": true,
+    "tissue_type": "Rectum",
+    "has_clinical_xml": true,
+    "clinical_xml_count": 1,
+    "total_clinical_files": 9
+  },
+  "TCGA-AG-3608": {
+    "has_diagnostic_slide": true,
+    "tissue_type": "Rectum",
+    "has_clinical_xml": true,
+    "clinical_xml_count": 1,
+    "total_clinical_files": 9
+  },
+  "TCGA-AG-A00C": {
+    "has_diagnostic_slide": true,
+    "tissue_type": "Rectum",
+    "has_clinical_xml": true,
+    "clinical_xml_count": 1,
+    "total_clinical_files": 9
+  },
+  "TCGA-EI-7002": {
+    "has_diagnostic_slide": true,
+    "tissue_type": "Rectum",
+    "has_clinical_xml": true,
+    "clinical_xml_count": 1,
+    "total_clinical_files": 9
+  },
+  "TCGA-AG-3594": {
+    "has_diagnostic_slide": true,
+    "tissue_type": "Rectosigmoid junction",
+    "has_clinical_xml": true,
+    "clinical_xml_count": 1,
+    "total_clinical_files": 9
+  },
+  "TCGA-AG-3591": {
+    "has_diagnostic_slide": true,
+    "tissue_type": "Rectosigmoid junction",
+    "has_clinical_xml": true,
+    "clinical_xml_count": 1,
+    "total_clinical_files": 9
+  },
+  "TCGA-AG-3728": {
+    "has_diagnostic_slide": true,
+    "tissue_type": "Rectum",
+    "has_clinical_xml": true,
+    "clinical_xml_count": 1,
+    "total_clinical_files": 9
+  },
+  "TCGA-AG-3901": {
+    "has_diagnostic_slide": true,
+    "tissue_type": "Rectosigmoid junction",
+    "has_clinical_xml": true,
+    "clinical_xml_count": 1,
+    "total_clinical_files": 9
+  },
+  "TCGA-F5-6571": {
+    "has_diagnostic_slide": true,
+    "tissue_type": "Rectum",
+    "has_clinical_xml": true,
+    "clinical_xml_count": 1,
+    "total_clinical_files": 9
+  },
+  "TCGA-AG-A01L": {
+    "has_diagnostic_slide": true,
+    "tissue_type": "Rectum",
+    "has_clinical_xml": true,
+    "clinical_xml_count": 1,
+    "total_clinical_files": 9
+  },
+  "TCGA-AH-6643": {
+    "has_diagnostic_slide": true,
+    "tissue_type": "Rectosigmoid junction",
+    "has_clinical_xml": true,
+    "clinical_xml_count": 1,
+    "total_clinical_files": 9
+  },
+  "TCGA-AG-3581": {
+    "has_diagnostic_slide": true,
+    "tissue_type": "Rectosigmoid junction",
+    "has_clinical_xml": true,
+    "clinical_xml_count": 1,
+    "total_clinical_files": 9
+  },
+  "TCGA-AG-3605": {
+    "has_diagnostic_slide": true,
+    "tissue_type": "Rectosigmoid junction",
+    "has_clinical_xml": true,
+    "clinical_xml_count": 1,
+    "total_clinical_files": 9
+  },
+  "TCGA-EI-6885": {
+    "has_diagnostic_slide": true,
+    "tissue_type": "Rectum",
+    "has_clinical_xml": true,
+    "clinical_xml_count": 1,
+    "total_clinical_files": 9
+  },
+  "TCGA-EI-6513": {
+    "has_diagnostic_slide": true,
+    "tissue_type": "Rectum",
+    "has_clinical_xml": true,
+    "clinical_xml_count": 1,
+    "total_clinical_files": 9
+  },
+  "TCGA-AG-3601": {
+    "has_diagnostic_slide": true,
+    "tissue_type": "Rectosigmoid junction",
+    "has_clinical_xml": true,
+    "clinical_xml_count": 1,
+    "total_clinical_files": 9
+  },
+  "TCGA-AG-A02X": {
+    "has_diagnostic_slide": true,
+    "tissue_type": "Rectum",
+    "has_clinical_xml": true,
+    "clinical_xml_count": 1,
+    "total_clinical_files": 9
+  },
+  "TCGA-DC-6683": {
+    "has_diagnostic_slide": true,
+    "tissue_type": "Rectosigmoid junction",
+    "has_clinical_xml": true,
+    "clinical_xml_count": 1,
+    "total_clinical_files": 9
+  },
+  "TCGA-AF-4110": {
+    "has_diagnostic_slide": true,
+    "tissue_type": "Rectum",
+    "has_clinical_xml": true,
+    "clinical_xml_count": 1,
+    "total_clinical_files": 9
+  },
+  "TCGA-DC-5869": {
+    "has_diagnostic_slide": true,
+    "tissue_type": "Rectum",
+    "has_clinical_xml": true,
+    "clinical_xml_count": 1,
+    "total_clinical_files": 9
+  },
+  "TCGA-AG-A015": {
+    "has_diagnostic_slide": true,
+    "tissue_type": "Rectum",
+    "has_clinical_xml": true,
+    "clinical_xml_count": 2,
+    "total_clinical_files": 10
+  },
+  "TCGA-AG-3893": {
+    "has_diagnostic_slide": true,
+    "tissue_type": "Rectosigmoid junction",
+    "has_clinical_xml": true,
+    "clinical_xml_count": 1,
+    "total_clinical_files": 9
+  },
+  "TCGA-AG-A025": {
+    "has_diagnostic_slide": true,
+    "tissue_type": "Rectum",
+    "has_clinical_xml": true,
+    "clinical_xml_count": 1,
+    "total_clinical_files": 9
+  },
+  "TCGA-AH-6903": {
+    "has_diagnostic_slide": true,
+    "tissue_type": "Rectosigmoid junction",
+    "has_clinical_xml": true,
+    "clinical_xml_count": 1,
+    "total_clinical_files": 9
+  }
+}

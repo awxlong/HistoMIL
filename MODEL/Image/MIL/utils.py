@@ -20,6 +20,7 @@ from einops import rearrange, reduce
 from torch import einsum, nn
 #--------> commonly used feature encoder function for MIL
 
+import pdb
 class FeatureNet(torch.nn.Module):
     def __init__(self,model_name,pretrained:bool=True):
         super().__init__()
@@ -178,8 +179,8 @@ class PreNorm(nn.Module):
             context = kwargs['context']
             normed_context = self.norm_context(context)
             kwargs.update(context=normed_context)
-
-        return self.fn(x, **kwargs)
+        # pdb.set_trace()
+        return self.fn(x, **kwargs) # calls the attention module
 
 # --------------------
 # Positional Embeddings
@@ -274,6 +275,8 @@ class Attention(nn.Module):
         q, k, v = map(
             lambda t: rearrange(t, 'b n (h d) -> b h n d', h=self.heads), qkv
         )
+
+        # pdb.set_trace()
 
         dots = torch.matmul(q, k.transpose(-1, -2)) * self.scale
 

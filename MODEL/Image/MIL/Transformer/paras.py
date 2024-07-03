@@ -22,9 +22,6 @@ class TransformerParas:
     encoder_name="pre-calculated"# or name of encoder",
     encoder_pretrained:bool = True # or False
     
-    
-    
-    
     num_classes:int = 1
     input_dim:int = 1024           # by default we'll be using uni's feature vectors which are of size 1024
     pretrained_input_dim:int = 768 # pretrained transformer used ctranspath by default for feature encoding
