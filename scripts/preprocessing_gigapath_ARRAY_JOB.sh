@@ -4,7 +4,7 @@
 #$ -j y
 #$ -l gpu=true
 #$ -N preprocess_with_gigapath_array_job
-#$ -t 4
+#$ -t 1-7
 
 
 echo "Running on host: $(hostname)"
