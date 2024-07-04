@@ -26,9 +26,9 @@ class EnvParas(object):
 
     # for cohort
     main_data_source:str = "slide" # "slide" or "omic"
-    collector_para:CollectorParas = CollectorParas()
+    collector_para:CollectorParas = CollectorParas() 
     cohort_para:CohortParas = CohortParas()
-    dataset_para:DatasetParas=DatasetParas()
+    dataset_para:DatasetParas=DatasetParas() # specifies stuff like split ratio, weight sampler, batch_size
     # for trainner
     trainer_para:PLTrainerParas = PLTrainerParas()
     opt_para:OptLossParas = OptLossParas()

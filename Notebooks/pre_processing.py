@@ -138,7 +138,7 @@ def preprocessing(args):
         preprocess_env.collector_para.feature.img_size = (args.step_size, args.step_size)
         preprocess_env.collector_para.feature.out_dim = FEAT_DIMS[args.backbone_name]
     print(preprocess_env.collector_para.feature)
-
+    
     #----------------> dataset
     preprocess_env.dataset_para.dataset_name = args.dataset_name # e.g. "DNAD_L2"
     preprocess_env.dataset_para.concepts = args.concepts_name    # default ['slide', 'tissue', 'patch', 'feature']

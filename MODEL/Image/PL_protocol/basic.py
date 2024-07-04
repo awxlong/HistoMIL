@@ -6,6 +6,7 @@ import random
 import pytorch_lightning as pl
 from HistoMIL.MODEL.Image.PL_protocol.utils import current_label_format,label_format_transfer
 
+import pdb
 class pl_basic(pl.LightningModule):
     def __init__(self):
         super().__init__()
@@ -89,6 +90,7 @@ class pl_basic(pl.LightningModule):
         max_probs = self.collect_step_output(key="Y_hat",out=outlist,dim=0)
         target = self.collect_step_output(key="label",out=outlist,dim=0)
         #----> log part
+        pdb.set_trace()
         self.log(bar_name, self.bar_metrics(probs, target.squeeze()), 
                             prog_bar=True, on_epoch=True, logger=True)
         # self.log_dict(self.valid_metrics(max_probs.squeeze() , target.squeeze()),

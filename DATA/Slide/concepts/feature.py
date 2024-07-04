@@ -287,6 +287,7 @@ class Featset(Dataset):
     def _processing(self,img):
         if self.img_size is not None:
             pil_img=Image.fromarray(img)
+            # pdb.set_trace()
             pil_img = pil_img.resize(self.img_size)
             img = np.asarray(pil_img)
         # get transform

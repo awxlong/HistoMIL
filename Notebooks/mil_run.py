@@ -47,6 +47,7 @@ MDL_TO_FEATURE_DIMS = {
     'prov-gigapath': 1536, 
     'resnet18': 512,
     'uni': 1024,
+    'resnet50': 2048,
 }
 
 def run_mil(args):

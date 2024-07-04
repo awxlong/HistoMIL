@@ -77,6 +77,8 @@ def select_backends(loc:Path):
         return OpenSlideBackend(loc = str(loc))
     elif format in [".tiff",".tif"]:
         return TifffilesBackend(loc = str(loc))
+    
+    
 
 
 ###############################################################################
