@@ -179,6 +179,10 @@ def run_mil(args):
 
     exp.exp_worker.train()
 
+    val_results = exp.exp_worker.validate()
+
+    
+
 if __name__ == '__main__':
     args = get_args_mil()
     run_mil(args)

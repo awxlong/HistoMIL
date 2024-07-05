@@ -240,6 +240,8 @@ def get_args_mil():
     
     parser.add_argument(
         "--n-epochs", default=4, type=int, help='Maximum numer of epochs for training pytorch lightning model, default is 4. ')
+    parser.add_argument(
+        "--k-fold", default=4, type=int, help='Number of folds for cross-validation')
     
     
     parser.add_argument(
@@ -256,7 +258,7 @@ def get_args_mil():
     
     # assert args.data_dir.endswith(os.path.sep)
     assert args.cohort_dir.endswith(os.path.sep)
-    assert args.pretrained_weights_dir.endswith(os.path.sep)
+    # assert args.pretrained_weights_dir.endswith(os.path.sep)
 
     # args.conf_version = args.data_dir.split(os.path.sep)[-2]
     # args.name = args.name + f"-{args.conf_version}"
