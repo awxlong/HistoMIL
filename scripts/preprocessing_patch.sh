@@ -1,6 +1,6 @@
 #$ -l tmem=8G
 #$ -l h_vmem=8G
-#$ -l h_rt=10:00:00 
+#$ -l h_rt=15:00:00 
 #$ -S /bin/bash
 #$ -j y
 #$ -N preprocess_until_patch
