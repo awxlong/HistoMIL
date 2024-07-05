@@ -181,6 +181,8 @@ def run_mil(args):
 
     val_results = exp.exp_worker.validate()
 
+    print(val_results)
+
     
 
 if __name__ == '__main__':
