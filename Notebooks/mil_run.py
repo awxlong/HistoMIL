@@ -50,6 +50,8 @@ MDL_TO_FEATURE_DIMS = {
     'resnet50': 2048,
 }
 
+from datetime import datetime
+
 def run_mil(args):
     #--------------------------> task setting
     #--------------------------> model setting
@@ -82,7 +84,7 @@ def run_mil(args):
     #--------------------------> parameters
     
     gene2k_env = EnvParas()
-    gene2k_env.exp_name = args.exp_name         # e.g. "debug_preprocess"
+    gene2k_env.exp_name = f'{args.exp_name}_{datetime.now().strftime("%m%d_%H%M")}'         # name of the experiment which is also the checkpoint model that's going to be saved in SavedModel/ e.g. "debug_process + time.time()"
     gene2k_env.project = args.project_name      # e.g. "test-project" 
     gene2k_env.entity = args.wandb_entity_name  # make sure it's initialized to an existing wandb entity
     #----------------> cohort
@@ -119,10 +121,12 @@ def run_mil(args):
     gene2k_env.trainer_para.model_para = model_para_settings[model_name]
     
     # --------------> Logging metrics
+    gene2k_env.trainer_para.ckpt_format = "_{epoch+1:02d}-{auroc/val:.4f}" # additional substring that's appended to self.exp_name to be the filename of .ckpt file stored in SavedModel/
+
     gene2k_env.trainer_para.ckpt_para = { #-----------> paras for pytorch_lightning.callbacks.ModelCheckpoint
                     "save_top_k":1,
-                    "mode":"max",
-                   "monitor":"auroc/val",}
+                    "mode":"max" if args.monitor_metric == 'auroc/val' else 'min',
+                    "monitor":args.monitor_metric,}
     
     gene2k_env.trainer_para.additional_pl_paras={
                 #---------> paras for pytorch lightning trainner
@@ -150,14 +154,14 @@ def run_mil(args):
     gene2k_env.data_locs = data_locs
     gene2k_env.exp_locs = exp_locs
     #---------------> wandb 
-    wandb.setup(settings=wandb.Settings(
-        _disable_stats=True,
-        # disable_git=True,
-        api_key=user.wandb_api_key  
-    ))
+    # wandb.setup(settings=wandb.Settings(
+    #     _disable_stats=True,
+    #     # disable_git=True,
+    #     api_key=user.wandb_api_key  
+    # ))
 
-    wandb.init(project=gene2k_env.project, 
-               entity=gene2k_env.entity)   ### ADD THIS IN CLUSTER
+    # wandb.init(project=gene2k_env.project, 
+    #            entity=gene2k_env.entity)   ### ADD THIS IN CLUSTER
     
     #--------------------------> setup experiment
     logging.info("setup MIL experiment")

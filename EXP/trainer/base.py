@@ -64,6 +64,7 @@ class pl_base_trainer:
             wandb_logger = WandbLogger(project=self.project,
                                         entity=self.entity,
                                         name=self.exp_name)
+            # pdb.set_trace()
             trainer_additional_dict.update({"logger":wandb_logger})
 
         if self.trainer_para.with_ckpt:

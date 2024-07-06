@@ -17,5 +17,6 @@ python3 HistoMIL/Notebooks/mil_run.py --exp-name 'mil_transmil_resnet50_100epoch
                                       --split-ratio 0.8 0.2 --step-size 224 --precomputed 'resnet50' \
                                       --label-dict "{0:0,1:1}" \
                                       --mil-algorithm "TransMIL" \
-                                      --n-epochs 100
+                                      --n-epochs 100 \
+                                      --monitor-metric 'auroc/val'
 echo "Finished at: $(date)"
