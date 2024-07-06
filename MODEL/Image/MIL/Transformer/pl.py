@@ -120,8 +120,8 @@ class pl_Transformer(pl.LightningModule):
         else:
             probs = torch.softmax(logits, dim=1)
             self.acc_train(probs, y)
-        self.log("acc/train", self.acc_train, prog_bar=True)
-        self.log("loss/train", loss, prog_bar=False)
+        self.log("acc_train", self.acc_train, prog_bar=True)
+        self.log("loss_train", loss, prog_bar=False)
 
         return loss
 
@@ -150,14 +150,14 @@ class pl_Transformer(pl.LightningModule):
         # pdb.set_trace()
         self.cm_val(probs, y)
 
-        self.log("loss/val", loss, prog_bar=True)
-        self.log("acc/val", self.acc_val, prog_bar=True, on_step=False, on_epoch=True)
-        self.log("auroc/val", self.auroc_val, prog_bar=True, on_step=False, on_epoch=True)
-        self.log("f1/val", self.f1_val, prog_bar=True, on_step=False, on_epoch=True)
-        self.log("precision/val", self.precision_val, prog_bar=False, on_step=False, on_epoch=True)
-        self.log("recall/val", self.recall_val, prog_bar=False, on_step=False, on_epoch=True)
+        self.log("loss_val", loss, prog_bar=True)
+        self.log("acc_val", self.acc_val, prog_bar=True, on_step=False, on_epoch=True)
+        self.log("auroc_val", self.auroc_val, prog_bar=True, on_step=False, on_epoch=True)
+        self.log("f1_val", self.f1_val, prog_bar=True, on_step=False, on_epoch=True)
+        self.log("precision_val", self.precision_val, prog_bar=False, on_step=False, on_epoch=True)
+        self.log("recall_val", self.recall_val, prog_bar=False, on_step=False, on_epoch=True)
         self.log(
-            "specificity/val", self.specificity_val, prog_bar=False, on_step=False, on_epoch=True
+            "specificity_val", self.specificity_val, prog_bar=False, on_step=False, on_epoch=True
         )
 
     def on_validation_epoch_end(self):
@@ -171,7 +171,7 @@ class pl_Transformer(pl.LightningModule):
             # log to wandb
             plt.clf()
             cm = sns.heatmap(normalized_cm.cpu(), annot=cm.cpu(), cmap='rocket_r', vmin=0, vmax=1)
-            wandb.log({"confusion_matrix/val": wandb.Image(cm)})
+            wandb.log({"confusion_matrix_val": wandb.Image(cm)})
 
         self.cm_val.reset()
 
@@ -203,16 +203,16 @@ class pl_Transformer(pl.LightningModule):
         self.specificity_test(probs, y)
         self.cm_test(probs, y)
 
-        self.log("loss/test", loss, prog_bar=False)
-        self.log("acc/test", self.acc_test, prog_bar=True, on_step=False, on_epoch=True)
-        self.log("auroc/test", self.auroc_test, prog_bar=True, on_step=False, on_epoch=True)
-        self.log("f1/test", self.f1_test, prog_bar=True, on_step=False, on_epoch=True)
+        self.log("loss_test", loss, prog_bar=False)
+        self.log("acc_test", self.acc_test, prog_bar=True, on_step=False, on_epoch=True)
+        self.log("auroc_test", self.auroc_test, prog_bar=True, on_step=False, on_epoch=True)
+        self.log("f1_test", self.f1_test, prog_bar=True, on_step=False, on_epoch=True)
         self.log(
-            "precision/test", self.precision_test, prog_bar=False, on_step=False, on_epoch=True
+            "precision_test", self.precision_test, prog_bar=False, on_step=False, on_epoch=True
         )
-        self.log("recall/test", self.recall_test, prog_bar=False, on_step=False, on_epoch=True)
+        self.log("recall_test", self.recall_test, prog_bar=False, on_step=False, on_epoch=True)
         self.log(
-            "specificity/test", self.specificity_test, prog_bar=False, on_step=False, on_epoch=True
+            "specificity_test", self.specificity_test, prog_bar=False, on_step=False, on_epoch=True
         )
 
         outputs = pd.DataFrame(
@@ -237,7 +237,7 @@ class pl_Transformer(pl.LightningModule):
             # log to wandb
             plt.clf()
             cm = sns.heatmap(normalized_cm.cpu(), annot=cm.cpu(), cmap='rocket_r', vmin=0, vmax=1)
-            wandb.log({"confusion_matrix/test": wandb.Image(cm)})
+            wandb.log({"confusion_matrix_test": wandb.Image(cm)})
 
         self.cm_test.reset()
 

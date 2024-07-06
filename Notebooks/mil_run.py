@@ -123,7 +123,7 @@ def run_mil(args):
     gene2k_env.trainer_para.model_para = model_para_settings[model_name]
     
     # --------------> Logging metrics
-    gene2k_env.trainer_para.ckpt_format = "_{epoch:02d}-{auroc_val:.4f}}" # additional substring that's appended to self.exp_name to be the filename of .ckpt file stored in SavedModel/
+    gene2k_env.trainer_para.ckpt_format = "_{epoch:02d}-{auroc_val:.4f}" # additional substring that's appended to self.exp_name to be the filename of .ckpt file stored in SavedModel/
 
     gene2k_env.trainer_para.ckpt_para = { #-----------> paras for pytorch_lightning.callbacks.ModelCheckpoint
                     "save_top_k":1,
@@ -178,16 +178,22 @@ def run_mil(args):
     print(exp.paras.trainer_para)
 
     # pdb.set_trace()
-    exp.setup_experiment(main_data_source="slide",
-                        need_train=True)
-    # exp.paras.trainer_para.backbone_name = args.precomputed
-    # pdb.set_trace()
+    if exp.paras.trainer_para.k_fold > 1:
+       exp.setup_cv_experiment(main_data_source="slide",
+                            need_train=True)
+    else:
+        
+        
+        exp.setup_experiment(main_data_source="slide",
+                            need_train=True)
+        # exp.paras.trainer_para.backbone_name = args.precomputed
+        # pdb.set_trace()
 
-    exp.exp_worker.train()
+        exp.exp_worker.train()
 
-    # val_results = exp.exp_worker.validate()
+        val_results = exp.exp_worker.validate()
 
-    # print(val_results)
+        print(val_results)
 
     
 

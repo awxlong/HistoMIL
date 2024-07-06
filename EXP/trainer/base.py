@@ -48,7 +48,7 @@ class pl_base_trainer:
         self.entity = entity
         self.exp_name = exp_name
         
-    def build_trainer(self):
+    def build_trainer(self, reinit=False):
         trainer_additional_dict = self.trainer_para.additional_pl_paras
         callbacks_list = []
 
@@ -63,7 +63,8 @@ class pl_base_trainer:
 
             wandb_logger = WandbLogger(project=self.project,
                                         entity=self.entity,
-                                        name=self.exp_name)
+                                        name=self.exp_name,
+                                        reinit=reinit)
             # pdb.set_trace()
             trainer_additional_dict.update({"logger":wandb_logger})
 
@@ -96,13 +97,23 @@ class pl_base_trainer:
     def train(self):
         logger.info("Trainer:: Start training....")
         trainloader = self.data_pack["trainloader"] 
-        valloader = self.data_pack["validloader"]
-        print(f'acc_grad_batches: {self.trainer.accumulate_grad_batches} \
-              precision: {self.trainer.precision}')
+        validloader = self.data_pack["validloader"]
+
 
         self.trainer.fit(model=self.pl_model, 
                 train_dataloaders=trainloader,
-                val_dataloaders=valloader)
+                val_dataloaders=validloader)
+        
+    def train_val_kfold(self):
+        logger.info("Trainer:: Start training in k-fold cross validation....")
+        
+        trainloader = self.data_pack["trainloader"] 
+        validloader = self.data_pack["validloader"]
+
+
+        self.trainer.fit(model=self.pl_model, 
+                train_dataloaders=trainloader,
+                val_dataloaders=validloader)
 
     def validate(self,ckpt_path:str="best"):
         validloader = self.data_pack["validloader"]
