@@ -72,6 +72,7 @@ class pl_base_trainer:
             from pytorch_lightning.callbacks import ModelCheckpoint
             ckpt_paras = self.trainer_para.ckpt_para
             ckpt_name = self.exp_name+self.trainer_para.ckpt_format
+            # pdb.set_trace()
             logger.debug(f"Trainer:: for exp {self.exp_name} Checkpoint with paras {ckpt_paras}")
             checkpoint_callback = ModelCheckpoint(dirpath=self.machine.exp_locs.abs_loc("saved_models"),
                                                 filename=ckpt_name,

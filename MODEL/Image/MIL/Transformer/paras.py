@@ -40,11 +40,11 @@ class TransformerParas:
     task:str = 'binary'
     criterion:str = 'BCEWithLogitsLoss'
     pos_weight = torch.ones(1)
-    lr:float = 2.0e-05
+    lr:float = 2.0e-05 # same as https://github.com/peng-lab/HistoBistro/blob/main/config.yaml
     wd:float = 2.0e-05
     optimizer = 'AdamW'
     lr_scheduler = 'CosineAnnealingLR'
-    lr_scheduler_config = {'T_max':50, 'eta_min':1e-6}
+    lr_scheduler_config = {'T_max':5, 'eta_min':1e-6} # small 5 for finetuning
 
     # def __attrs_post_init__(self):
     #     super().__init__()

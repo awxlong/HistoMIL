@@ -1,8 +1,8 @@
 #$ -l tmem=32G
-#$ -l h_rt=6:00:00 
+#$ -l h_rt=1:00:00 
 #$ -S /bin/bash
 #$ -j y
-#$ -l gpu=true,gpu_type=A40
+#$ -l gpu=true,gpu_arch=ampere
 #$ -N mil_pretrain_trans_uni_msi
 echo "Running on host: $(hostname)"
 echo "Starting at: $(date)"
@@ -18,5 +18,6 @@ python3 HistoMIL/Notebooks/mil_run.py --exp-name 'mil-pretrained-MSI' \
                                       --mil-algorithm "Transformer" \
                                       --pretrained-weights-dir '/home/xuelonan/secrier_lab/persistence/HistoMIL/MODEL/Image/MIL/Transformer/pretrained_weights/' \
                                       --pretrained-weights-name 'MSI_high_CRC_model.pth'\
-                                      --n-epochs 3
+                                      --n-epochs 3 \
+                                      --monitor-metric 'auroc/val'
 echo "Finished at: $(date)"

@@ -121,7 +121,7 @@ def run_mil(args):
     gene2k_env.trainer_para.model_para = model_para_settings[model_name]
     
     # --------------> Logging metrics
-    gene2k_env.trainer_para.ckpt_format = "_{epoch+1:02d}-{auroc/val:.4f}" # additional substring that's appended to self.exp_name to be the filename of .ckpt file stored in SavedModel/
+    gene2k_env.trainer_para.ckpt_format = "_{epoch:02d}-{auroc/val:.2f}}" # additional substring that's appended to self.exp_name to be the filename of .ckpt file stored in SavedModel/
 
     gene2k_env.trainer_para.ckpt_para = { #-----------> paras for pytorch_lightning.callbacks.ModelCheckpoint
                     "save_top_k":1,
@@ -131,11 +131,11 @@ def run_mil(args):
     gene2k_env.trainer_para.additional_pl_paras={
                 #---------> paras for pytorch lightning trainner
                 "accumulate_grad_batches":8, # mil need accumulated grad
-                "accelerator":"auto",#accelerator='gpu', devices=1,
-                'precision': 16,  # Use mixed precision
+                "accelerator":"auto",        #accelerator='gpu', devices=1,
+                'precision': 16,             # Use mixed precision
                 'enable_progress_bar': True, 
                 'enable_model_summary': True,
-                # 'gradient_clip_val': 0.5,
+                'gradient_clip_val': 0.5,
                 # 'plugins': [DDPStrategy(find_unused_parameters=False)],
                 # 'strategy':'ddp',
             }

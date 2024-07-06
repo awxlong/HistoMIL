@@ -1,8 +1,8 @@
 #$ -l tmem=32G
-#$ -l h_rt=6:00:00 
+#$ -l h_rt=168:00:00 
 #$ -S /bin/bash
 #$ -j y
-#$ -l gpu=true,gpu_type=A40
+#$ -l gpu=true
 #$ -N mil_transmil_resnet50_100epochs
 echo "Running on host: $(hostname)"
 echo "Starting at: $(date)"
