@@ -2,7 +2,7 @@
 #$ -l h_rt=6:00:00 
 #$ -S /bin/bash
 #$ -j y
-#$ -l gpu=true, gpu_type=A40
+#$ -l gpu=true,gpu_type=A40
 #$ -N mil_pre_trans_resnet50_8epochs
 echo "Running on host: $(hostname)"
 echo "Starting at: $(date)"

@@ -3,13 +3,13 @@
 #$ -S /bin/bash
 #$ -j y
 #$ -l gpu=true,gpu_type=A40
-#$ -N mil_pretrain_trans_uni_msi
+#$ -N mil_pretrain_trans_uni_braf
 echo "Running on host: $(hostname)"
 echo "Starting at: $(date)"
 cd secrier_lab/persistence/
 source /home/xuelonan/secrier_lab/python3.8.5-biomedai.source
 source /share/apps/source_files/cuda/cuda-11.8.source
-python3 HistoMIL/Notebooks/mil_run.py --exp-name 'mil-pretrained-MSI' \
+python3 HistoMIL/Notebooks/mil_run.py --exp-name 'mil-pretrained-BRAF' \
                                       --project-name 'g0-arrest-uni' --wandb-entity-name 'cell-x' --localcohort-name 'COAD' --task-name 'g0_arrest' --pid-name 'PatientID' \
                                       --targets-name 'g0_arrest' \
                                       --cohort-dir '/home/xuelonan/secrier_lab/persistence/' \
@@ -17,6 +17,6 @@ python3 HistoMIL/Notebooks/mil_run.py --exp-name 'mil-pretrained-MSI' \
                                       --label-dict "{0:0,1:1}" \
                                       --mil-algorithm "Transformer" \
                                       --pretrained-weights-dir '/home/xuelonan/secrier_lab/persistence/HistoMIL/MODEL/Image/MIL/Transformer/pretrained_weights/' \
-                                      --pretrained-weights-name 'MSI_high_CRC_model.pth'\
+                                      --pretrained-weights-name 'BRAF_CRC_model.pth'\
                                       --n-epochs 3
 echo "Finished at: $(date)"

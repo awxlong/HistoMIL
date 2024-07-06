@@ -2,8 +2,8 @@
 #$ -l h_rt=6:00:00 
 #$ -S /bin/bash
 #$ -j y
-#$ -l gpu=true, gpu_type=A40
-#$ -N mil_pre_trans_resnet50_8epochs
+#$ -l gpu=true,gpu_type=A40
+#$ -N mil_transmil_resnet50_100epochs
 echo "Running on host: $(hostname)"
 echo "Starting at: $(date)"
 cd secrier_lab/persistence/
