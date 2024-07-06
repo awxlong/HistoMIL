@@ -185,9 +185,9 @@ def run_mil(args):
 
     exp.exp_worker.train()
 
-    val_results = exp.exp_worker.validate()
+    # val_results = exp.exp_worker.validate()
 
-    print(val_results)
+    # print(val_results)
 
     
 

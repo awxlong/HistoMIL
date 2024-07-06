@@ -123,14 +123,21 @@ class DataCohort:
         if K_fold is None:
             logger.warning("Cohort::Using ratio split.")
             from sklearn.model_selection import train_test_split   
-            pdb.set_trace()
+            # pdb.set_trace()
             train_data,test_data = train_test_split(target_df, 
                                         test_size=test_size,
                                         random_state=self.cohort_para.in_domain_split_seed,
                                         # stratify=target_df[label_name]) # avoid test data leakage
             )
+            train_data,val_data = train_test_split(train_data, 
+                                        test_size=test_size,
+                                        # train data can be randomly split
+            )
+            
             self.data = {"all_df":target_df,"train":train_data}
-            self.data.update({"test":test_data})
+            self.data.update({"valid": val_data,
+                              "test":test_data})
+            # pdb.set_trace()
 
         else:
             # DON'T DO K-FOLD CV THIS WAY

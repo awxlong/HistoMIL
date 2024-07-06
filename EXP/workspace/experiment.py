@@ -117,7 +117,7 @@ class Experiment:
         label_name = self.data_cohort.task_cohort.labels_name[0]
         # shuffle original data frome
         self.data_cohort.cohort_shuffle()
-        pdb.set_trace()
+        # pdb.set_trace()
         self.data_cohort.split_train_phase(ratio=ratio,
                                             label_name=label_name,
                                             K_fold=self.paras.trainer_para.k_fold,
@@ -145,7 +145,7 @@ class Experiment:
                 #-------train need split data
                 label_idx = self.paras.cohort_para.targets[self.paras.cohort_para.targets_idx]
                 self.data_cohort.show_taskcohort_stat(label_idx=label_idx)
-                self.split_train_test()
+                self.split_train_test()  # updated to split into train, valid, test
                 # init train worker
                 from HistoMIL.EXP.trainer.slide import pl_slide_trainer
                 self.exp_worker = pl_slide_trainer(
@@ -159,11 +159,15 @@ class Experiment:
                                         entity=self.entity,
                                         exp_name=self.exp_name)
             self.exp_worker.set_cohort(self.data_cohort)
-            self.exp_worker.get_datapack(self.machine,self.paras.collector_para)
+            # pdb.set_trace()
+            if self.cohort_para.in_domain_split_seed:
+                self.exp_worker.get_in_domain_datapack(self.machine,self.paras.collector_para)
+            else:
+                self.exp_worker.get_datapack(self.machine,self.paras.collector_para)
 
             self.exp_worker.build_model()       # creates model from available implementations
             self.exp_worker.build_trainer()     # sets up trainer configurations such as wandb and learning rate
-
+            # pdb.set_trace()
             # update paras
             self.paras.dataset_para=self.exp_worker.dataset_para
             self.paras.trainer_para=self.exp_worker.trainer_para
