@@ -2,7 +2,7 @@
 #$ -l h_rt=1:00:00 
 #$ -S /bin/bash
 #$ -j y
-#$ -l gpu=true,gpu_arch=ampere
+#$ -l gpu=true
 #$ -N mil_pretrain_trans_uni_msi
 echo "Running on host: $(hostname)"
 echo "Starting at: $(date)"
