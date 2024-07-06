@@ -149,7 +149,7 @@ class DataCohort:
             from sklearn.model_selection import KFold
             # pdb.set_trace()
             kf = KFold(n_splits=K_fold,shuffle=True)
-            idx_lists = list(kf.split(train_data))
+            idx_lists = list(kf.split(train_val_data))
             # self.get_k_th_fold(target_df,idx_lists,label_name,i_th=0)
             self.get_k_th_fold(df=train_val_data,idx_lists=idx_lists,
                                k_th_fold=0, test_data=test_data)

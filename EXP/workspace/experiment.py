@@ -131,7 +131,7 @@ class Experiment:
 
     def get_i_th_fold(self,i:int=0):
         #update split for train and valid set
-        self.data_cohort.get_k_th_fold(df = self.data_cohort.data["train"],
+        self.data_cohort.get_k_th_fold(df = self.data_cohort.data["train_val"],
                                         idx_lists=self.data_cohort.data["idxs"],
                                         test_data=self.data_cohort.data['test'],
                                         k_th_fold=i,
@@ -219,7 +219,7 @@ class Experiment:
                 self.paras.dataset_para=self.exp_worker.dataset_para
                 self.paras.trainer_para=self.exp_worker.trainer_para
                 self.paras.opt_para=self.exp_worker.opt_para
-                pdb.set_trace()
+                # pdb.set_trace()
                 self.exp_worker.train()
                 val_results = self.exp_worker.validate()
 
