@@ -123,11 +123,11 @@ def run_mil(args):
     gene2k_env.trainer_para.model_para = model_para_settings[model_name]
     
     # --------------> Logging metrics
-    gene2k_env.trainer_para.ckpt_format = "_{epoch:02d}-{auroc/val:.2f}}" # additional substring that's appended to self.exp_name to be the filename of .ckpt file stored in SavedModel/
+    gene2k_env.trainer_para.ckpt_format = "_{epoch:02d}-{auroc_val:.4f}}" # additional substring that's appended to self.exp_name to be the filename of .ckpt file stored in SavedModel/
 
     gene2k_env.trainer_para.ckpt_para = { #-----------> paras for pytorch_lightning.callbacks.ModelCheckpoint
                     "save_top_k":1,
-                    "mode":"max" if args.monitor_metric == 'auroc/val' else 'min',
+                    "mode":"max" if args.monitor_metric == 'auroc_val' else 'min',
                     "monitor":args.monitor_metric,}
     
     gene2k_env.trainer_para.additional_pl_paras={
