@@ -167,7 +167,54 @@ class pl_base_trainer:
         testset,testloader = self.dataloader_init_fn(train_phase="test",
                                             machine=machine,
                                             collector_para=collector_para)
+        # pdb.set_trace()
+        #---> setup dataset meta
+        self.dataset_para.data_len = trainset.__len__()
+        _,dict_L = trainset.get_balanced_weight(device="cpu")
+        self.dataset_para.category_ratio = dict_L
+
+        #----> change back for next run
+        self.dataset_para.is_shuffle=is_shuffle # not shuffle for validation
+        self.dataset_para.is_weight_sampler=is_weight_sampler
         
+        #----> change label_dict to fit the model and loss
+        # get original label dict
+        trainset,trainloader = self.change_label_dict(trainset,trainloader)
+        testset,testloader = self.change_label_dict(testset,testloader)
+        #----> save to self
+        self.data_pack = {
+            "trainset":trainset,
+            "trainloader":trainloader,
+            "testset":testset,
+            "testloader":testloader,
+        }
+
+    def get_in_domain_datapack(self,
+                    machine:Machine,
+                    collector_para:CollectorParas,):
+        """
+        create self.datapack which includes an in-domain trainset, validset, testset,
+        trainloader, validloader, testloader
+        in:
+            machine:Machine: machine object for data path
+            collector_para:CollectorParas: paras for data collector
+
+        """
+        is_shuffle = self.dataset_para.is_shuffle
+        is_weight_sampler = self.dataset_para.is_weight_sampler
+        #---> for train phase
+        trainset,trainloader = self.dataloader_init_fn(train_phase="train",
+                                            machine=machine,
+                                            collector_para=collector_para)
+
+        #---> for validation phase
+        if not self.dataset_para.force_balance_val:
+            self.dataset_para.is_shuffle=False # not shuffle for validation
+            self.dataset_para.is_weight_sampler=False
+        testset,testloader = self.dataloader_init_fn(train_phase="test",
+                                            machine=machine,
+                                            collector_para=collector_para)
+        # pdb.set_trace()
         #---> setup dataset meta
         self.dataset_para.data_len = trainset.__len__()
         _,dict_L = trainset.get_balanced_weight(device="cpu")

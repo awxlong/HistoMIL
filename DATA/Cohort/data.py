@@ -15,6 +15,8 @@ from HistoMIL.DATA.Database.utils import get_weight_sampler
 from HistoMIL.EXP.paras.dataset import DatasetParas
 
 
+import pdb
+
 class DataCohort:
     def __init__(self,
                     data_locs:Locations,
@@ -121,26 +123,37 @@ class DataCohort:
         if K_fold is None:
             logger.warning("Cohort::Using ratio split.")
             from sklearn.model_selection import train_test_split   
+            pdb.set_trace()
             train_data,test_data = train_test_split(target_df, 
                                         test_size=test_size,
-                                        stratify=target_df[label_name])
+                                        random_state=self.cohort_para.in_domain_split_seed,
+                                        # stratify=target_df[label_name]) # avoid test data leakage
+            )
             self.data = {"all_df":target_df,"train":train_data}
             self.data.update({"test":test_data})
+
         else:
+            # DON'T DO K-FOLD CV THIS WAY
+            raise NotImplementedError
+        
             logger.warning("Cohort::Using k-fold split rather than ratio.")
             from sklearn.model_selection import KFold
+            pdb.set_trace()
             kf = KFold(n_splits=K_fold,shuffle=True,random_state=2022)
             idx_lists = list(kf.split(target_df))
             self.get_k_th_fold(target_df,idx_lists,label_name,i_th=0)
         
             
 
-    def get_k_th_fold(self,df:pd.DataFrame,idx_lists:list,target_label:str,i_th:int=0):
+    # def get_k_th_fold(self,df:pd.DataFrame,idx_lists:list,target_label:str,i_th:int=0):
+    #     '''
+    #     TODO: GET RID OF THIS FUNCTION; CROSS-VALIDATION CAN BE DONE IN ANOTHER WAY
+    #     '''
             
-        df_train = df.iloc[idx_lists[i_th][0].tolist()]
-        df_test = df.iloc[idx_lists[i_th][1].tolist()]
+    #     df_train = df.iloc[idx_lists[i_th][0].tolist()]
+    #     df_test = df.iloc[idx_lists[i_th][1].tolist()]
 
-        self.data = {"all_df":df,"train":df_train,"test":df_test,"idxs":idx_lists}
+    #     self.data = {"all_df":df,"train":df_train,"test":df_test,"idxs":idx_lists}
 
     def get_task_datalist(self,phase:str="train"):
         """

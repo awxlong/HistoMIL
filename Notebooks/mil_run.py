@@ -97,6 +97,8 @@ def run_mil(args):
     gene2k_env.cohort_para.targets_idx = 0
     gene2k_env.cohort_para.label_dict = args.label_dict # e.g. "{'HRD':0,'HRP':1}" # SINGLE quotations for the keys
     gene2k_env.cohort_para.task_additional_idx = args.task_additional_idx # ["g0_score"] # if CRC_g0_arrest.csv has other biomarkers of interest, name them in this variable, default None. 
+    gene2k_env.cohort_para.in_domain_split_seed = 42                      # for consisten in-domain train-val-test split
+
 
     #---------------> collector parameters and trainer / analyzer
     if args.precomputed:
@@ -172,7 +174,7 @@ def run_mil(args):
     exp.init_cohort()
     logging.info("setup trainer..")
     
-    # exp.paras.trainer_para.k_fold = 2 ### REMOVE THIS FOR CLUSTER
+    exp.paras.trainer_para.k_fold = args.k_fold 
     print(exp.paras.trainer_para)
 
     # pdb.set_trace()
