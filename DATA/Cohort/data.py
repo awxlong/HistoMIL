@@ -14,6 +14,9 @@ from HistoMIL.EXP.paras.cohort import CohortParas
 from HistoMIL.DATA.Database.utils import get_weight_sampler
 from HistoMIL.EXP.paras.dataset import DatasetParas
 
+from sklearn.model_selection import train_test_split   
+
+import pdb
 
 class DataCohort:
     def __init__(self,
@@ -114,33 +117,57 @@ class DataCohort:
     def split_train_phase(self,
                         ratio:list=[0.8,0.2],#in dataset_para
                         label_name:str="HRD",    #select one category name
-                        K_fold:int=None,target_df=None):
+                        K_fold:int=0,target_df=None):
         # target_df can be customized 
         target_df = self.task_cohort.table.df if target_df is None else target_df
         test_size = 1-ratio[0]
-        if K_fold is None:
+        
+            # pdb.set_trace()
+        train_val_data,test_data = train_test_split(target_df, 
+                                    test_size=test_size,
+                                    random_state=self.cohort_para.in_domain_split_seed,
+                                    # stratify=target_df[label_name]) # avoid test data leakage
+        )
+        if K_fold == 0:
             logger.warning("Cohort::Using ratio split.")
-            from sklearn.model_selection import train_test_split   
-            train_data,test_data = train_test_split(target_df, 
+            
+            train_data,val_data = train_test_split(train_val_data, 
                                         test_size=test_size,
-                                        stratify=target_df[label_name])
+                                        # train data can be randomly split
+            )
+            
             self.data = {"all_df":target_df,"train":train_data}
-            self.data.update({"test":test_data})
+            self.data.update({"valid": val_data,
+                              "test":test_data})
+            # pdb.set_trace()
+
         else:
+            # DON'T DO K-FOLD CV THIS WAY
+            # raise NotImplementedError
+        
             logger.warning("Cohort::Using k-fold split rather than ratio.")
             from sklearn.model_selection import KFold
-            kf = KFold(n_splits=K_fold,shuffle=True,random_state=2022)
-            idx_lists = list(kf.split(target_df))
-            self.get_k_th_fold(target_df,idx_lists,label_name,i_th=0)
+            # pdb.set_trace()
+            kf = KFold(n_splits=K_fold,shuffle=True)
+            idx_lists = list(kf.split(train_val_data))
+            # self.get_k_th_fold(target_df,idx_lists,label_name,i_th=0)
+            self.get_k_th_fold(df=train_val_data,idx_lists=idx_lists,
+                               k_th_fold=0, test_data=test_data)
         
             
 
-    def get_k_th_fold(self,df:pd.DataFrame,idx_lists:list,target_label:str,i_th:int=0):
-            
-        df_train = df.iloc[idx_lists[i_th][0].tolist()]
-        df_test = df.iloc[idx_lists[i_th][1].tolist()]
+    def get_k_th_fold(self,df:pd.DataFrame,idx_lists:list, test_data, k_th_fold:int=0):
+        '''
+        #  TODO: 
+        '''
+        # pdb.set_trace()
+        df_train = df.iloc[idx_lists[k_th_fold][0].tolist()]
+        # df_test = df.iloc[idx_lists[i_th][1].tolist()]
+        df_valid = df.iloc[idx_lists[k_th_fold][1].tolist()]
+        df_test = test_data
 
-        self.data = {"all_df":df,"train":df_train,"test":df_test,"idxs":idx_lists}
+        self.data = {"train_val":df,"train":df_train, "valid":df_valid,
+                     "test":df_test,"idxs":idx_lists}
 
     def get_task_datalist(self,phase:str="train"):
         """

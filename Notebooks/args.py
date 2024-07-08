@@ -241,10 +241,10 @@ def get_args_mil():
     parser.add_argument(
         "--n-epochs", default=4, type=int, help='Maximum numer of epochs for training pytorch lightning model, default is 4. ')
     parser.add_argument(
-        "--k-fold", default=4, type=int, help='Number of folds for cross-validation')
+        "--k-fold", default=0, type=int, help='Number of folds for cross-validation, e.g. 3 for 3-fold cross-validation. Default is 0, no cross-validation')
     
     parser.add_argument(
-        "--monitor-metric", default='auroc/val', type=str, help='Performance metric to monitor by pytorch lightning which decides saved checkpoint, e.g. loss/val, auroc/val')
+        "--monitor-metric", default='auroc_val', type=str, help='Performance metric to monitor by pytorch lightning which decides saved checkpoint, e.g. loss_val, auroc_val')
     
     
     parser.add_argument(

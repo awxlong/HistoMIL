@@ -46,3 +46,4 @@ class CohortParas(object):
         self.label_dict:dict={"label1":0,"label2":1}  #::dict:: a dict for possible labels and related int
         self.category_nb:int=len(self.label_dict.keys())  #::int:: number of classes
         self.is_shuffle:bool=True  #::bool:: if shuffle the cohort level(or shuffle in df)
+        self.in_domain_split_seed = 42

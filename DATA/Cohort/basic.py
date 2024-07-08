@@ -308,7 +308,7 @@ class TaskCohort(Cohort):
         else:
             content_names = self.labels_name 
         # pdb.set_trace()
-        patinet_df = self.sort_patientID(table = source_table,pid_name=self.pid_name,labels_name=content_names)
+        patinet_df = self.sort_patientID(table = source_table,pid_name=self.pid_name,labels_name=content_names) # gets rid of randomness when train-validation-test split
         self.table.df = self.merge_with_PID(df_1=local_df,
                                             df_2=patinet_df).drop_duplicates()
         # pdb.set_trace()

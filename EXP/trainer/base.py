@@ -48,7 +48,7 @@ class pl_base_trainer:
         self.entity = entity
         self.exp_name = exp_name
         
-    def build_trainer(self):
+    def build_trainer(self, reinit=False):
         trainer_additional_dict = self.trainer_para.additional_pl_paras
         callbacks_list = []
 
@@ -63,7 +63,8 @@ class pl_base_trainer:
 
             wandb_logger = WandbLogger(project=self.project,
                                         entity=self.entity,
-                                        name=self.exp_name)
+                                        name=self.exp_name,
+                                        reinit=reinit)
             # pdb.set_trace()
             trainer_additional_dict.update({"logger":wandb_logger})
 
@@ -96,28 +97,74 @@ class pl_base_trainer:
     def train(self):
         logger.info("Trainer:: Start training....")
         trainloader = self.data_pack["trainloader"] 
-        valloader = self.data_pack["testloader"]
-        print(f'acc_grad_batches: {self.trainer.accumulate_grad_batches} \
-              precision: {self.trainer.precision}')
+        validloader = self.data_pack["validloader"]
+
 
         self.trainer.fit(model=self.pl_model, 
                 train_dataloaders=trainloader,
-                val_dataloaders=valloader)
+                val_dataloaders=validloader)
+        
+    def train_val_kfold(self):
+        logger.info("Trainer:: Start training in k-fold cross validation....")
+        
+        trainloader = self.data_pack["trainloader"] 
+        validloader = self.data_pack["validloader"]
+
+
+        self.trainer.fit(model=self.pl_model, 
+                train_dataloaders=trainloader,
+                val_dataloaders=validloader)
 
     def validate(self,ckpt_path:str="best"):
-        testloader = self.data_pack["testloader"]
-        out = self.trainer.validate(dataloaders=testloader, ckpt_path=ckpt_path,)
+        validloader = self.data_pack["validloader"]
+        out = self.trainer.validate(dataloaders=validloader, ckpt_path=ckpt_path,)
         return out
+    
+    def test(self, ckpt_path:str='best'):
+        test_loader = self.data_pack['testloader']
+        out = self.trainer.test(dataloaders=test_loader, ckpt_path=ckpt_path,)
+        return out 
+    
     ################################################################
     #   cohort related function
     ################################################################ 
     def set_cohort(self,data_cohort:DataCohort):
         self.data_cohort = data_cohort
 
-    def dataloader_init_fn(self,train_phase:str,
+    def in_domain_dataloader_init_fn_(self,train_phase:str,
                             machine:Machine,
-                            colloctor_para:CollectorParas,):
-        raise NotImplementedError
+                            collector_para:CollectorParas,):
+        
+        """
+        produce dataset and dataloader for different training phase
+        """
+        slide_list,patch_list,_ = self.data_cohort.get_task_datalist(phase=train_phase)
+
+        # different slide methods need different training protocol 
+        # data_list related with training methods,
+        # (1)mil need slide list 
+        # (2)and transfer learning need patch list
+        method_type = self.trainer_para.method_type# "mil" or "patch_learning"
+        assert method_type in ["mil","patch_learning"]
+        data_list = slide_list if method_type == "mil" else patch_list
+
+        # is_train related with two things: dataset_para and train_phase
+        is_train = self.dataset_para.is_train if self.dataset_para.is_train is not None \
+                                         else True if train_phase == "train" else False
+        # get dataset
+        dataset = create_slide_dataset(
+                                data_list=data_list,
+                                data_locs=machine.data_locs,
+                                concept_paras=collector_para,
+                                dataset_paras=self.dataset_para,
+                                is_train=is_train,
+                                as_PIL=self.dataset_para.as_PIL,
+                                )
+
+        return dataset,self.data_cohort.create_dataloader(dataset,
+                                                    self.dataset_para)
+    
+        
 
     def change_label_dict(self,dataset,dataloader):
         # get original label dict
@@ -167,7 +214,7 @@ class pl_base_trainer:
         testset,testloader = self.dataloader_init_fn(train_phase="test",
                                             machine=machine,
                                             collector_para=collector_para)
-        
+        # pdb.set_trace()
         #---> setup dataset meta
         self.dataset_para.data_len = trainset.__len__()
         _,dict_L = trainset.get_balanced_weight(device="cpu")
@@ -185,6 +232,63 @@ class pl_base_trainer:
         self.data_pack = {
             "trainset":trainset,
             "trainloader":trainloader,
+            "testset":testset,
+            "testloader":testloader,
+        }
+
+    def get_in_domain_datapack(self,
+                    machine:Machine,
+                    collector_para:CollectorParas,):
+        """
+        create self.datapack which includes an in-domain trainset, validset, testset,
+        trainloader, validloader, testloader
+        in:
+            machine:Machine: machine object for data path
+            collector_para:CollectorParas: paras for data collector
+
+        """
+        is_shuffle = self.dataset_para.is_shuffle
+        is_weight_sampler = self.dataset_para.is_weight_sampler
+        #---> for train phase
+        
+        trainset,trainloader = self.in_domain_dataloader_init_fn_(train_phase="train",
+                                            machine=machine,
+                                            collector_para=collector_para)
+
+        
+        #---> for validation phase
+        if not self.dataset_para.force_balance_val:
+            self.dataset_para.is_shuffle=False # not shuffle for validation
+            self.dataset_para.is_weight_sampler=False
+        
+        validset,validloader = self.in_domain_dataloader_init_fn_(train_phase="valid",
+                                            machine=machine,
+                                            collector_para=collector_para)
+        testset,testloader = self.in_domain_dataloader_init_fn_(train_phase="test",
+                                            machine=machine,
+                                            collector_para=collector_para)
+        # pdb.set_trace()
+        #---> setup dataset meta
+        self.dataset_para.data_len = trainset.__len__()
+        _,dict_L = trainset.get_balanced_weight(device="cpu")
+        self.dataset_para.category_ratio = dict_L
+
+        #----> change back for next run
+        self.dataset_para.is_shuffle=is_shuffle # not shuffle for validation
+        self.dataset_para.is_weight_sampler=is_weight_sampler
+        
+        #----> change label_dict to fit the model and loss
+        # get original label dict
+        trainset,trainloader = self.change_label_dict(trainset, trainloader)
+        validset,validloader = self.change_label_dict(validset, validloader)
+        testset,testloader = self.change_label_dict(testset, testloader)
+        #----> save to self
+        # pdb.set_trace()
+        self.data_pack = {
+            "trainset":trainset,
+            "trainloader":trainloader,
+            "validset": validset,
+            "validloader": validloader,
             "testset":testset,
             "testloader":testloader,
         }

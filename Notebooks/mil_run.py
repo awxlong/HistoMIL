@@ -97,6 +97,8 @@ def run_mil(args):
     gene2k_env.cohort_para.targets_idx = 0
     gene2k_env.cohort_para.label_dict = args.label_dict # e.g. "{'HRD':0,'HRP':1}" # SINGLE quotations for the keys
     gene2k_env.cohort_para.task_additional_idx = args.task_additional_idx # ["g0_score"] # if CRC_g0_arrest.csv has other biomarkers of interest, name them in this variable, default None. 
+    gene2k_env.cohort_para.in_domain_split_seed = 42                      # for consisten in-domain train-val-test split
+
 
     #---------------> collector parameters and trainer / analyzer
     if args.precomputed:
@@ -121,11 +123,11 @@ def run_mil(args):
     gene2k_env.trainer_para.model_para = model_para_settings[model_name]
     
     # --------------> Logging metrics
-    gene2k_env.trainer_para.ckpt_format = "_{epoch:02d}-{auroc/val:.2f}}" # additional substring that's appended to self.exp_name to be the filename of .ckpt file stored in SavedModel/
+    gene2k_env.trainer_para.ckpt_format = "_{epoch:02d}-{auroc_val:.4f}" # additional substring that's appended to self.exp_name to be the filename of .ckpt file stored in SavedModel/
 
     gene2k_env.trainer_para.ckpt_para = { #-----------> paras for pytorch_lightning.callbacks.ModelCheckpoint
                     "save_top_k":1,
-                    "mode":"max" if args.monitor_metric == 'auroc/val' else 'min',
+                    "mode":"max" if args.monitor_metric == 'auroc_val' else 'min',
                     "monitor":args.monitor_metric,}
     
     gene2k_env.trainer_para.additional_pl_paras={
@@ -172,20 +174,26 @@ def run_mil(args):
     exp.init_cohort()
     logging.info("setup trainer..")
     
-    # exp.paras.trainer_para.k_fold = 2 ### REMOVE THIS FOR CLUSTER
+    exp.paras.trainer_para.k_fold = args.k_fold 
     print(exp.paras.trainer_para)
 
     # pdb.set_trace()
-    exp.setup_experiment(main_data_source="slide",
-                        need_train=True)
-    # exp.paras.trainer_para.backbone_name = args.precomputed
-    # pdb.set_trace()
+    if exp.paras.trainer_para.k_fold > 1:
+       exp.setup_cv_experiment(main_data_source="slide",
+                            need_train=True)
+    else:
+        
+        
+        exp.setup_experiment(main_data_source="slide",
+                            need_train=True)
+        # exp.paras.trainer_para.backbone_name = args.precomputed
+        # pdb.set_trace()
 
-    exp.exp_worker.train()
+        exp.exp_worker.train()
 
-    val_results = exp.exp_worker.validate()
+        val_results = exp.exp_worker.validate()
 
-    print(val_results)
+        print(val_results)
 
     
 

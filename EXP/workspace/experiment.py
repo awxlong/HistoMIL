@@ -8,6 +8,9 @@ from HistoMIL.DATA.Cohort.utils import cohort_pre_processing
 from HistoMIL.DATA.Slide.collector.data_collector import read_wsi_collector
 
 from HistoMIL.EXP.paras.env import EnvParas
+from HistoMIL.EXP.trainer.slide import pl_slide_trainer
+
+import wandb
 
 import pdb
 class Experiment:
@@ -122,14 +125,16 @@ class Experiment:
                                             label_name=label_name,
                                             K_fold=self.paras.trainer_para.k_fold,
                                             target_df=df)
+        
         logger.info(f"Exp:: Splited train and test data")
 
 
     def get_i_th_fold(self,i:int=0):
-        #update split for train and test set
-        self.data_cohort.get_k_th_fold(df = self.data_cohort.data["all_df"],
+        #update split for train and valid set
+        self.data_cohort.get_k_th_fold(df = self.data_cohort.data["train_val"],
                                         idx_lists=self.data_cohort.data["idxs"],
-                                        i_th=i,
+                                        test_data=self.data_cohort.data['test'],
+                                        k_th_fold=i,
                                         )
 
 
@@ -144,7 +149,7 @@ class Experiment:
                 #-------train need split data
                 label_idx = self.paras.cohort_para.targets[self.paras.cohort_para.targets_idx]
                 self.data_cohort.show_taskcohort_stat(label_idx=label_idx)
-                self.split_train_test()
+                self.split_train_test()  # updated to split into train, valid, test
                 # init train worker
                 from HistoMIL.EXP.trainer.slide import pl_slide_trainer
                 self.exp_worker = pl_slide_trainer(
@@ -158,19 +163,70 @@ class Experiment:
                                         entity=self.entity,
                                         exp_name=self.exp_name)
             self.exp_worker.set_cohort(self.data_cohort)
-            self.exp_worker.get_datapack(self.machine,self.paras.collector_para)
+            # pdb.set_trace()
+            if self.cohort_para.in_domain_split_seed:
+                self.exp_worker.get_in_domain_datapack(self.machine,self.paras.collector_para)
+            else:
+                self.exp_worker.get_datapack(self.machine,self.paras.collector_para)
 
             self.exp_worker.build_model()       # creates model from available implementations
             self.exp_worker.build_trainer()     # sets up trainer configurations such as wandb and learning rate
-
+            # pdb.set_trace()
             # update paras
             self.paras.dataset_para=self.exp_worker.dataset_para
             self.paras.trainer_para=self.exp_worker.trainer_para
             self.paras.opt_para=self.exp_worker.opt_para
+            # pdb.set_trace()
             #self.exp_worker.train()
         else:
             raise NotImplementedError
     
+    def setup_cv_experiment(self,main_data_source:str,need_train:bool=True,**kwargs):
+        self.need_train = need_train
+        if main_data_source == "slide":
+            #-------train need split data
+            label_idx = self.paras.cohort_para.targets[self.paras.cohort_para.targets_idx]
+            self.data_cohort.show_taskcohort_stat(label_idx=label_idx)
+            self.split_train_test()  # updated to split into train, valid, test
+        
+            for kfold in range(self.paras.trainer_para.k_fold):
+
+                #------> for slide 
+                self.get_i_th_fold(i=kfold)
+                # init train worker
+                
+                self.exp_worker = pl_slide_trainer(
+                                        trainer_para =self.paras.trainer_para,
+                                        dataset_para=self.paras.dataset_para,
+                                        opt_para=self.paras.opt_para)
+                
+                self.exp_worker.get_env_info(machine=self.machine,user=self.user,
+                                            project=self.project,
+                                            entity=self.entity,
+                                            exp_name=self.exp_name)
+                self.exp_worker.set_cohort(self.data_cohort)
+                # pdb.set_trace()
+                if self.cohort_para.in_domain_split_seed:
+                    self.exp_worker.get_in_domain_datapack(self.machine,self.paras.collector_para)
+                else:
+                    raise NotImplementedError
+                    self.exp_worker.get_datapack(self.machine,self.paras.collector_para)
+
+                self.exp_worker.build_model()       # creates model from available implementations
+                self.exp_worker.build_trainer(reinit=True)     # sets up trainer configurations such as wandb and learning rate
+                # pdb.set_trace()
+                # update paras
+                self.paras.dataset_para=self.exp_worker.dataset_para
+                self.paras.trainer_para=self.exp_worker.trainer_para
+                self.paras.opt_para=self.exp_worker.opt_para
+                # pdb.set_trace()
+                self.exp_worker.train()
+                val_results = self.exp_worker.validate()
+
+                print(val_results)
+                wandb.finish()
+            
+        
     def run(self):
         if self.need_train:
             self.exp_worker.train()
