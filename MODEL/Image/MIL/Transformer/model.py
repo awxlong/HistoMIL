@@ -78,7 +78,7 @@ class Transformer(BaseAggregator):
 
         # Add a projection layer if input_dim != pretrained networks' input_dim
         if paras.input_dim != paras.pretrained_input_dim:
-            self.input_projection = nn.Linear(paras.input_dim, paras.pretrained_input_dim)
+            self.input_projection = nn.Sequential(nn.Linear(paras.input_dim, paras.heads * paras.dim_head, bias=True), nn.ReLU()) # nn.Linear(paras.input_dim, paras.pretrained_input_dim)
         else:
             self.input_projection = nn.Identity()
 
@@ -111,6 +111,7 @@ class Transformer(BaseAggregator):
         return sum(p.numel() for p in self.parameters() if p.requires_grad)
     
     def forward(self, x, coords=None, register_hook=False):
+        
         b, _, _ = x.shape
         #--------> feature encoder
         # pdb.set_trace()
@@ -119,8 +120,8 @@ class Transformer(BaseAggregator):
         # Project input if necessary
         x = self.input_projection(x)
 
-        x = self.projection(x)
-
+        # x = self.projection(x)
+        # pdb.set_trace()
         if self.pos_enc:
             x = x + self.pos_enc(coords)
 
