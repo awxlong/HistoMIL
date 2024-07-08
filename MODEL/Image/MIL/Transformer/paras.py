@@ -34,7 +34,7 @@ class TransformerParas:
     dropout:float = 0.
     emb_dropout:float = 0.
     pos_enc:nn.Module = None
-    pretrained_weights_dir = ''
+    pretrained_weights_dir:str = ''
     pretrained_weights: str = attr.ib(default=None, validator=attr.validators.optional(attr.validators.in_(AVAILABLE_WEIGHTS)))
     encoder_name:str = 'pre-calculated' # by default we'll be using the foundational models for feature extraction, so we avoid SSL
     task:str = 'binary'
@@ -46,6 +46,7 @@ class TransformerParas:
     lr_scheduler = 'CosineAnnealingLR'
     lr_scheduler_config = {'T_max':5, 'eta_min':1e-6} # small 5 for finetuning
 
+    selective_finetuning = False
     # def __attrs_post_init__(self):
     #     super().__init__()
     #     # pdb.set_trace()

@@ -14,7 +14,7 @@ from HistoMIL.EXP.paras.trainer import PLTrainerParas
 
 from HistoMIL.DATA.Cohort.data import DataCohort
 from HistoMIL.DATA.Database.dataset import create_slide_dataset
-
+from pytorch_lightning.callbacks import ModelCheckpoint
 import pdb
 class pl_base_trainer:
     """
@@ -70,7 +70,7 @@ class pl_base_trainer:
 
         if self.trainer_para.with_ckpt:
             # 4. check point
-            from pytorch_lightning.callbacks import ModelCheckpoint
+            
             ckpt_paras = self.trainer_para.ckpt_para
             ckpt_name = self.exp_name+self.trainer_para.ckpt_format
             # pdb.set_trace()

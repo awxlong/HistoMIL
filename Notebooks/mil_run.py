@@ -73,7 +73,7 @@ def run_mil(args):
     DEFAULT_TRANSFORMER_PARAS.input_dim =  MDL_TO_FEATURE_DIMS[args.precomputed]
     DEFAULT_TRANSFORMER_PARAS.pretrained_weights_dir = args.pretrained_weights_dir
     DEFAULT_TRANSFORMER_PARAS.pretrained_weights = args.pretrained_weights_name    # default is MSI_high_CRC_model.pth 
-
+    DEFAULT_TRANSFORMER_PARAS.selective_finetuning = args.efficient_finetuning
 
     model_name = args.mil_algorithm  # options are "TransMIL", "ABMIL", "DSMIL" or "Transformer"
 
@@ -137,7 +137,7 @@ def run_mil(args):
                 'precision': 16,             # Use mixed precision
                 'enable_progress_bar': True, 
                 'enable_model_summary': True,
-                'gradient_clip_val': 0.5,
+                # 'gradient_clip_val': 0.5,
                 # 'plugins': [DDPStrategy(find_unused_parameters=False)],
                 # 'strategy':'ddp',
             }

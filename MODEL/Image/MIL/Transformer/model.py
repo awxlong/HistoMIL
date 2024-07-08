@@ -82,6 +82,9 @@ class Transformer(BaseAggregator):
         else:
             self.input_projection = nn.Identity()
 
+        if paras.selective_finetuning:
+            self.selected_layers_finetuning()
+
     def load_pretrained_weights(self):
         pretrained_weights_dir =  self.transformer_paras.pretrained_weights_dir# 'pretrained_weights/'
         state_dict = torch.load(f'{pretrained_weights_dir}{self.transformer_paras.pretrained_weights}')
@@ -94,6 +97,19 @@ class Transformer(BaseAggregator):
         # pdb.set_trace()
         self.load_state_dict(new_state_dict, strict=True)
 
+    def selected_layers_finetuning(self):
+        for name, param in self.named_parameters():
+            if not any(layer in name for layer in ['mlp_head', 'input_projection']):
+                param.requires_grad = False
+    def print_trainable_parameters(self):
+        for name, param in self.named_parameters():
+            if param.requires_grad:
+                print(f"Trainable: {name}")
+            else:
+                print(f"Frozen: {name}")
+    def count_parameters(self):
+        return sum(p.numel() for p in self.parameters() if p.requires_grad)
+    
     def forward(self, x, coords=None, register_hook=False):
         b, _, _ = x.shape
         #--------> feature encoder
@@ -126,8 +142,11 @@ if __name__ == "__main__":
     #             'mlp_dim': 512, 
     #             'input_dim':768,
     #             'num_classes':1}
-    default_paras = TransformerParas(input_dim=1024, pretrained_weights='MSI_high_CRC_model.pth', encoder_name='pre-calculated')
-    
+    default_paras = TransformerParas(input_dim=1024, \
+                                    # pretrained_weights_dir='/Users/awxlong/Desktop/my-studies/hpc_exps/HistoMIL/MODEL/Image/MIL/Transformer/pretrained_weights/',
+                                    pretrained_weights='MSI_high_CRC_model.pth', \
+                                    encoder_name='pre-calculated')
+    default_paras.pretrained_weights_dir = '/Users/awxlong/Desktop/my-studies/hpc_exps/HistoMIL/MODEL/Image/MIL/Transformer/pretrained_weights/'
     model = Transformer(default_paras)
 
     

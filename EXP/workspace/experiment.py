@@ -213,6 +213,8 @@ class Experiment:
                     self.exp_worker.get_datapack(self.machine,self.paras.collector_para)
 
                 self.exp_worker.build_model()       # creates model from available implementations
+                self.exp_worker.trainer_para.ckpt_format = f'cv={kfold}' + "_{epoch:02d}-{auroc:.2f}"
+                
                 self.exp_worker.build_trainer(reinit=True)     # sets up trainer configurations such as wandb and learning rate
                 # pdb.set_trace()
                 # update paras

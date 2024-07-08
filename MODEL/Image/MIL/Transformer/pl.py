@@ -17,7 +17,7 @@ class pl_Transformer(pl.LightningModule):
         super().__init__()
         self.paras = paras
         self.model = Transformer(paras)
-        self.criterion = get_loss(paras.criterion, pos_weight=paras.pos_weight
+        self.criterion = get_loss(paras.criterion
                                  ) if paras.task == "binary" else get_loss(paras.criterion)
         self.save_hyperparameters()
 

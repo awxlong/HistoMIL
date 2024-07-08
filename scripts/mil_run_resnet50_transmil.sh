@@ -18,5 +18,5 @@ python3 HistoMIL/Notebooks/mil_run.py --exp-name 'mil_transmil_resnet50_100epoch
                                       --label-dict "{0:0,1:1}" \
                                       --mil-algorithm "TransMIL" \
                                       --n-epochs 100 \
-                                      --monitor-metric 'auroc/val'
+                                      --monitor-metric 'auroc_val'
 echo "Finished at: $(date)"
