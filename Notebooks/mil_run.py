@@ -74,7 +74,7 @@ def run_mil(args):
     DEFAULT_TRANSFORMER_PARAS.pretrained_weights_dir = args.pretrained_weights_dir
     DEFAULT_TRANSFORMER_PARAS.pretrained_weights = args.pretrained_weights_name    # default is MSI_high_CRC_model.pth 
     DEFAULT_TRANSFORMER_PARAS.selective_finetuning = args.efficient_finetuning
-
+    # pdb.set_trace()
     model_name = args.mil_algorithm  # options are "TransMIL", "ABMIL", "DSMIL" or "Transformer"
 
     model_para_settings = {"TransMIL":model_para_transmil,

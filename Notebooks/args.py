@@ -75,7 +75,16 @@ def dict_type_mil(string):
 def str_to_int_list(string):
     return [int(num) for num in string.split(',')]
 
-
+def str2bool(v):
+    if isinstance(v, bool):
+        return v
+    if v.lower() in ('yes', 'true', 't', 'y', '1'):
+        return True
+    elif v.lower() in ('no', 'false', 'f', 'n', '0'):
+        return False
+    else:
+        raise argparse.ArgumentTypeError('Boolean value expected.')
+    
 def get_args_split_array_job():
     parser = argparse.ArgumentParser()
     ### logging arguments
@@ -246,10 +255,9 @@ def get_args_mil():
     parser.add_argument(
         "--monitor-metric", default='auroc_val', type=str, help='Performance metric to monitor by pytorch lightning which decides saved checkpoint, e.g. loss_val, auroc_val')
     
-    parser.add_argument(
-        "--efficient-finetuning", default=True, type=bool, help='Set true for only finetuning selected layers: mlp_head and an input_projection layer')
-    
-    
+    parser.add_argument("--efficient-finetuning", type=str2bool, nargs='?', const=True, default=True, 
+                    help="Set True to enable finetuning mlp_head and first input projection layer (default: True)")
+
     parser.add_argument(
         "--seed", type=int, default=42, help="Seed to ensure reproducibility")
     # parser.add_argument(

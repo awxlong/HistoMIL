@@ -11,6 +11,7 @@ from HistoMIL.MODEL.Image.PL_protocol.MIL import pl_MIL
 
 from HistoMIL.MODEL.Image.MIL.Transformer.paras import TransformerParas, DEFAULT_TRANSFORMER_PARAS
 
+import pdb
 def create_img_model(train_paras:PLTrainerParas,
                      dataset_paras:DatasetParas,
                      optloss_paras:OptLossParas,
@@ -42,7 +43,9 @@ def create_img_model(train_paras:PLTrainerParas,
                             model_para=model_para)
         elif model_name == 'Transformer':
             from HistoMIL.MODEL.Image.MIL.Transformer.pl import pl_Transformer
-            pl_model = pl_Transformer(paras=DEFAULT_TRANSFORMER_PARAS)
+            # pdb.set_trace()
+            pl_model = pl_Transformer(paras=model_para)
+            # pdb.set_trace()
     else:
         raise ValueError("model name not availiable")
     return pl_model

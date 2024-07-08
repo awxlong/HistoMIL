@@ -147,6 +147,8 @@ if __name__ == "__main__":
                                     pretrained_weights='MSI_high_CRC_model.pth', \
                                     encoder_name='pre-calculated')
     default_paras.pretrained_weights_dir = '/Users/awxlong/Desktop/my-studies/hpc_exps/HistoMIL/MODEL/Image/MIL/Transformer/pretrained_weights/'
+    default_paras.selective_finetuning = False
+    
     model = Transformer(default_paras)
 
     
