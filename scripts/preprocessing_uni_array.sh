@@ -1,9 +1,9 @@
 #$ -l tmem=16G
-#$ -l h_rt=96:00:00 
+#$ -l h_rt=120:00:00 
 #$ -S /bin/bash
 #$ -j y
 #$ -l gpu=true
-#$ -N preprocess_with_uni_array_job
+#$ -N recompute_preprocess_uni_array_job
 #$ -t 1-7
 
 echo "Running on host: $(hostname)"

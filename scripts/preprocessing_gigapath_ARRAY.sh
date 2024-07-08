@@ -1,9 +1,9 @@
 #$ -l tmem=18G
-#$ -l h_rt=96:00:00 
+#$ -l h_rt=120:00:00 
 #$ -S /bin/bash
 #$ -j y
 #$ -l gpu=true
-#$ -N preprocess_with_gigapath_array_job
+#$ -N recompute_gigapath_array_job
 #$ -t 1-7
 
 

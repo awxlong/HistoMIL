@@ -1,9 +1,9 @@
 #$ -l tmem=16G
-#$ -l h_rt=72:00:00 
+#$ -l h_rt=120:00:00 
 #$ -S /bin/bash
 #$ -j y
 #$ -l gpu=true
-#$ -N preprocess_with_resnet50_array_job
+#$ -N recompute_preprocess_resnet50_array_job
 #$ -t 1-7
 
 echo "Running on host: $(hostname)"
