@@ -152,7 +152,7 @@ class Features_extractor:
     def process(self,slide:WholeSlideImage,patches:Patches):
         # with pytorch dataloader
         self.model.eval()
-        with torch.no_grad():
+        with torch.inference_mode():
             feats=[]
             self.get_dataloader(slide=slide,
                                 patches=patches,
@@ -161,8 +161,10 @@ class Features_extractor:
             for i, x in enumerate(self.dataloader, 0):
                 if i%100==0: logger.info(f"{i}/{len(self.dataloader)}")
                 x = x.to(self.device)
+                # pdb.set_trace()
                 f = self.model(x)
                 f = f.view(f.shape[0],-1).detach().cpu() # B x N where N=CxWxH
+                # pdb.set_trace()
                 feats.append(f)
             # release source
             self.dataloader.dataset.wsi.close()
@@ -228,7 +230,7 @@ class Features_extractor:
                           img_size=self.img_size,
                           trans=self.trans,
                           is_train=False)
-        # pdb.set_trace()
+        
         self.dataloader = DataLoader(dataset, 
                                      batch_size=self.paras.batch_size,
                                      shuffle=False,
@@ -302,6 +304,6 @@ class Featset(Dataset):
         img = self.wsi.get_region(coords = coords,
                                  patch_size = self.patch_size,
                                   patch_level = self.patch_level)
-
+        # pdb.set_trace()
         img = self._processing(img)
         return img

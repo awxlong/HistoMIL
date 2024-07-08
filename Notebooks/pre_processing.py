@@ -26,12 +26,14 @@ import timm
 from HistoMIL.EXP.paras.env import EnvParas
 from HistoMIL.EXP.workspace.experiment import Experiment
 from HistoMIL import logger
+from HistoMIL.DATA.Database.data_aug import only_naive_transforms_tensor, no_transforms, only_naive_transforms
 import logging
 logger.setLevel(logging.INFO)
 
 from args import get_args_preprocessing
 from huggingface_hub import login
 from dotenv import load_dotenv
+from torchvision import transforms
 
 BACKBONES = {
     'uni': {
@@ -78,7 +80,7 @@ def create_model_from_backbones(model_key):
     
     model_name = model_config.pop('model_name')
     # with torch.cuda.amp.autocast():
-    model = timm.create_model(model_name, **model_config) # .half() 
+    model = timm.create_model(model_name, pretrained=True, **model_config) # .half() 
     torch.cuda.empty_cache()
     model.to(device)
 
@@ -126,6 +128,7 @@ def preprocessing(args):
     # patch-level parameters
     preprocess_env.collector_para.patch.step_size = args.step_size # e.g. 224 # ASSUME this also decides the size of patch, although you can change this
     preprocess_env.collector_para.patch.patch_size = (args.step_size, args.step_size) 
+    preprocess_env.collector_para.patch.from_contours = True
     print(preprocess_env.collector_para.patch)
 
     # feature-extraction parameters
@@ -137,6 +140,9 @@ def preprocessing(args):
         preprocess_env.collector_para.feature.model_instance.eval()
         preprocess_env.collector_para.feature.img_size = (args.step_size, args.step_size)
         preprocess_env.collector_para.feature.out_dim = FEAT_DIMS[args.backbone_name]
+        preprocess_env.collector_para.feature.trans = only_naive_transforms_tensor # no_transforms # only_naive_transforms_tensor # no_transforms
+
+
     print(preprocess_env.collector_para.feature)
     
     #----------------> dataset

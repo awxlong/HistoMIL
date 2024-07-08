@@ -129,7 +129,7 @@ class FeatureParas(object):
     with_semantic_shifts:bool = False
 
 ##############################################################################
-#           para for collectorß
+#           para for collector
 ##############################################################################
 @attr.s(auto_attribs=True)
 class CollectorParas(object):
