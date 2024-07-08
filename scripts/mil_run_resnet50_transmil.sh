@@ -1,4 +1,4 @@
-#$ -l tmem=32G
+#$ -l tmem=9G
 #$ -l h_rt=168:00:00 
 #$ -S /bin/bash
 #$ -j y
@@ -7,7 +7,7 @@
 echo "Running on host: $(hostname)"
 echo "Starting at: $(date)"
 cd secrier_lab/persistence/
-source /home/xuelonan/secrier_lab/python3.8.5-biomedai.source
+source /home/xuelonan/sec   rier_lab/python3.8.5-biomedai.source
 source /share/apps/source_files/cuda/cuda-11.8.source
 python3 HistoMIL/Notebooks/mil_run.py --exp-name 'mil_transmil_resnet50_100epochs' \
                                       --project-name 'g0-arrest-resnet50-transmil' \
