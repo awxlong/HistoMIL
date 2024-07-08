@@ -31,7 +31,7 @@ class TransformerParas:
     mlp_dim:int = 512
     pool:str = 'cls'
     dim_head:int = 64
-    dropout:float = 0.
+    dropout:float = 0.1
     emb_dropout:float = 0.
     pos_enc:nn.Module = None
     pretrained_weights_dir:str = ''
