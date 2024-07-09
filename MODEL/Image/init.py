@@ -46,6 +46,12 @@ def create_img_model(train_paras:PLTrainerParas,
             # pdb.set_trace()
             pl_model = pl_Transformer(paras=model_para)
             # pdb.set_trace()
+        elif model_name == 'AttentionMIL':
+            from HistoMIL.MODEL.Image.MIL.AttentionMIL.pl import pl_AttentionMIL
+
+            pl_model = pl_AttentionMIL(dataset_paras=dataset_paras, 
+                                       paras=model_para)
+            # pdb.set_trace()
     else:
         raise ValueError("model name not availiable")
     return pl_model

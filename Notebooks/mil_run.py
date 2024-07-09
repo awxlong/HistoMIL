@@ -34,7 +34,9 @@ from args import get_args_mil
 ### Getting parameters for MIL model architectures/algorithms
 from HistoMIL.MODEL.Image.MIL.TransMIL.paras import TransMILParas
 from HistoMIL.MODEL.Image.MIL.DSMIL.paras import DSMILParas
-from HistoMIL.MODEL.Image.MIL.Transformer.paras import TransformerParas, DEFAULT_TRANSFORMER_PARAS
+from HistoMIL.MODEL.Image.MIL.Transformer.paras import  DEFAULT_TRANSFORMER_PARAS
+from HistoMIL.MODEL.Image.MIL.AttentionMIL.paras import  DEFAULT_Attention_MIL_PARAS
+
 from HistoMIL.EXP.paras.env import EnvParas
 from HistoMIL.EXP.workspace.experiment import Experiment
 
@@ -78,11 +80,16 @@ def run_mil(args):
     DEFAULT_TRANSFORMER_PARAS.lr_scheduler_config = {'T_max':args.n_epochs, 
                                                     'eta_min':1e-6}
     # pdb.set_trace()
-    model_name = args.mil_algorithm  # options are "TransMIL", "ABMIL", "DSMIL" or "Transformer"
+    DEFAULT_Attention_MIL_PARAS.input_dim = MDL_TO_FEATURE_DIMS[args.precomputed]
+    DEFAULT_Attention_MIL_PARAS.epoch = args.n_epochs
+
+    
+    model_name = args.mil_algorithm  # options are "TransMIL", "ABMIL", "DSMIL" or "Transformer", 'AttentionMIL'
 
     model_para_settings = {"TransMIL":model_para_transmil,
                            "DSMIL":model_para_dsmil,
-                           'Transformer':DEFAULT_TRANSFORMER_PARAS} 
+                           'Transformer':DEFAULT_TRANSFORMER_PARAS,
+                           'AttentionMIL': DEFAULT_Attention_MIL_PARAS} 
 
     #--------------------------> parameters
     

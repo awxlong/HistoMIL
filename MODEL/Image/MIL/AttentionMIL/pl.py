@@ -7,16 +7,19 @@ import torchmetrics
 import wandb
 from matplotlib import pyplot as plt
 
-from HistoMIL.MODEL.Image.MIL.Transformer.paras import TransformerParas, DEFAULT_TRANSFORMER_PARAS
-from HistoMIL.MODEL.Image.MIL.Transformer.model import Transformer
+from HistoMIL.EXP.paras.dataset import DatasetParas
+from HistoMIL.MODEL.Image.MIL.AttentionMIL.paras import AttentionMILParas, DEFAULT_Attention_MIL_PARAS
+from HistoMIL.MODEL.Image.MIL.AttentionMIL.model import AttentionMIL
 from HistoMIL.MODEL.Image.MIL.utils import  get_loss, get_optimizer, get_scheduler
 
+
 import pdb
-class pl_Transformer(pl.LightningModule):
-    def __init__(self, paras:TransformerParas = DEFAULT_TRANSFORMER_PARAS):
+class pl_AttentionMIL(pl.LightningModule):
+    def __init__(self, dataset_paras:DatasetParas, paras:AttentionMILParas = DEFAULT_Attention_MIL_PARAS):
         super().__init__()
+        self.dataset_paras = dataset_paras
         self.paras = paras
-        self.model = Transformer(paras)
+        self.model = AttentionMIL(paras)
         self.criterion = get_loss(paras.criterion
                                  ) if paras.task == "binary" else get_loss(paras.criterion)
         self.save_hyperparameters()
@@ -90,6 +93,14 @@ class pl_Transformer(pl.LightningModule):
             wd=self.wd,
         )
         if self.paras.lr_scheduler:
+            self.paras.lr_scheduler_config = {
+                'epochs':self.paras.epoch, 
+                'max_lr': self.paras.max_lr,
+                'steps_per_epoch': self.dataset_paras.data_len # len(dataloader), essentially number of slides when batch-size is 1
+                }
+            
+            # pdb.set_trace()
+            
             scheduler = get_scheduler(
                 self.paras.lr_scheduler,
                 optimizer,

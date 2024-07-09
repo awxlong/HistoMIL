@@ -2,6 +2,8 @@ from HistoMIL.MODEL.Image.MIL.ABMIL.model import ABMIL
 from HistoMIL.MODEL.Image.MIL.TransMIL.model import TransMIL
 from HistoMIL.MODEL.Image.MIL.DSMIL.model import DSMIL
 from HistoMIL.MODEL.Image.MIL.Transformer.model import Transformer
+from HistoMIL.MODEL.Image.MIL.AttentionMIL.model import AttentionMIL
+
 
 aviliable_mil_models = {
                     "ABMIL":ABMIL,
@@ -10,5 +12,7 @@ aviliable_mil_models = {
 
                     "DSMIL":DSMIL,
 
-                    "Transformer": Transformer
+                    "Transformer": Transformer,
+
+                    'AttentionMIL': AttentionMIL
     }

@@ -18,6 +18,8 @@ import torch.nn as nn
 import torch.nn.functional as F
 from einops import rearrange, reduce
 from torch import einsum, nn
+import torch.optim as optim
+import torch.optim.lr_scheduler as lr_scheduler
 #--------> commonly used feature encoder function for MIL
 
 import pdb
@@ -75,6 +77,51 @@ class FeatureNet(torch.nn.Module):
 # --------------------
 # Helpers copied from utils.py from https://github.com/peng-lab/HistoBistro/tree/main
 # --------------------
+
+def get_loss(name, **kwargs):
+    # Check if the name is a valid loss name
+    if name in nn.__dict__:
+        # Get the loss class from the torch.nn module
+        loss_class = getattr(nn, name)
+        # Instantiate the loss with the reduction option
+        loss = loss_class(**kwargs)
+        # Return the loss
+        return loss
+    else:
+        # Raise an exception if the name is not valid
+        raise ValueError(f"Invalid loss name: {name}")
+    
+
+
+def get_optimizer(name, model, lr=0.01, wd=0.1):
+    # Check if the name is a valid optimizer name
+    if name in optim.__dict__:
+        # Get the optimizer class from the torch.optim module
+        optimizer_class = getattr(optim, name)
+        # Instantiate the optimizer with the model parameters and the learning rate
+        optimizer = optimizer_class(model.parameters(), lr=lr, weight_decay=wd)
+        # Return the optimizer
+        # pdb.set_trace()
+        return optimizer
+    else:
+        # Raise an exception if the name is not valid
+        raise ValueError(f"Invalid optimizer name: {name}")
+
+
+def get_scheduler(name, optimizer, optim_config):
+    # Check if the name is a valid scheduler name
+    if name in lr_scheduler.__dict__:
+        # Get the scheduler class from the torch.optim.lr_scheduler module
+        scheduler_class = getattr(lr_scheduler, name)
+        # Instantiate the scheduler with the optimizer and other keyword arguments
+        scheduler = scheduler_class(optimizer, **optim_config)
+        # Return the scheduler
+        # pdb.set_trace()
+        return scheduler
+    else:
+        # Raise an exception if the name is not valid
+        raise ValueError(f"Invalid scheduler name: {name}")
+
 
 def exists(val):
     return val is not None
@@ -419,4 +466,23 @@ class TransformerLayer(nn.Module):
             attn = self.attn.get_self_attention(x)
 
         return attn
+    
+
+### FOR AttentionMIL: copied from https://github.com/peng-lab/HistoBistro/blob/main/models/aggregators/model_utils.py
+class MILAttention(nn.Module):
+    """
+    A network calculating an embedding's importance weight.
+    """
+    def __init__(self, n_in: int, n_latent: Optional[int] = None):
+        super().__init__()
+        n_latent = n_latent or (n_in + 1) // 2
+        self.linear1 = nn.Linear(n_in, n_latent)
+        self.tanh = nn.Tanh()
+        self.linear2 = nn.Linear(n_latent, 1)
+
+    def forward(self, x):
+        x = self.linear1(x)
+        x = self.tanh(x)
+        x = self.linear2(x)
+        return x
 

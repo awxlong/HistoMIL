@@ -206,7 +206,7 @@ class pl_base_trainer:
         trainset,trainloader = self.dataloader_init_fn(train_phase="train",
                                             machine=machine,
                                             collector_para=collector_para)
-
+        
         #---> for validation phase
         if not self.dataset_para.force_balance_val:
             self.dataset_para.is_shuffle=False # not shuffle for validation
@@ -255,7 +255,7 @@ class pl_base_trainer:
                                             machine=machine,
                                             collector_para=collector_para)
 
-        
+        # pdb.set_trace()
         #---> for validation phase
         if not self.dataset_para.force_balance_val:
             self.dataset_para.is_shuffle=False # not shuffle for validation
