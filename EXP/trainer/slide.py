@@ -15,6 +15,8 @@ from HistoMIL.EXP.paras.trainer import PLTrainerParas
 
 from HistoMIL.DATA.Database.dataset import create_slide_dataset
 from HistoMIL.EXP.trainer.base import pl_base_trainer
+
+import pdb
 ##########################################################################################
 #   slide trainer related function
 ##########################################################################################
@@ -53,6 +55,7 @@ class pl_slide_trainer(pl_base_trainer):
                             dataset_paras=self.dataset_para,
                             model_para = self.trainer_para.model_para
                             )
+        # pdb.set_trace()
 
   
         

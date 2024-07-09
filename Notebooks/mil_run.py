@@ -74,6 +74,9 @@ def run_mil(args):
     DEFAULT_TRANSFORMER_PARAS.pretrained_weights_dir = args.pretrained_weights_dir
     DEFAULT_TRANSFORMER_PARAS.pretrained_weights = args.pretrained_weights_name    # default is MSI_high_CRC_model.pth 
     DEFAULT_TRANSFORMER_PARAS.selective_finetuning = args.efficient_finetuning
+    DEFAULT_TRANSFORMER_PARAS.epoch = args.n_epochs
+    DEFAULT_TRANSFORMER_PARAS.lr_scheduler_config = {'T_max':args.n_epochs, 
+                                                    'eta_min':1e-6}
     # pdb.set_trace()
     model_name = args.mil_algorithm  # options are "TransMIL", "ABMIL", "DSMIL" or "Transformer"
 

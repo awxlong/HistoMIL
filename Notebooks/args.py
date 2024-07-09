@@ -245,7 +245,7 @@ def get_args_mil():
     parser.add_argument(
         "--pretrained-weights-dir", type=str, help='Directory where the pretrained-weights are stored for the MIL model')
     parser.add_argument(
-        "--pretrained-weights-name", type=str, help='Filename (e.g. ending in .pth) of the pretrained weights to be loaded to the MIL model, e.g. MSI_high_CRC_model.pth')
+        "--pretrained-weights-name", default=None, type=str, help='Filename (e.g. ending in .pth) of the pretrained weights to be loaded to the MIL model, e.g. MSI_high_CRC_model.pth')
     
     parser.add_argument(
         "--n-epochs", default=4, type=int, help='Maximum numer of epochs for training pytorch lightning model, default is 4. ')
