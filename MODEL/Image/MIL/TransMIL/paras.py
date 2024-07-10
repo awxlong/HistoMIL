@@ -16,9 +16,25 @@ class TransMILParas:
     encoder_pretrained:bool = True # or False
     feature_size:int=512
     embed_size:int=None
-
+    input_dim:int = 1024
     n_classes:int=2
     norm_layer=nn.LayerNorm
+
+
+
+# @attr.s(auto_attribs=True)
+# class TransMILParas:
+#     """
+#     include all paras for create TransMIL model
+#     """
+#     #------> parameters for model
+#     encoder_name="pre-calculated"# or name of encoder",
+#     encoder_pretrained:bool = True # or False
+#     feature_size:int=512
+#     embed_size:int=None
+
+#     n_classes:int=2
+#     norm_layer=nn.LayerNorm
     #class_nb:int=1
 
     #------> parameters for feature encoder
