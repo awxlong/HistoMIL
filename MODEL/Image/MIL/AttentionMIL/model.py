@@ -94,11 +94,17 @@ class AttentionMIL(BaseAggregator):
 
         # False for every instance of bag i with index(instance) >= lens[i]
         attention_mask = (idx < tiles).unsqueeze(-1)
-
+        
+        min_value = torch.finfo(attention_scores.dtype).min
         masked_attention = torch.where(
             attention_mask, attention_scores,
-            torch.full_like(attention_scores, -1e10)
+            torch.full_like(attention_scores, min_value)
         )
+        # masked_attention = torch.where(
+        #     attention_mask, attention_scores,
+        #     # pdb.set_trace()
+        #     torch.full_like(attention_scores, -1e10)
+        # )
 
         return torch.softmax(masked_attention, dim=1)
     
@@ -123,7 +129,7 @@ if __name__ == "__main__":
     rand_tensor = torch.rand(1, 1, 1024) 
     model = AttentionMIL(default_paras)
 
-    pdb.set_trace()
+    # pdb.set_trace()
 
     
     # pdb.set_trace()
