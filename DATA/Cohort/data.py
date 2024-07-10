@@ -115,7 +115,7 @@ class DataCohort:
         return cat_stat
 
     def split_train_phase(self,
-                        ratio:list=[0.8,0.2],#in dataset_para
+                        ratio:list=[0.9,0.1],#in dataset_para
                         label_name:str="HRD",    #select one category name
                         K_fold:int=0,target_df=None):
         # target_df can be customized 
