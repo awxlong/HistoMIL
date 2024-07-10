@@ -94,6 +94,7 @@ class pl_AttentionMIL(pl.LightningModule):
         )
         if self.paras.lr_scheduler:
             self.paras.lr_scheduler_config = {
+                'pct_start': 0.25,  # default 0.3, set same as https://github.com/peng-lab/HistoBistro/blob/52313bbc9671191d648a78111e4c5f52084d66c0/CancerCellCRCTransformer/train_num_samples.py#L109
                 'epochs':self.paras.epoch, 
                 'max_lr': self.paras.max_lr,
                 'steps_per_epoch': self.dataset_paras.data_len # len(dataloader), essentially number of slides when batch-size is 1

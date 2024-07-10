@@ -24,11 +24,11 @@ class TransformerParas:
     num_classes:int = 1
     input_dim:int = 1024           # by default we'll be using uni's feature vectors which are of size 1024
     pretrained_input_dim:int = 768 # pretrained transformer used ctranspath by default for feature encoding
-    dim:int = 192 # 512 # has  to be equal to # of heads * dim_head 
+    dim:int =  128 # 512 # has  to be equal to # of heads * dim_head 
     depth:int = 2
-    heads:int = 6 # 8
+    heads:int = 4 # 8
     dim_head:int = 32 # 64
-    mlp_dim:int = 192 # 512 # has  to be equal to # of heads * dim_head 
+    mlp_dim:int = 128 # 512 # has  to be equal to # of heads * dim_head 
     pool:str = 'cls'
     
     dropout:float = 0.1

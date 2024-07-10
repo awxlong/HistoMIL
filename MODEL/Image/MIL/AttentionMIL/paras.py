@@ -11,8 +11,6 @@ import torch.optim.lr_scheduler as lr_scheduler
 #---->
 import pdb
 
-AVAILABLE_WEIGHTS = ['BRAF_CRC_model.pth', 'KRAS_CRC_model.pth', 'MSI_high_CRC_model.pth']
-
 @attr.s(auto_attribs=True)
 class AttentionMILParas:
     """
