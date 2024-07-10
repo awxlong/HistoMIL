@@ -119,9 +119,9 @@ class Transformer(BaseAggregator):
 
         # Project input if necessary
         x = self.input_projection(x)
-
+        
         # x = self.projection(x)
-        # pdb.set_trace()
+        
         if self.pos_enc:
             x = x + self.pos_enc(coords)
 
@@ -132,7 +132,7 @@ class Transformer(BaseAggregator):
         x = self.dropout(x)
         x = self.transformer(x, register_hook=register_hook)
         x = x.mean(dim=1) if self.pool == 'mean' else x[:, 0]
-
+        # pdb.set_trace()
         return self.mlp_head(self.norm(x))
 
 
