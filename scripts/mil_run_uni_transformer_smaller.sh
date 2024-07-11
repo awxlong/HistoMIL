@@ -1,5 +1,5 @@
 #$ -l tmem=27G
-#$ -l h_rt=10:30:00 
+#$ -l h_rt=5:30:00 
 #$ -S /bin/bash
 #$ -j y
 #$ -l gpu=true,gpu_type=(a40|a100)
