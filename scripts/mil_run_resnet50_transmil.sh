@@ -1,4 +1,4 @@
-#$ -l tmem=4G
+#$ -l tmem=6G
 #$ -l h_rt=72:00:00 
 #$ -S /bin/bash
 #$ -j y
@@ -15,7 +15,7 @@ python3 HistoMIL/Notebooks/mil_run.py --exp-name 'mil_transmil_resnet50_32epochs
                                       --targets-name 'g0_arrest' \
                                       --cohort-dir '/home/xuelonan/secrier_lab/persistence/' \
                                       --split-ratio 0.9 0.1 --step-size 224 \
-                                      --precomputed 'uni' \
+                                      --precomputed 'resnet50' \
                                       --label-dict "{0:0,1:1}" \
                                       --mil-algorithm "TransMIL" \
                                       --n-epochs 32 \
