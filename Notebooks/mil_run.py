@@ -60,12 +60,12 @@ def run_mil(args):
 
     # for transmil
     model_para_transmil = TransMILParas()
-    model_para_transmil.feature_size = MDL_TO_FEATURE_DIMS[args.precomputed]
+    model_para_transmil.input_dim = MDL_TO_FEATURE_DIMS[args.precomputed]
     model_para_transmil.n_classes=1
     model_para_transmil.lr_scheduler_config = {'T_max':args.n_epochs, 
                                                 'eta_min':1e-6}
     model_para_transmil.epoch = args.n_epochs
-    
+
     # for dsmil
     model_para_dsmil = DSMILParas()
     model_para_dsmil.feature_dim = MDL_TO_FEATURE_DIMS[args.precomputed]
