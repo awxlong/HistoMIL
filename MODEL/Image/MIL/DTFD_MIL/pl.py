@@ -19,8 +19,8 @@ from HistoMIL import logger
 # from HistoMIL.EXP.paras.optloss import OptLossParas
 # from HistoMIL.EXP.paras.trainer import PLTrainerParas
 
-from HistoMIL.MODEL.Image.MIL.TransMIL.paras import TransMILParas
-from HistoMIL.MODEL.Image.MIL.TransMIL.model import TransMIL
+from HistoMIL.MODEL.Image.MIL.DTFD_MIL.paras import DTFD_MILParas
+from HistoMIL.MODEL.Image.MIL.DTFD_MIL.model import DTFD_MIL
 from HistoMIL.MODEL.Image.MIL.utils import  get_loss, get_optimizer, get_scheduler
 
 #---->
@@ -29,10 +29,10 @@ from HistoMIL.MODEL.Image.MIL.utils import  get_loss, get_optimizer, get_schedul
 ####################################################################################
 
 class pl_DTFDMIL(pl.LightningModule):
-    def __init__(self, paras:TransMILParas):
+    def __init__(self, paras:DTFD_MILParas):
         super().__init__()
         self.paras = paras
-        self.model = TransMIL(paras)
+        self.model = DTFD_MIL(paras)
         self.criterion = get_loss(paras.criterion
                                  ) if paras.task == "binary" else get_loss(paras.criterion)
         self.save_hyperparameters()
