@@ -5,7 +5,8 @@ most code copy from
 https://github.com/szc19990412/TransMIL
 """
 import numpy as np
-
+import sys
+sys.path.append('/Users/awxlong/Desktop/my-studies/hpc_exps/')
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -22,26 +23,28 @@ import pdb
 
 
 class TransMIL(BaseAggregator):
-    def __init__(self, paras:TransMILParas, num_classes:int, input_dim=1024, pos_enc='PPEG', **kwargs):
+    def __init__(self, paras:TransMILParas):
         super(BaseAggregator, self).__init__()
+        
+        self.paras = paras
         self.pos_layer = PPEG(dim=512)
-        self.pos_enc = pos_enc
+        self.pos_enc = paras.pos_enc
         self.encoder = FeatureNet(model_name = paras.encoder_name)
         print(f'Using {self.pos_enc} positional encoding')
-        self._fc1 = nn.Sequential(nn.Linear(input_dim, 512), nn.ReLU())
+        self._fc1 = nn.Sequential(nn.Linear(paras.input_dim, 512), nn.ReLU())
         self.cls_token = nn.Parameter(torch.randn(1, 1, 512))
-        self.num_classes = num_classes
-        self.layer1 = NystromTransformerLayer(dim=512)
-        self.layer2 = NystromTransformerLayer(dim=512)
+        self.num_classes = paras.num_classes
+        self.layer1 = NystromTransformerLayer(dim = 512)
+        self.layer2 = NystromTransformerLayer(dim = 512)
         self.norm = nn.LayerNorm(512)
-        self._fc2 = nn.Linear(512, self.num_classes)
+        self._fc2 = nn.Linear(512, paras.num_classes)
         
 
     def forward(self, x, coords=None):
 
-        x = self.encoder(x)
+        h = self.encoder(x) #[B, n, 1024]
 
-        h = x  #[B, n, 1024]
+        # h = x  
 
         h = self._fc1(h)  #[B, n, 512]
 
@@ -92,11 +95,7 @@ class TransMIL(BaseAggregator):
 
 if __name__ == "__main__":
     
-    default_paras = TransMILParas(input_dim=1024, \
-                                    encoder_name='pre-calculated', 
-                                    num_classes=1)
-    # default_paras.pretrained_weights_dir = '/Users/awxlong/Desktop/my-studies/hpc_exps/HistoMIL/MODEL/Image/MIL/Transformer/pretrained_weights/'
-    # default_paras.selective_finetuning = False
+    default_paras = TransMILParas()
     rand_tensor = torch.rand(1, 1, 1024) 
     model = TransMIL(default_paras)
 

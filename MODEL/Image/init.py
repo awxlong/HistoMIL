@@ -31,10 +31,12 @@ def create_img_model(train_paras:PLTrainerParas,
                             model_para=model_para)
         elif model_name == "TransMIL":
             from HistoMIL.MODEL.Image.MIL.TransMIL.pl import pl_TransMIL
-            pl_model = pl_TransMIL(data_paras=dataset_paras,
-                            opt_paras=optloss_paras,
-                            trainer_paras=train_paras,
-                            model_para=model_para)
+            # pl_model = pl_TransMIL(data_paras=dataset_paras,
+            #                 opt_paras=optloss_paras,
+            #                 trainer_paras=train_paras,
+            #                 model_para=model_para)
+            pl_model = pl_TransMIL(paras=model_para)
+            
         elif model_name == "DSMIL":
             from HistoMIL.MODEL.Image.MIL.DSMIL.pl import pl_DSMIL
             pl_model = pl_DSMIL(data_paras=dataset_paras,
