@@ -1,5 +1,5 @@
 #$ -l tmem=9G
-#$ -l h_rt=72:00:00 
+#$ -l h_rt=36:00:00 
 #$ -S /bin/bash
 #$ -j y
 #$ -l gpu=true
