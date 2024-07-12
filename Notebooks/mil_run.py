@@ -96,7 +96,7 @@ def run_mil(args):
     #--------------------------> parameters
     
     gene2k_env = EnvParas()
-    gene2k_env.exp_name = f'{args.exp_name}_{datetime.now().strftime("%m%d_%H%M")}'         # name of the experiment which is also the checkpoint model that's going to be saved in SavedModel/ e.g. "debug_process + time.time()"
+    gene2k_env.exp_name = f'{args.exp_name}' # f'{args.exp_name}_{datetime.now().strftime("%m%d_%H%M")}'         # name of the experiment which is also the checkpoint model that's going to be saved in SavedModel/ e.g. "debug_process + time.time()"
     gene2k_env.project = args.project_name      # e.g. "test-project" 
     gene2k_env.entity = args.wandb_entity_name  # make sure it's initialized to an existing wandb entity
     #----------------> cohort

@@ -239,7 +239,7 @@ def get_args_mil():
     parser.add_argument(
         "--task-additional-idx", type=str, nargs='+', default=None, help='additional column names of biomarkers of interest.')
     parser.add_argument(
-        "--num-workers", type=int, default=8, help='number of workers to specify in pytorch dataloader')
+        "--num-workers", type=int, default=4, help='number of workers to specify in pytorch dataloader')
     parser.add_argument(
         "--mil-algorithm", type=str, help='Name of the MIL algorithm/model that is used, e.g., TransMIL, DSMIL, ABMIL, Transformer')
     parser.add_argument(
