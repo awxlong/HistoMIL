@@ -231,8 +231,8 @@ class Experiment:
                 val_results = self.exp_worker.validate()
 
                 print(val_results)
+
                 ## restart pytorch lightning's configuration so that it doesn't load from previous checkpoint
-                
                 self.paras.trainer_para.additional_pl_paras = {
                                                             #---------> paras for pytorch lightning trainner
                                                             "accumulate_grad_batches":8, # mil need accumulated grad

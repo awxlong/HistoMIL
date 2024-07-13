@@ -149,7 +149,7 @@ def compute_adj_coords(wsi_coords, wsi_feats, wsi_name, adj_coord_save_path, adj
                 # sorted_indices = np.argsort(batch_patch_distance)
                 # neighbor_indices[idx] = sorted_indices[:n_neighbors]
                 start_idx = idx * chunk_size
-                end_idx = min((idx + 1) * chunk_size, wsi_coords.shape[0])
+                # end_idx = min((idx + 1) * chunk_size, wsi_coords.shape[0])
                 
                 for i, distances in enumerate(batch_patch_distance):
                     sorted_indices = np.argsort(distances)
@@ -204,8 +204,8 @@ def compute_adj_coords(wsi_coords, wsi_feats, wsi_name, adj_coord_save_path, adj
             indices = torch.tensor(sparse_coords, dtype=torch.long).t()
             # values = torch.tensor(values, dtype=torch.float32)
             values = torch.FloatTensor(values)
-            sparse_matrix = torch.sparse.FloatTensor(indices, values, torch.Size([wsi_feats.shape[0], wsi_feats.shape[0]]))
-
+            # sparse_matrix = torch.sparse.FloatTensor(indices, values, torch.Size([wsi_feats.shape[0], wsi_feats.shape[0]]))
+            sparse_matrix = torch.sparse_coo_tensor(indices, values, torch.Size([wsi_feats.shape[0], wsi_feats.shape[0]]))
             torch.save(sparse_matrix, f'{adj_matrix_save_path}{wsi_name}.pt')
             logger.info(f'Adjacency matrix stored at {adj_matrix_save_path}')
         else:
