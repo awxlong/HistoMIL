@@ -37,7 +37,7 @@ from torchvision import transforms
 
 
 import h5py
-from sklearn.metrics import pairwise_distances
+from sklearn.metrics import pairwise_distances, pairwise_distances_chunked
 import numpy as np
 from scipy.spatial import distance
 import torch
@@ -85,12 +85,18 @@ def save_hdf5(output_path, asset_dict, attr_dict=None, mode='a'):
     file.close()
     return output_path
 
+def compute_distances_in_chunks(X, chunk_size=1000):
+    chunks = pairwise_distances_chunked(X, metric='euclidean', n_jobs=1, working_memory=chunk_size)
+    distances = np.vstack(list(chunks))
+    return distances
+
 def compute_adj_coords(wsi_coords, wsi_feats, wsi_name, adj_coord_save_path, adj_matrix_save_path, force_recalc = False):
         # output_path_file = os.path.join(save_path + wsi_name + '.h5')
         # output_path_file = data_locs.abs_loc('feature') + f'{encoder}_adj_dictionary/{wsi_name}.h5'
         if not os.path.exists(f'{adj_matrix_save_path}{wsi_name}.pt') or force_recalc: 
              
-            patch_distances = pairwise_distances(wsi_coords, metric='euclidean', n_jobs=1)
+            # patch_distances = pairwise_distances(wsi_coords, metric='euclidean', n_jobs=1)
+            patch_distances = compute_distances_in_chunks(wsi_coords)
             neighbor_indices = np.argsort(patch_distances, axis=1)[:, :16]
             rows = np.asarray([[enum] * len(item) for enum, item in enumerate(neighbor_indices)]).ravel()
             columns = neighbor_indices.ravel()
@@ -109,9 +115,9 @@ def compute_adj_coords(wsi_coords, wsi_feats, wsi_name, adj_coord_save_path, adj
             
             coords = np.array(coords)
             
-            asset_dict = {'adj_coords': coords, 'similarities': values, 'indices': neighbor_indices}
+            # asset_dict = {'adj_coords': coords, 'similarities': values, 'indices': neighbor_indices}
 
-            save_hdf5(adj_coord_save_path, asset_dict, attr_dict=None)
+            # save_hdf5(adj_coord_save_path, asset_dict, attr_dict=None)
 
             ### compute adjacency matrix
             values = np.nan_to_num(values)
