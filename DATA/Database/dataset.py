@@ -126,9 +126,7 @@ class MILFeaturesAdjMatrixSet(Dataset):
                                     paras=self.collector_paras,
                                     )
         data = self.processing(collector=collector)
-        adj_matrix = torch.load(f'{self.locs.abs_loc('feature')}\
-                                  {self.collector_paras.feature.model_name}\
-                                   _adj_matrix/{folder}{filename}.pt') 
+        adj_matrix = torch.load(f"{self.locs.abs_loc('feature')}{self.collector_paras.feature.model_name}_adj_matrix/{folder}{filename}.pt") 
         l = self.label_dict[label]
         del collector
         # pdb.set_trace()
@@ -353,13 +351,13 @@ def create_slide_dataset(data_locs:Locations,
         
         if dataset_paras.additional_feature == 'CAMIL':
             logger.info(f"Dataset::Using pre-calculated features along with {dataset_paras.additional_feature} adjacency matrices for MIL.")
-            raise MILFeaturesAdjMatrixSet(data_locs=data_locs,
+            return MILFeaturesAdjMatrixSet(data_locs=data_locs,
                         data_list=data_list,
                         label_dict = dataset_paras.label_dict,
                         collector_paras=concept_paras,
                         ) 
         else:   
-            pdb.set_trace()
+            # pdb.set_trace()
             logger.info(f"Dataset::Using pre-calculated feature for MIL.")
             return MILFeatureSet(data_locs=data_locs,
                         data_list=data_list,
