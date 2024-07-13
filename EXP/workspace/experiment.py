@@ -181,7 +181,7 @@ class Experiment:
         else:
             raise NotImplementedError
     
-    def setup_cv_experiment(self,main_data_source:str,need_train:bool=True,**kwargs):
+    def setup_cv_experiment(self,main_data_source:str,last_cv:int = 0, need_train:bool=True,**kwargs):
         self.need_train = need_train
         if main_data_source == "slide":
             #-------train need split data
@@ -189,10 +189,14 @@ class Experiment:
             self.data_cohort.show_taskcohort_stat(label_idx=label_idx)
             self.split_train_test()  # updated to split into train, valid, test
         
-            for kfold in range(self.paras.trainer_para.k_fold):
-
+            for kfold in range(last_cv, self.paras.trainer_para.k_fold):
+                
+                if kfold != 0:
+                    logger.info(f"Resuming experiment from cross-validation fold {kfold} with \n checkpoint at: {self.paras.trainer_para.additional_pl_paras['resume_from_checkpoint']}")
+                
                 #------> for slide 
                 self.get_i_th_fold(i=kfold)
+                # pdb.set_trace()
                 # init train worker
                 
                 self.exp_worker = pl_slide_trainer(
@@ -227,7 +231,55 @@ class Experiment:
 
                 print(val_results)
                 wandb.finish()
-            
+    # def setup_cv_experiment_rerun(self, main_data_source:str, last_cv:int = 0, need_train:bool=True):
+    #     '''
+    #     TODO: Refactor this by editing 
+    #     '''
+    #     self.need_train = need_train
+    #     if main_data_source == "slide":
+    #         #-------train need split data
+    #         label_idx = self.paras.cohort_para.targets[self.paras.cohort_para.targets_idx]
+    #         self.data_cohort.show_taskcohort_stat(label_idx=label_idx)
+    #         self.split_train_test()  # updated to split into train, valid, test
+        
+    #         for kfold in range(last_cv, self.paras.trainer_para.k_fold):
+
+    #             #------> for slide 
+    #             self.get_i_th_fold(i=kfold)
+    #             # init train worker
+                
+    #             self.exp_worker = pl_slide_trainer(
+    #                                     trainer_para =self.paras.trainer_para,
+    #                                     dataset_para=self.paras.dataset_para,
+    #                                     opt_para=self.paras.opt_para)
+                
+    #             self.exp_worker.get_env_info(machine=self.machine,user=self.user,
+    #                                         project=self.project,
+    #                                         entity=self.entity,
+    #                                         exp_name=self.exp_name)
+    #             self.exp_worker.set_cohort(self.data_cohort)
+    #             # pdb.set_trace()
+    #             if self.cohort_para.in_domain_split_seed:
+    #                 self.exp_worker.get_in_domain_datapack(self.machine,self.paras.collector_para)
+    #             else:
+    #                 raise NotImplementedError
+    #                 self.exp_worker.get_datapack(self.machine,self.paras.collector_para)
+
+    #             self.exp_worker.build_model()       # creates model from available implementations
+    #             self.exp_worker.trainer_para.ckpt_format = f'cv={kfold}' + "_{epoch:02d}-{auroc_val:.2f}"
+                
+    #             self.exp_worker.build_trainer(reinit=True)     # sets up trainer configurations such as wandb and learning rate
+    #             # pdb.set_trace()
+    #             # update paras
+    #             self.paras.dataset_para=self.exp_worker.dataset_para
+    #             self.paras.trainer_para=self.exp_worker.trainer_para
+    #             self.paras.opt_para=self.exp_worker.opt_para
+    #             # pdb.set_trace()
+    #             self.exp_worker.train()
+    #             val_results = self.exp_worker.validate()
+
+    #             print(val_results)
+    #             wandb.finish()        
         
     def run(self):
         if self.need_train:

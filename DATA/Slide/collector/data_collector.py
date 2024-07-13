@@ -136,7 +136,7 @@ class WSICollector(DataCollector):
             self.patch.get(self.slide,self.tissue,force_calc=force_calc)
         elif name == "feature":
             self.feature.get(self.slide,self.patch,force_calc=force_calc)
-
+        ### TODO: elif name == 'adj_matrix'
     def release(self,name:str,idx:str="default"):
         self.__delattr__(name)
     
