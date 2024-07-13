@@ -103,13 +103,24 @@ def compute_distances_in_chunks(X, chunk_size=1000):
         distances[start:end, :] = chunk
     return distances
 
-def compute_distances_in_batches(X, batch_size=1000):
+# def compute_distances_in_batches(X, batch_size=1000, dtype=np.float32):
+#     # X = X.astype(dtype)  
+#     n = X.shape[0]
+#     distances = np.zeros((n, n), dtype=dtype)
+#     for i in range(0, n, batch_size):
+#         end = min(i + batch_size, n)
+#         distances[i:end] = pairwise_distances(X[i:end], X, metric='euclidean')
+#         yield distances # will distances have full rows such that argsort would be done in an entire row
+#     # return distances
+
+def compute_distances_in_batches(X, batch_size=1000, dtype=np.float32):
+    # X = X.astype(dtype)  
     n = X.shape[0]
-    distances = np.zeros((n, n))
+    # distances = np.zeros((n, n), dtype=dtype)
     for i in range(0, n, batch_size):
         end = min(i + batch_size, n)
-        distances[i:end] = pairwise_distances(X[i:end], X, metric='euclidean')
-    return distances
+        batch_distances = pairwise_distances(X[i:end], X, metric='euclidean')
+        yield batch_distances
 
 
 def compute_adj_coords(wsi_coords, wsi_feats, wsi_name, adj_coord_save_path, adj_matrix_save_path, force_recalc = False):
@@ -122,9 +133,28 @@ def compute_adj_coords(wsi_coords, wsi_feats, wsi_name, adj_coord_save_path, adj
             # wsi_coords = wsi_coords.astype(np.int32)
             # patch_distances = compute_distances_in_chunks(wsi_coords)
             # pdb.set_trace()
-            patch_distances = compute_distances_in_batches(wsi_coords)
+            # patch_distances = compute_distances_in_batches(wsi_coords)
             # pdb.set_trace()
-            neighbor_indices = np.argsort(patch_distances, axis=1)[:, :16]
+            # neighbor_indices = np.argsort(patch_distances, axis=1)[:, :16]
+            # n_rows, _ = patch_distances.shape
+            # n_neighbors = 16
+            # neighbor_indices = np.empty((n_rows, n_neighbors), dtype=np.int32)
+            # for i in range(n_rows):
+            #     sorted_indices = np.argsort(patch_distances[i])
+            #     neighbor_indices[i] = sorted_indices[:n_neighbors]
+            chunk_size = 4096
+            n_neighbors = 16
+            neighbor_indices = np.empty((wsi_coords.shape[0], n_neighbors), dtype=np.int32)
+            for idx, batch_patch_distance in enumerate(compute_distances_in_batches(wsi_coords, batch_size=chunk_size)):
+                # sorted_indices = np.argsort(batch_patch_distance)
+                # neighbor_indices[idx] = sorted_indices[:n_neighbors]
+                start_idx = idx * chunk_size
+                end_idx = min((idx + 1) * chunk_size, wsi_coords.shape[0])
+                
+                for i, distances in enumerate(batch_patch_distance):
+                    sorted_indices = np.argsort(distances)
+                    neighbor_indices[start_idx + i] = sorted_indices[:n_neighbors]
+            # pdb.set_trace()
             rows = np.asarray([[enum] * len(item) for enum, item in enumerate(neighbor_indices)]).ravel()
             columns = neighbor_indices.ravel()
             values = []
@@ -275,8 +305,8 @@ def preprocess_adj_matrices(args):
                 compute_adj_coords(wsi_coords = wsi_coordinates, 
                                 wsi_feats = wsi_features,
                                 wsi_name = wsi_name,
-                                adj_coord_save_path=adj_matrix_save_path,
-                                adj_matrix_save_path=adj_coords_save_path,
+                                adj_coord_save_path=adj_coords_save_path,
+                                adj_matrix_save_path=adj_matrix_save_path,
                                 force_recalc=False
                                 )
             
