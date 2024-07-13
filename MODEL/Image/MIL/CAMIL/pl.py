@@ -119,7 +119,7 @@ class pl_DTFDMIL(pl.LightningModule):
     def training_step(self, batch, batch_idx):
         # pdb.set_trace()
         
-        x, y = batch  # x = encoded features, y = labels
+        x, y = batch  # x = encoded features, adjmatrix, y = labels
         
         logits = self.forward(x)
         # pdb.set_trace()

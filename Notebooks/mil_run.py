@@ -91,7 +91,9 @@ def run_mil(args):
     model_para_settings = {"TransMIL":model_para_transmil,
                            "DSMIL":model_para_dsmil,
                            'Transformer':DEFAULT_TRANSFORMER_PARAS,
-                           'AttentionMIL': DEFAULT_Attention_MIL_PARAS} 
+                           'AttentionMIL': DEFAULT_Attention_MIL_PARAS,
+                           'CAMIL': None,
+                           'DTFD-MIL': None} 
 
     #--------------------------> parameters
     

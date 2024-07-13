@@ -192,7 +192,8 @@ class Experiment:
             for kfold in range(last_cv, self.paras.trainer_para.k_fold):
                 
                 if kfold != 0:
-                    logger.info(f"Resuming experiment from cross-validation fold {kfold} with \n checkpoint at: {self.paras.trainer_para.additional_pl_paras['resume_from_checkpoint']}")
+                    # logger.info(f"Resuming experiment from cross-validation fold {kfold} with \n checkpoint at: {self.paras.trainer_para.additional_pl_paras['resume_from_checkpoint']}")
+                    logger.info(f"Resuming experiment from cross-validation fold {kfold}")
                 
                 
                 #------> for slide 

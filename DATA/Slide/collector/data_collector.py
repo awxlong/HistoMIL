@@ -28,7 +28,7 @@ from HistoMIL.DATA.Cohort.location import Locations
 
 from HistoMIL.EXP.paras.slides import DEFAULT_CONCEPT_PARAS,CollectorParas
 
-DEFAULT_CONCEPT_DICT = {"slide":WholeSlideImage,
+DEFAULT_CONCEPT_DICT = {"slide":WholeSlideImage, # comment out slide if you don't have slides but have everything else
                         "tissue":TissueMask,
                         "patch":Patches,
                         "feature":Features,

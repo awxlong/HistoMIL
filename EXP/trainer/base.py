@@ -151,7 +151,7 @@ class pl_base_trainer:
         # is_train related with two things: dataset_para and train_phase
         is_train = self.dataset_para.is_train if self.dataset_para.is_train is not None \
                                          else True if train_phase == "train" else False
-        # get dataset
+        # get dataset. Diversification of features starts here
         dataset = create_slide_dataset(
                                 data_list=data_list,
                                 data_locs=machine.data_locs,

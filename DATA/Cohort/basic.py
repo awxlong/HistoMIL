@@ -236,8 +236,8 @@ class LocalCohort(Cohort):
         """
         df = self.table.df
         # pdb.set_trace()
-        for name in usbale_concepts:
-            df = df[df[name]==True]
+        for name in usbale_concepts: #
+            df = df[df[name]==True] # 
         # pdb.set_trace()
         return df
 
