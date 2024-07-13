@@ -231,15 +231,15 @@ class Experiment:
                 val_results = self.exp_worker.validate()
 
                 print(val_results)
-                ## restart configuration so that it doesn't load from previous checkpoint
-                if last_cv > 0:
-                    self.paras.trainer_para.additional_pl_paras = {
-                                                                #---------> paras for pytorch lightning trainner
-                                                                "accumulate_grad_batches":8, # mil need accumulated grad
-                                                                "accelerator":"auto",        #accelerator='gpu', devices=1,
-                                                                'precision': 16,             # Use mixed precision
-                                                                'enable_progress_bar': True, 
-                                                                'enable_model_summary': True,} 
+                ## restart pytorch lightning's configuration so that it doesn't load from previous checkpoint
+                
+                self.paras.trainer_para.additional_pl_paras = {
+                                                            #---------> paras for pytorch lightning trainner
+                                                            "accumulate_grad_batches":8, # mil need accumulated grad
+                                                            "accelerator":"auto",        #accelerator='gpu', devices=1,
+                                                            'precision': 16,             # Use mixed precision
+                                                            'enable_progress_bar': True, 
+                                                            'enable_model_summary': True,} 
                 wandb.finish()
     # def setup_cv_experiment_rerun(self, main_data_source:str, last_cv:int = 0, need_train:bool=True):
     #     '''
