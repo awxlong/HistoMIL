@@ -86,17 +86,44 @@ def save_hdf5(output_path, asset_dict, attr_dict=None, mode='a'):
     return output_path
 
 def compute_distances_in_chunks(X, chunk_size=1000):
-    chunks = pairwise_distances_chunked(X, metric='euclidean', n_jobs=1, working_memory=chunk_size)
-    distances = np.vstack(list(chunks))
+    # chunks = pairwise_distances_chunked(X, metric='euclidean', n_jobs=1, working_memory=chunk_size)
+    # pdb.set_trace()
+    # distances = np.vstack(list(chunks)) # becomes boottleneck due to dtype 64
+    n_samples = X.shape[0]
+    distances = np.memmap('temp_distances.dat', dtype='float32', mode='w+', shape=(n_samples, n_samples))
+
+    for i, chunk in enumerate(pairwise_distances_chunked(X, metric='euclidean', n_jobs=1, working_memory=chunk_size)):
+        start = i * chunk_size
+        end = min((i + 1) * chunk_size, n_samples)
+        
+        # Convert chunk to float32 to save memory
+        chunk = chunk.astype(np.float32)
+        pdb.set_trace()
+        # Store the chunk in the memmap array
+        distances[start:end, :] = chunk
     return distances
+
+def compute_distances_in_batches(X, batch_size=1000):
+    n = X.shape[0]
+    distances = np.zeros((n, n))
+    for i in range(0, n, batch_size):
+        end = min(i + batch_size, n)
+        distances[i:end] = pairwise_distances(X[i:end], X, metric='euclidean')
+    return distances
+
 
 def compute_adj_coords(wsi_coords, wsi_feats, wsi_name, adj_coord_save_path, adj_matrix_save_path, force_recalc = False):
         # output_path_file = os.path.join(save_path + wsi_name + '.h5')
         # output_path_file = data_locs.abs_loc('feature') + f'{encoder}_adj_dictionary/{wsi_name}.h5'
         if not os.path.exists(f'{adj_matrix_save_path}{wsi_name}.pt') or force_recalc: 
              
-            # patch_distances = pairwise_distances(wsi_coords, metric='euclidean', n_jobs=1)
-            patch_distances = compute_distances_in_chunks(wsi_coords)
+            # patch_distances = pairwise_distances(wsi_coords, metric='euclidean', n_jobs=1) # array of shape (num_nodes, num_nodes)
+            # pdb.set_trace()
+            # wsi_coords = wsi_coords.astype(np.int32)
+            # patch_distances = compute_distances_in_chunks(wsi_coords)
+            # pdb.set_trace()
+            patch_distances = compute_distances_in_batches(wsi_coords)
+            # pdb.set_trace()
             neighbor_indices = np.argsort(patch_distances, axis=1)[:, :16]
             rows = np.asarray([[enum] * len(item) for enum, item in enumerate(neighbor_indices)]).ravel()
             columns = neighbor_indices.ravel()
@@ -111,6 +138,7 @@ def compute_adj_coords(wsi_coords, wsi_feats, wsi_name, adj_coord_save_path, adj
                     coords.append((row, column))
             
             # mode = 'a'
+            values = np.array(values, dtype=np.float32) # reduce memory
             values = np.reshape(values, (wsi_coords.shape[0], neighbor_indices.shape[1]))
             
             coords = np.array(coords)

@@ -3,7 +3,7 @@
 #$ -l h_rt=8:00:00 
 #$ -S /bin/bash
 #$ -j y
-#$ -N adj_matrix_resnet18_array
+#$ -N adj_matrix_resnet50_array
 #$ -t 1-7
 echo "Running on host: $(hostname)"
 echo "Starting at: $(date)"
