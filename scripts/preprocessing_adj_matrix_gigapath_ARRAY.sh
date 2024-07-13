@@ -1,6 +1,6 @@
 #$ -l tmem=36G
 #$ -l h_vmem=36G
-#$ -l h_rt=20:00:00 
+#$ -l h_rt=8:00:00 
 #$ -S /bin/bash
 #$ -j y
 #$ -N adj_matrix_gigapath_array
