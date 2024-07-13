@@ -121,9 +121,26 @@ class NeighborAggregator(nn.Module):
         # reduced_sum = torch.sum(sparse_data_input, dim=1)
         reduced_sum = torch.sparse.sum(sparse_data_input, dim=1)# more efficient apparently
         # Reshape to match the expected shape
-        A_raw = reduced_sum.view(-1)
+        # A_raw = reduced_sum.view(-1)
+        # A_raw = reduced_sum.reshape(-1)
+        # A_raw = reduced_sum.view(data_input.size(1))
+
+        ### perplexity
+        # Ensure the sparse tensor is coalesced
+        reduced_sum = reduced_sum.coalesce()        
+
+        # Get the indices and values
+        indices = reduced_sum.indices().squeeze()
+        values = reduced_sum.values()
+
+        # Create a new dense tensor with the desired shape
+        A_raw = torch.zeros(data_input.size(1), device=reduced_sum.device)
+
+        # Fill in the values
+        A_raw[indices] = values
 
         # Apply softmax to get attention weights
+        # pdb.set_trace()
         alpha = F.softmax(A_raw, dim=0)
 
         return alpha, A_raw
@@ -236,13 +253,18 @@ class encoder(nn.Module):
         dense, sparse_adj = inputs  # adjacency matrix
 
         encoder_output = self.nyst_att(dense.unsqueeze(0), return_attn=False)
+
         xg = encoder_output.squeeze(0)
 
         encoder_output = xg + dense
 
         attention_matrix = self.custom_att(encoder_output)
-        norm_alpha, alpha = self.neigh([attention_matrix, sparse_adj])
+
+        norm_alpha, alpha = self.neigh([attention_matrix, sparse_adj]) # attention coefficients
+
         value = self.wv(dense)
+        # pdb.set_trace()
+        norm_alpha = norm_alpha.unsqueeze(1) # reshape to (num_nodes, 1) as per perplexity
         xl = torch.mul(norm_alpha, value)
 
         wei = torch.sigmoid(-xl)
@@ -252,14 +274,15 @@ class encoder(nn.Module):
     
 class CAMIL(nn.Module):
     def __init__(self, paras:CAMILParas):
-        super(CAMIL, self).__init__()
+        super().__init__()
         self.paras = paras
         self.input_shape = paras.input_shape
         self.n_classes = paras.n_classes
         self.subtyping = paras.subtyping
 
         
-        self.attcls = MILAttentionLayer(weight_params_dim=128, 
+        self.attcls = MILAttentionLayer(input_dim=self.input_shape,
+                                        weight_params_dim=128, 
                                         use_gated=True)
         self.custom_att = CustomAttention(input_dim=paras.input_shape, 
                                           weight_params_dim=256)
@@ -277,9 +300,12 @@ class CAMIL(nn.Module):
 
     def forward(self, inputs):
         bag, adjacency_matrix = inputs
+
         xo, alpha = self.encoder([bag, adjacency_matrix])
 
         k_alpha = self.attcls(xo)
+        
+        # pdb.set_trace()
 
         attn_output = torch.mul(k_alpha, xo)
 
