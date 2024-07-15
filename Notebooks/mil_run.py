@@ -88,6 +88,7 @@ def run_mil(args):
 
     DEFAULT_CAMIL_PARAS = CAMILParas()
     DEFAULT_CAMIL_PARAS.input_shape = MDL_TO_FEATURE_DIMS[args.precomputed]
+    DEFAULT_CAMIL_PARAS.epoch = args.n_epochs
 
     model_name = args.mil_algorithm  # options are "TransMIL", "ABMIL", "DSMIL" or "Transformer", 'AttentionMIL'
 

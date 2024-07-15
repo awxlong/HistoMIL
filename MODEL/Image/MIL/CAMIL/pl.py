@@ -106,14 +106,27 @@ class pl_CAMIL(pl.LightningModule):
             lr=self.lr,
             wd=self.wd,
         )
+        # pdb.set_trace()
         if self.paras.lr_scheduler:
-            scheduler = get_scheduler(
-                self.paras.lr_scheduler,
-                optimizer,
-                self.paras.lr_scheduler_config,
-            )
-            # pdb.set_trace()
-            return [optimizer], [scheduler]
+            if self.paras.lr_scheduler == 'ReduceLROnPlateau':
+                scheduler = {
+                            'scheduler': torch.optim.lr_scheduler.ReduceLROnPlateau(
+                            optimizer,
+                            mode=self.paras.lr_scheduler_config['mode'],  # We want to minimize loss
+                            factor=self.paras.lr_scheduler_config['factor'],
+                        ),
+                            'monitor': 'loss_val',  # Metric to monitor for reducing LR
+        }
+                
+                return  [optimizer], [scheduler]
+            else: 
+                scheduler = get_scheduler(
+                    self.paras.lr_scheduler,
+                    optimizer,
+                    self.paras.lr_scheduler_config,
+                )
+                # pdb.set_trace()
+                return [optimizer], [scheduler]
         else:
             return [optimizer]
 
@@ -148,6 +161,7 @@ class pl_CAMIL(pl.LightningModule):
         logits, alpha, k_alpha = self.forward([x, adj_matrix])
         # print(y)
         # print(y.shape)
+        # pdb.set_trace()
         if self.paras.task == "binary":
             y = y.unsqueeze(1)
             loss = self.criterion(logits, y.float())
@@ -259,7 +273,7 @@ class pl_CAMIL(pl.LightningModule):
         self.cm_test.reset()
 
     def lr_scheduler_step(self, scheduler, optimizer_idx, metric):
-        scheduler.step()
+        scheduler.step(metric)
 
     # def on_before_backward(self, loss):
     
