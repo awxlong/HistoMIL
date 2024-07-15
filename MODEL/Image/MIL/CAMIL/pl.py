@@ -23,12 +23,13 @@ from HistoMIL.MODEL.Image.MIL.CAMIL.paras import CAMILParas
 from HistoMIL.MODEL.Image.MIL.CAMIL.model import CAMIL
 from HistoMIL.MODEL.Image.MIL.utils import  get_loss, get_optimizer, get_scheduler
 
+import pdb
 #---->
 ####################################################################################
 #      pl protocol class
 ####################################################################################
 
-class pl_DTFDMIL(pl.LightningModule):
+class pl_CAMIL(pl.LightningModule):
     def __init__(self, paras:CAMILParas):
         super().__init__()
         self.paras = paras
@@ -119,9 +120,9 @@ class pl_DTFDMIL(pl.LightningModule):
     def training_step(self, batch, batch_idx):
         # pdb.set_trace()
         
-        x, y = batch  # x = encoded features, adjmatrix, y = labels
-        
-        logits = self.forward(x)
+        x, adj_matrix, y = batch  # x = encoded features, adjmatrix, y = labels
+        # pdb.set_trace()
+        logits, alpha, k_alpha = self.forward([x, adj_matrix])
         # pdb.set_trace()
         if self.paras.task == "binary":
             loss = self.criterion(logits, y.unsqueeze(0).float())
@@ -143,8 +144,8 @@ class pl_DTFDMIL(pl.LightningModule):
 
     def validation_step(self, batch, batch_idx):
         # pdb.set_trace()
-        x, y = batch  # x = features, y = labels 
-        logits = self.forward(x)
+        x, adj_matrix, y = batch
+        logits, alpha, k_alpha = self.forward([x, adj_matrix])
         # print(y)
         # print(y.shape)
         if self.paras.task == "binary":
@@ -197,9 +198,9 @@ class pl_DTFDMIL(pl.LightningModule):
         self.outputs = pd.DataFrame(columns=column_names)
 
     def test_step(self, batch, batch_idx, dataloader_idx=0):
-        x, y = batch  # x = features, coords, y = labels, tiles, patient
+        x, adj_matrix, y = batch  # x = features, coords, y = labels, tiles, patient
         # pdb.set_trace()
-        logits = self.forward(x)
+        logits, alpha, k_alpha = self.forward([x, adj_matrix])
 
         if self.paras.task == "binary":
             y = y.unsqueeze(1)
@@ -259,4 +260,11 @@ class pl_DTFDMIL(pl.LightningModule):
 
     def lr_scheduler_step(self, scheduler, optimizer_idx, metric):
         scheduler.step()
+
+    # def on_before_backward(self, loss):
+    
+    # # Inspect your model's parameters and buffers here
+    #     for name, param in self.named_parameters():
+    #         if param.is_sparse:
+    #             print(f"Sparse parameter found: {name}, shape: {param.shape}")
 

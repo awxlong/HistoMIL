@@ -558,6 +558,8 @@ class NystromAttention(nn.Module):
             )
 
     def forward(self, x, mask=None, return_attn=False):
+        # pdb.set_trace()
+
         b, n, _, h, m, iters, eps = *x.shape, self.heads, self.num_landmarks, self.pinv_iterations, self.eps
 
         # pad so that sequence can be evenly divided into m landmarks

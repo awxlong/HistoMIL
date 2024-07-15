@@ -98,7 +98,7 @@ def compute_distances_in_chunks(X, chunk_size=1000):
         
         # Convert chunk to float32 to save memory
         chunk = chunk.astype(np.float32)
-        pdb.set_trace()
+        # pdb.set_trace()
         # Store the chunk in the memmap array
         distances[start:end, :] = chunk
     return distances
@@ -206,7 +206,9 @@ def compute_adj_coords(wsi_coords, wsi_feats, wsi_name, adj_coord_save_path, adj
             values = torch.FloatTensor(values)
             # sparse_matrix = torch.sparse.FloatTensor(indices, values, torch.Size([wsi_feats.shape[0], wsi_feats.shape[0]]))
             sparse_matrix = torch.sparse_coo_tensor(indices, values, torch.Size([wsi_feats.shape[0], wsi_feats.shape[0]]))
-            torch.save(sparse_matrix, f'{adj_matrix_save_path}{wsi_name}.pt')
+            # pdb.set_trace()
+            # torch.save(sparse_matrix, f'{adj_matrix_save_path}{wsi_name}.pt')
+            torch.save(sparse_matrix, f'{adj_matrix_save_path}')
             logger.info(f'Adjacency matrix stored at {adj_matrix_save_path}')
         else:
              logger.info(f'Adjacency matrix already exists at: {adj_matrix_save_path}{wsi_name}.pt')
@@ -286,6 +288,7 @@ def preprocess_adj_matrices(args):
 
     for i in range(local_cohort_idx_file.shape[0]):
         wsi_name = f'{local_cohort_idx_file.loc[i, "folder"]}.{local_cohort_idx_file.loc[i, "filename"]}'
+        # pdb.set_trace()
         wsi_coords_name = f'{wsi_name}.h5'
         wsi_feats = f'{wsi_name}.pt'
 

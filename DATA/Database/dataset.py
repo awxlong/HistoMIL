@@ -126,7 +126,9 @@ class MILFeaturesAdjMatrixSet(Dataset):
                                     paras=self.collector_paras,
                                     )
         data = self.processing(collector=collector)
-        adj_matrix = torch.load(f"{self.locs.abs_loc('feature')}{self.collector_paras.feature.model_name}_adj_matrix/{folder}{filename}.pt") 
+        adj_matrix = torch.load(f"{self.locs.abs_loc('feature')}{self.collector_paras.feature.model_name}_adj_matrix/{folder}.{filename}.pt{folder}.{filename}.pt") # CHANGE THIS FOR GIGAPATH
+        # adj_matrix = torch.load(f"{self.locs.abs_loc('feature')}{self.collector_paras.feature.model_name}_adj_matrix/{folder}.{filename}.pt") # CHANGE THIS FOR GIGAPATH
+        
         l = self.label_dict[label]
         del collector
         # pdb.set_trace()

@@ -78,16 +78,17 @@ class MILAttentionLayer(nn.Module):
         original_instance = instance
 
         # tanh(v*h_k^T)
-        instance = torch.tanh(torch.mm(instance, self.v_weight_params))
+        # pdb.set_trace()
+        instance = torch.tanh(torch.matmul(instance, self.v_weight_params))
 
         # for learning non-linear relations efficiently
         if self.use_gated:
             gate = torch.sigmoid(
-                torch.mm(original_instance, self.u_weight_params)) # maybe torch.matmul(original_instance, self.u_weight_params.T) 
+                torch.matmul(original_instance, self.u_weight_params)) # maybe torch.matmul(original_instance, self.u_weight_params.T) 
             instance = instance * gate
 
         # w^T*(tanh(v*h_k^T)) / w^T*(tanh(v*h_k^T)*sigmoid(u*h_k^T))
-        return torch.mm(instance, self.w_weight_params) # axes = 1?
+        return torch.matmul(instance, self.w_weight_params) # axes = 1?
     
 class NeighborAggregator(nn.Module):
     """
@@ -115,38 +116,56 @@ class NeighborAggregator(nn.Module):
         data_input, adj_matrix = inputs  # [attention_matrix, sparse_adj] in encoder's forward function
 
         # Element-wise multiplication of data_input and adj_matrix
-        # sparse_data_input = torch.mul(data_input, adj_matrix.to_dense())
-        sparse_data_input = adj_matrix * data_input # according to another perplexity's answer
+        dense_data_input = torch.mul(data_input, adj_matrix.to_dense())
+        # sparse_data_input = adj_matrix * data_input # according to another perplexity's answer; sparse_data_input is sparse
+        # pdb.set_trace()
+        # sparse_data_input = torch.sparse.mm(adj_matrix, data_input)
+        
+        # Convert to dense, sum, and convert back to sparse if needed
+        # dense_data_input = sparse_data_input.to_dense()
+        reduced_dense_sum = torch.sum(dense_data_input, dim=1)
         # Sum along rows
         # reduced_sum = torch.sum(sparse_data_input, dim=1)
-        reduced_sum = torch.sparse.sum(sparse_data_input, dim=1)# more efficient apparently
-        # Reshape to match the expected shape
-        # A_raw = reduced_sum.view(-1)
-        # A_raw = reduced_sum.reshape(-1)
-        # A_raw = reduced_sum.view(data_input.size(1))
+        # reduced_sum = torch.sparse.sum(sparse_data_input, dim=1)# more efficient apparently
+        # The below MAY trigger a reshape not implemented during backward pass
+        # # Reshape to match the expected shape
+        # # A_raw = reduced_sum.view(-1)
+        # # A_raw = reduced_sum.reshape(-1)
+        # # A_raw = reduced_sum.view(data_input.size(1))
 
-        ### perplexity
-        # Ensure the sparse tensor is coalesced
-        reduced_sum = reduced_sum.coalesce()        
+        # ### perplexity
+        # # Ensure the sparse tensor is coalesced
+        # reduced_sum = reduced_sum.coalesce()     # most likely triggers the reshape not implemented during backward pass    
 
-        # Get the indices and values
-        indices = reduced_sum.indices().squeeze()
-        values = reduced_sum.values()
+        # # Get the indices and values
+        # indices = reduced_sum.indices().squeeze()
+        # values = reduced_sum.values()
 
-        # Create a new dense tensor with the desired shape
-        A_raw = torch.zeros(data_input.size(1), device=reduced_sum.device)
+        # # Create a new dense tensor with the desired shape
+        # A_raw = torch.zeros(data_input.size(1), device=reduced_sum.device)
 
-        # Fill in the values
-        A_raw[indices] = values
+        # # Fill in the values
+        # A_raw[indices] = values
+
+        # Convert to dense (this is necessary for softmax)
+        # pdb.set_trace()
+        # Reshape to match the original Keras implementation; dense tensor occupy more memory
+        # A_raw = reduced_sum.to_dense().view(data_input.size(1))
+
+
+        
+        # pdb.set_trace()
+        # Reshape to match the original Keras implementation
+        A_raw = reduced_dense_sum.view(-1)
 
         # Apply softmax to get attention weights
-        # pdb.set_trace()
         alpha = F.softmax(A_raw, dim=0)
 
         return alpha, A_raw
 
     def extra_repr(self):
         return f'output_dim={self.output_dim}'
+
 
 class Last_Sigmoid(nn.Module):
     """
@@ -163,14 +182,30 @@ class Last_Sigmoid(nn.Module):
         2D tensor with shape: (1, units)
     """
 
-    def __init__(self, input_dim, output_dim, subtyping=False, pooling_mode="sum", use_bias=True):
+    def __init__(self, input_dim, output_dim, subtyping, 
+                 kernel_initializer='glorot_uniform', bias_initializer='zeros',
+                 pooling_mode="sum", use_bias=True):
         super(Last_Sigmoid, self).__init__()
+        
         self.output_dim = output_dim
         self.subtyping = subtyping
         self.pooling_mode = pooling_mode
         self.use_bias = use_bias
 
-        self.fc = nn.Linear(input_dim, output_dim, bias=use_bias)
+        # Initialize weights
+        if kernel_initializer == 'glorot_uniform':
+            self.kernel = nn.Parameter(torch.nn.init.xavier_uniform_(torch.empty(input_dim, output_dim)))
+        else:
+            self.kernel = nn.Parameter(torch.randn(input_dim, output_dim))
+
+        # Initialize bias
+        if use_bias:
+            if bias_initializer == 'zeros':
+                self.bias = nn.Parameter(torch.zeros(output_dim))
+            else:
+                self.bias = nn.Parameter(torch.randn(output_dim))
+        else:
+            self.register_parameter('bias', None)
 
     def max_pooling(self, x):
         return torch.max(x, dim=0, keepdim=True)[0]
@@ -179,19 +214,30 @@ class Last_Sigmoid(nn.Module):
         return torch.sum(x, dim=0, keepdim=True)
 
     def forward(self, x):
+        # pdb.set_trace()
+        if x.size(0) == 1:
+            x = x.squeeze(0)
+
+        # Apply pooling
         if self.pooling_mode == 'max':
             x = self.max_pooling(x)
         elif self.pooling_mode == 'sum':
             x = self.sum_pooling(x)
 
-        x = self.fc(x)
+        # Apply linear transformation
+        x = torch.matmul(x, self.kernel)
+        
+        if self.use_bias:
+            x = x + self.bias
+        # pdb.set_trace()
+        # # Apply activation; commented out since we use BCEWithLogitsLoss
+        # if self.subtyping:
+        #     out = F.softmax(x, dim=-1)
+        # else:
+        #     out = torch.sigmoid(x)
 
-        if self.subtyping:
-            out = F.softmax(x, dim=1)
-        else:
-            out = torch.sigmoid(x)
-
-        return out
+        return x
+    
 
 class CustomAttention(nn.Module):
     def __init__(
@@ -226,14 +272,15 @@ class CustomAttention(nn.Module):
         return self.compute_attention_scores(inputs)
 
     def compute_attention_scores(self, instance):
+        ### can futher optimize this using F.scaled_dot_product 
         q = torch.matmul(instance, self.wq_weight_params)
         k = torch.matmul(instance, self.wk_weight_params)
 
         # dk = torch.tensor(k.size(-1), dtype=torch.float32)
-        dk = torch.tensor(k.shape[-1], dtype=torch.float32)
-
-        # matmul_qk = torch.matmul(q, k.transpose(-2, -1))  # (..., seq_len_q, seq_len_k)
-        matmul_qk = torch.matmul(q, k.T)
+        dk = k.shape[-1]# torch.tensor(k.shape[-1], dtype=torch.float32)
+        # pdb.set_trace()
+        matmul_qk = torch.matmul(q, k.transpose(-2, -1))  # (..., seq_len_q, seq_len_k)
+        # matmul_qk = torch.tensordot(q, k.transpose(-2, -1), dims=1) # could also be this
         
         scaled_attention_logits = matmul_qk / math.sqrt(dk)
 
@@ -252,7 +299,7 @@ class encoder(nn.Module):
     def forward(self, inputs):
         dense, sparse_adj = inputs  # adjacency matrix
 
-        encoder_output = self.nyst_att(dense.unsqueeze(0), return_attn=False)
+        encoder_output = self.nyst_att(dense, return_attn=False)
 
         xg = encoder_output.squeeze(0)
 
@@ -277,7 +324,7 @@ class CAMIL(nn.Module):
         super().__init__()
         self.paras = paras
         self.input_shape = paras.input_shape
-        self.n_classes = paras.n_classes
+        self.n_classes = paras.num_classes
         self.subtyping = paras.subtyping
 
         
@@ -310,6 +357,7 @@ class CAMIL(nn.Module):
         attn_output = torch.mul(k_alpha, xo)
 
         out = self.class_fc(attn_output)
+        
         # alpha = self.neigh(x, adjacency_matrix)
         # k_alpha = self.attcls(x)
         # attn_output = k_alpha * x

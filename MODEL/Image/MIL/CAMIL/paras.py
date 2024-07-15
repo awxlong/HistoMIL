@@ -15,7 +15,7 @@ class CAMILParas:
     encoder_name:str = "pre-calculated"# or name of encoder",
     encoder_pretrained:bool = True # or False
     input_shape:int = 1024
-    n_classes:int = 1
+    num_classes:int = 1
     subtyping:bool = False
     ### OPTIMIZER CONFIGURATIONS
     task:str = 'binary'

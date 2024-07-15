@@ -36,13 +36,14 @@ from HistoMIL.MODEL.Image.MIL.TransMIL.paras import TransMILParas
 from HistoMIL.MODEL.Image.MIL.DSMIL.paras import DSMILParas
 from HistoMIL.MODEL.Image.MIL.Transformer.paras import  DEFAULT_TRANSFORMER_PARAS
 from HistoMIL.MODEL.Image.MIL.AttentionMIL.paras import  DEFAULT_Attention_MIL_PARAS
+from HistoMIL.MODEL.Image.MIL.CAMIL.paras import  CAMILParas
 
 from HistoMIL.EXP.paras.env import EnvParas
 from HistoMIL.EXP.workspace.experiment import Experiment
 
 
 # from pytorch_lightning.plugins import DDPPlugin
-from pytorch_lightning.strategies import DDPStrategy
+# from pytorch_lightning.strategies import DDPStrategy
 
 
 MDL_TO_FEATURE_DIMS = {
@@ -52,7 +53,7 @@ MDL_TO_FEATURE_DIMS = {
     'resnet50': 2048,
 }
 
-from datetime import datetime
+# from datetime import datetime
 
 def run_mil(args):
     #--------------------------> task setting
@@ -85,14 +86,16 @@ def run_mil(args):
     DEFAULT_Attention_MIL_PARAS.input_dim = MDL_TO_FEATURE_DIMS[args.precomputed]
     DEFAULT_Attention_MIL_PARAS.epoch = args.n_epochs
 
-    
+    DEFAULT_CAMIL_PARAS = CAMILParas()
+    DEFAULT_CAMIL_PARAS.input_shape = MDL_TO_FEATURE_DIMS[args.precomputed]
+
     model_name = args.mil_algorithm  # options are "TransMIL", "ABMIL", "DSMIL" or "Transformer", 'AttentionMIL'
 
     model_para_settings = {"TransMIL":model_para_transmil,
                            "DSMIL":model_para_dsmil,
                            'Transformer':DEFAULT_TRANSFORMER_PARAS,
                            'AttentionMIL': DEFAULT_Attention_MIL_PARAS,
-                           'CAMIL': None,
+                           'CAMIL': DEFAULT_CAMIL_PARAS,
                            'DTFD-MIL': None} 
 
     #--------------------------> parameters
@@ -111,7 +114,7 @@ def run_mil(args):
     gene2k_env.cohort_para.targets_idx = 0
     gene2k_env.cohort_para.label_dict = args.label_dict # e.g. "{'HRD':0,'HRP':1}" # SINGLE quotations for the keys
     gene2k_env.cohort_para.task_additional_idx = args.task_additional_idx # ["g0_score"] # if CRC_g0_arrest.csv has other biomarkers of interest, name them in this variable, default None. 
-    gene2k_env.cohort_para.in_domain_split_seed = 42                      # for consisten in-domain train-val-test split
+    gene2k_env.cohort_para.in_domain_split_seed = 42 #               # for consistent in-domain train-val-test split and REPRODUCIBILITY
 
 
     #---------------> collector parameters and trainer / analyzer
@@ -132,6 +135,8 @@ def run_mil(args):
     gene2k_env.dataset_para.concepts = args.concepts_name    # default ["slide","patch","feature"]
     gene2k_env.dataset_para.split_ratio = args.split_ratio   # default [0.8,0.2]
     gene2k_env.dataset_para.num_workers = args.num_workers   # num_workers for dataloader, e.g. 8
+    if args.mil_algorithm == 'CAMIL':
+        gene2k_env.dataset_para.additional_feature = 'CAMIL'
     #----------------> model
     gene2k_env.trainer_para.model_name = model_name
     gene2k_env.trainer_para.model_para = model_para_settings[model_name]

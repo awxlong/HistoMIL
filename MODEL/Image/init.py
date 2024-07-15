@@ -54,6 +54,10 @@ def create_img_model(train_paras:PLTrainerParas,
             pl_model = pl_AttentionMIL(dataset_paras=dataset_paras, 
                                        paras=model_para)
             # pdb.set_trace()
+        elif model_name == 'CAMIL':
+            from HistoMIL.MODEL.Image.MIL.CAMIL.pl import pl_CAMIL
+            pl_model = pl_CAMIL(paras=model_para)
+
     else:
         raise ValueError("model name not availiable")
     return pl_model
