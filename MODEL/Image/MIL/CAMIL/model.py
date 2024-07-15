@@ -116,13 +116,14 @@ class NeighborAggregator(nn.Module):
         data_input, adj_matrix = inputs  # [attention_matrix, sparse_adj] in encoder's forward function
 
         # Element-wise multiplication of data_input and adj_matrix
-        dense_data_input = torch.mul(data_input, adj_matrix.to_dense())
+        # dense_data_input = torch.mul(data_input, adj_matrix.to_dense())
         # sparse_data_input = adj_matrix * data_input # according to another perplexity's answer; sparse_data_input is sparse
         # pdb.set_trace()
         # sparse_data_input = torch.sparse.mm(adj_matrix, data_input)
         
         # Convert to dense, sum, and convert back to sparse if needed
         # dense_data_input = sparse_data_input.to_dense()
+        dense_data_input = torch.mul(data_input, adj_matrix)
         reduced_dense_sum = torch.sum(dense_data_input, dim=1)
         # Sum along rows
         # reduced_sum = torch.sum(sparse_data_input, dim=1)
