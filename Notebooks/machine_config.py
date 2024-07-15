@@ -37,7 +37,7 @@ def setup_config(args):
         exp_locs = Locations(root=exp_dir,
                              sub_dirs={
                                         "src":"HistoMIL/",
-                                        "idx":"Data/",
+                                        "idx":"Files/",
                                         "saved_models":"SavedModels/",
                                         "out_files":"OutFiles/",
                                         "temp":"Temp/",
