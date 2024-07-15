@@ -2,7 +2,7 @@
 #$ -l h_rt=6:30:00 
 #$ -S /bin/bash
 #$ -j y
-#$ -l gpu=true,gpu_type=(a40|a100)
+#$ -l gpu=true
 #$ -N mil_camil_resnet50_30epochs_cv5
 echo "Running on host: $(hostname)"
 echo "Starting at: $(date)"
