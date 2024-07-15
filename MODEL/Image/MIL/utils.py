@@ -573,7 +573,7 @@ class NystromAttention(nn.Module):
                 mask = F.pad(mask, (padding, 0), value=False)
 
         # derive query, keys, values
-
+        # pdb.set_trace()
         q, k, v = self.to_qkv(x).chunk(3, dim=-1)
         q, k, v = map(
             lambda t: rearrange(t, 'b n (h d) -> b h n d', h=h), (q, k, v)

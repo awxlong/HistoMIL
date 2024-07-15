@@ -292,9 +292,9 @@ class encoder(nn.Module):
         super().__init__()
         self.custom_att = CustomAttention(input_dim=input_dim, 
                                           weight_params_dim=256)
-        self.wv = nn.Linear(512, 512)
+        self.wv = nn.Linear(input_dim, input_dim)
         self.neigh = NeighborAggregator(output_dim=1)
-        self.nyst_att = NystromAttention(dim=512, dim_head=64, heads=8, 
+        self.nyst_att = NystromAttention(dim=input_dim, dim_head=64, heads=8, 
                                          num_landmarks=256, pinv_iterations=6) # from utils
 
     def forward(self, inputs):
@@ -302,7 +302,7 @@ class encoder(nn.Module):
 
         encoder_output = self.nyst_att(dense, return_attn=False)
 
-        xg = encoder_output.squeeze(0)
+        xg = encoder_output.squeeze(0) # ([1, #patches, input_dim])
 
         encoder_output = xg + dense
 
@@ -313,10 +313,11 @@ class encoder(nn.Module):
         value = self.wv(dense)
         # pdb.set_trace()
         norm_alpha = norm_alpha.unsqueeze(1) # reshape to (num_nodes, 1) as per perplexity
-        xl = torch.mul(norm_alpha, value)
+        xl = torch.mul(norm_alpha, value) # (1, #patches, 512)
 
-        wei = torch.sigmoid(-xl)
-        squared_wei = wei ** 2
+        wei = torch.sigmoid(-xl) # (1, #patches, 512)
+        squared_wei = wei ** 2 # (1, #patches, 512)
+        # pdb.set_trace()
         xo = (xl * 2 * squared_wei) + 2 * encoder_output * (1 - squared_wei)
         return xo, alpha
     
@@ -334,7 +335,7 @@ class CAMIL(nn.Module):
                                         use_gated=True)
         self.custom_att = CustomAttention(input_dim=paras.input_shape, 
                                           weight_params_dim=256)
-        self.wv = nn.Linear(512, 512)
+        self.wv = nn.Linear(paras.input_shape, 512)
         self.neigh = NeighborAggregator(output_dim=1)
         self.nyst_att = NystromAttention(dim=512, dim_head=64, heads=8, num_landmarks=256,
                                          pinv_iterations=6) # neighboraggregator and nystromattention are inside encoder
@@ -342,9 +343,9 @@ class CAMIL(nn.Module):
         self.encoder = encoder(input_dim=paras.input_shape)
 
         if self.subtyping:
-            self.class_fc = Last_Sigmoid(input_dim=512, output_dim=self.n_classes, subtyping=True)
+            self.class_fc = Last_Sigmoid(input_dim=self.input_shape, output_dim=self.n_classes, subtyping=True)
         else:
-            self.class_fc = Last_Sigmoid(input_dim=512, output_dim=1, subtyping=False)
+            self.class_fc = Last_Sigmoid(input_dim=self.input_shape, output_dim=1, subtyping=False)
 
     def forward(self, inputs):
         bag, adjacency_matrix = inputs
