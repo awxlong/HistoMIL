@@ -23,11 +23,101 @@ import pdb
 
 ### IMPLEMENTATION COPIED FROM https://github.com/Dootmaan/DTFD-MIL.PyTorch/blob/main/train_DTFT-MIL.py
 ### OR https://github.com/hrzhang1123/DTFD-MIL/blob/main/Main_DTFD_MIL.py
-### TODO:
 
-from model.network import Classifier_1fc, DimReduction
-from model.Attention import Attention_Gated as Attention
-from model.Attention import Attention_with_Classifier
+
+class Classifier_1fc(nn.Module):
+    def __init__(self, n_channels, n_classes, droprate=0.0):
+        super(Classifier_1fc, self).__init__()
+        self.fc = nn.Linear(n_channels, n_classes)
+        self.droprate = droprate
+        if self.droprate != 0.0:
+            self.dropout = torch.nn.Dropout(p=self.droprate)
+
+    def forward(self, x):
+
+        if self.droprate != 0.0:
+            x = self.dropout(x)
+        x = self.fc(x)
+        return x
+class residual_block(nn.Module):
+    def __init__(self, nChn=512):
+        super(residual_block, self).__init__()
+        self.block = nn.Sequential(
+                nn.Linear(nChn, nChn, bias=False),
+                nn.ReLU(inplace=True),
+                nn.Linear(nChn, nChn, bias=False),
+                nn.ReLU(inplace=True),
+            )
+    def forward(self, x):
+        tt = self.block(x)
+        x = x + tt
+        return x
+
+
+class DimReduction(nn.Module):
+    def __init__(self, n_channels, m_dim=512, numLayer_Res=0):
+        super(DimReduction, self).__init__()
+        self.fc1 = nn.Linear(n_channels, m_dim, bias=False)
+        self.relu1 = nn.ReLU(inplace=True)
+        self.numRes = numLayer_Res
+
+        self.resBlocks = []
+        for ii in range(numLayer_Res):
+            self.resBlocks.append(residual_block(m_dim))
+        self.resBlocks = nn.Sequential(*self.resBlocks)
+
+    def forward(self, x):
+
+        x = self.fc1(x)
+        x = self.relu1(x)
+
+        if self.numRes > 0:
+            x = self.resBlocks(x)
+
+        return x
+
+class Attention_Gated(nn.Module):
+    def __init__(self, L=512, D=128, K=1):
+        super(Attention_Gated, self).__init__()
+
+        self.L = L
+        self.D = D
+        self.K = K
+
+        self.attention_V = nn.Sequential(
+            nn.Linear(self.L, self.D),
+            nn.Tanh()
+        )
+
+        self.attention_U = nn.Sequential(
+            nn.Linear(self.L, self.D),
+            nn.Sigmoid()
+        )
+
+        self.attention_weights = nn.Linear(self.D, self.K)
+
+    def forward(self, x, isNorm=True):
+        ## x: N x L
+        A_V = self.attention_V(x)  # NxD
+        A_U = self.attention_U(x)  # NxD
+        A = self.attention_weights(A_V * A_U) # NxK
+        A = torch.transpose(A, 1, 0)  # KxN
+
+        if isNorm:
+            A = F.softmax(A, dim=1)  # softmax over N
+
+        return A  ### K x N
+
+class Attention_with_Classifier(nn.Module):
+    def __init__(self, L=512, D=128, K=1, num_cls=2, droprate=0):
+        super(Attention_with_Classifier, self).__init__()
+        self.attention = Attention_Gated(L, D, K)
+        self.classifier = Classifier_1fc(L, num_cls, droprate)
+    def forward(self, x): ## x: N x L
+        AA = self.attention(x)  ## K x N
+        afeat = torch.mm(AA, x) ## K x L
+        pred = self.classifier(afeat) ## K x num_cls
+        return pred
 
 class DTFD_MIL(BaseAggregator):
     def __init__(self, paras:DTFD_MILParas):
@@ -36,19 +126,15 @@ class DTFD_MIL(BaseAggregator):
         self.paras = paras
         
         ### model components
-        self.classifier = Classifier_1fc(params.mDim, params.num_cls, params.droprate).to(params.device)
-        self.attention = Attention(params.mDim).to(params.device)
-        self.dimReduction = DimReduction(1024, params.mDim, numLayer_Res=params.numLayer_Res).to(params.device)
-        self.attCls = Attention_with_Classifier(L=params.mDim, num_cls=params.num_cls, droprate=params.droprate_2).to(params.device)
+        self.classifier = Classifier_1fc(paras.mDim, paras.num_cls, paras.droprate).to(paras.device)
+        self.attention = Attention_Gated(paras.mDim).to(paras.device)
+        self.dimReduction = DimReduction(1024, paras.mDim, numLayer_Res=paras.numLayer_Res).to(paras.device)
+        self.attCls = Attention_with_Classifier(L=paras.mDim, num_cls=paras.num_cls, droprate=paras.droprate_2).to(paras.device)
 
     def forward(self, x):
         inputs, labels = x
         # inputs= self.encoder(x) #[B, n, 1024]
 
-    
-        # TODO: LUBA HELP
-        # I THINK forward() should return slide_pseudo_feat,slide_sub_preds, slide_sub_labels,
-        # LINES 149 ONWARDS
         slide_sub_preds=[]
         slide_sub_labels=[]
         slide_pseudo_feat=[]
@@ -76,8 +162,11 @@ class DTFD_MIL(BaseAggregator):
 if __name__ == "__main__":
     
     default_paras = DTFD_MILParas()
-    rand_tensor = torch.rand(1, 1, 1024) 
+    rand_tensor = torch.rand(1, 42, 1024).to('mps')
     model = DTFD_MIL(default_paras)
+    label = torch.tensor(1).to('mps')
+    # rand_tensor
+    model([rand_tensor, label])
 
     pdb.set_trace()
     

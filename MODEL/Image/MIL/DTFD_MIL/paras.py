@@ -3,9 +3,16 @@ pre-defined parameters for TransMIL model
 """
 import torch.nn as nn
 import attr 
-
+import torch
 #---->
-
+def get_available_device():
+    if torch.cuda.is_available():
+        return "cuda"
+    elif torch.backends.mps.is_available():
+        return "mps"
+    else:
+        return "cpu"
+    
 @attr.s(auto_attribs=True)
 class DTFD_MILParas:
     """
@@ -14,13 +21,17 @@ class DTFD_MILParas:
     #------> parameters for model
     encoder_name:str = "pre-calculated"# or name of encoder",
     encoder_pretrained:bool = True # or False
+
+    ### DTFD-MIL Params according to https://github.com/Dootmaan/DTFD-MIL.PyTorch/blob/main/train_DTFT-MIL.py#L49
     numGroup:int = 5
-    feature_size:int = 512
-    embed_size:int = None
-    input_dim:int = 1024
-    num_classes:int = 1
-    norm_layer=nn.LayerNorm
-    pos_enc = 'PPEG'
+    mDim:int = 512
+    device:str = get_available_device()
+    num_cls:int = 1
+    droprate:float = 0
+    droprate_2:float = 0
+    numLayer_Res:int = 0
+    
+    
 
     ### OPTIMIZER CONFIGURATIONS
     task:str = 'binary'

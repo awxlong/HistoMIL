@@ -307,15 +307,42 @@ class CustomAttention(nn.Module):
         q = torch.matmul(instance, self.wq_weight_params)
         k = torch.matmul(instance, self.wk_weight_params)
 
-        # dk = torch.tensor(k.size(-1), dtype=torch.float32)
-        dk = torch.tensor(k.shape[-1], dtype=torch.int32)
-        # pdb.set_trace()
-        matmul_qk = torch.matmul(q, k.transpose(-2, -1))  # (..., seq_len_q, seq_len_k)
-        # matmul_qk = torch.tensordot(q, k.transpose(-2, -1), dims=1) # could also be this
+        # # dk = torch.tensor(k.size(-1), dtype=torch.float32)
+        # dk = torch.tensor(k.shape[-1], dtype=torch.int32)
+        # # pdb.set_trace()
+        # matmul_qk = torch.matmul(q, k.transpose(-2, -1))  # (..., seq_len_q, seq_len_k)
+        # # matmul_qk = torch.tensordot(q, k.transpose(-2, -1), dims=1) # could also be this
         
-        scaled_attention_logits = matmul_qk / torch.sqrt(dk)
+        # scaled_attention_logits = matmul_qk / torch.sqrt(dk)
 
-        return scaled_attention_logits
+        # return scaled_attention_logits
+        # Reshape q and k to have a batch dimension if they don't already
+        if q.dim() == 2:
+            q = q.unsqueeze(0)
+        if k.dim() == 2:
+            k = k.unsqueeze(0)
+
+        # Add head dimension if necessary (num_heads=1 in this case)
+        q = q.unsqueeze(1)
+        k = k.unsqueeze(1)
+
+        # Create a dummy value tensor (v) with the same shape as k
+        v = k
+
+        # Use scaled_dot_product_attention
+        attn_output = F.scaled_dot_product_attention(
+            q, k, v,
+            attn_mask=None,
+            dropout_p=0.0,  # You can adjust this if you want to add dropout
+            is_causal=False
+        )
+
+        # Remove the head dimension and batch dimension if they were added
+        attn_output = attn_output.squeeze(1)
+        if attn_output.size(0) == 1:
+            attn_output = attn_output.squeeze(0)
+
+        return attn_output
 
 class encoder(nn.Module):
     def __init__(self, input_dim=1024):
