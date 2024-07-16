@@ -20,6 +20,8 @@ from HistoMIL import logger
 import math
 import pdb
 
+from torch.cuda.amp import autocast
+from torch.autograd import Function
 
 ### IMPLEMENTATION ADAPTED FROM https://github.com/olgarithmics/ICLR_CAMIL
 
@@ -35,6 +37,34 @@ class SparseToDense(torch.autograd.Function):
         return grad_output.to_sparse()
 
 sparse_to_dense = SparseToDense.apply
+class SparseNeighborAggregator(Function):
+    @staticmethod
+    def forward(ctx, data_input, adj_matrix):
+        ctx.save_for_backward(data_input, adj_matrix)
+        
+        sparse_data_input = adj_matrix * data_input
+        reduced_sum = torch.sparse.sum(sparse_data_input, dim=1)
+        A_raw = reduced_sum.to_dense().flatten()
+        alpha = F.softmax(A_raw, dim=0)
+        
+        return alpha, A_raw
+
+    @staticmethod
+    def backward(ctx, grad_output_alpha, grad_output_A_raw):
+        data_input, adj_matrix = ctx.saved_tensors
+        
+        # Compute gradients for data_input
+        grad_data_input = torch.sparse_coo_tensor(
+            adj_matrix._indices(),
+            adj_matrix._values() * grad_output_alpha[adj_matrix._indices()[1]],
+            adj_matrix.size()
+        ).to_dense()
+        
+        # We don't compute gradients for adj_matrix as it's typically fixed
+        grad_adj_matrix = None
+        
+        return grad_data_input, grad_adj_matrix
+    
 
 class MILAttentionLayer(nn.Module):
     """Implementation of the attention-based Deep MIL layer.
@@ -125,8 +155,6 @@ class NeighborAggregator(nn.Module):
         self.output_dim = output_dim
 
     def forward(self, inputs):
-        data_input, adj_matrix = inputs  # [attention_matrix, sparse_adj] in encoder's forward function
-
         # Element-wise multiplication of data_input and adj_matrix
         # dense_data_input = torch.mul(data_input, adj_matrix.to_dense())
         # sparse_data_input = adj_matrix * data_input # according to another perplexity's answer; sparse_data_input is sparse
@@ -166,32 +194,28 @@ class NeighborAggregator(nn.Module):
         # pdb.set_trace()
         # Reshape to match the original Keras implementation; dense tensor occupy more memory
         # A_raw = reduced_sum.to_dense().view(data_input.size(1))
-        
-        # Reshape data_input to (num_patches, num_features)
-        data_input = data_input.squeeze(0)# .float()
-        
         # pdb.set_trace()
         # Element-wise multiplication of sparse adj_matrix with dense data_input
         # sparse_data_input = torch.sparse.mm(adj_matrix, data_input)
-        # sparse_data_input = adj_matrix * data_input
-        
-        # Sum along the rows (dim=1)
-        # reduced_sum = torch.sparse.sum(sparse_data_input, dim=1)
-        # Convert the sparse tensor to a dense tensor
-        # dense_data_input = sparse_data_input.to_dense()
-        # adj_matrix_dense = sparse_to_dense(adj_matrix)
-        dense_data_input = adj_matrix * data_input
-        # Perform the sum operation on the dense tensor
-        reduced_sum = torch.sum(dense_data_input, dim=1)
-        # Convert the sparse tensor to a dense tensor
-        # reduced_sum_dense = reduced_sum.to_dense()
-        
-        # Flatten the tensor to (num_patches,)
-        A_raw = reduced_sum.flatten()
-        
-        # Apply softmax
-        alpha = F.softmax(A_raw, dim=0)
+        # Reshape data_input to (num_patches, num_features)
+        data_input, adj_matrix = inputs  # [attention_matrix, sparse_adj] in encoder's forward function
 
+        data_input = data_input.squeeze(0)# .float()
+        
+        # sparse_data_input = adj_matrix * data_input
+        # # Perform sparse operation outside of autocast
+        
+        # # pdb.set_trace()
+        # # Sum along the rows (dim=1)
+        # reduced_sum = torch.sparse.sum(sparse_data_input, dim=1)
+      
+        # # Flatten the tensor to (num_patches,)
+        # A_raw = reduced_sum.flatten()
+        
+        # # Apply softmax
+        # alpha = F.softmax(A_raw, dim=0)
+        alpha, A_raw = SparseNeighborAggregator.apply(data_input, adj_matrix)
+        
         return alpha, A_raw
 
     def extra_repr(self):
@@ -304,8 +328,8 @@ class CustomAttention(nn.Module):
 
     def compute_attention_scores(self, instance):
         ### can futher optimize this using F.scaled_dot_product 
-        q = torch.matmul(instance, self.wq_weight_params)
-        k = torch.matmul(instance, self.wk_weight_params)
+        # q = torch.matmul(instance, self.wq_weight_params)
+        # k = torch.matmul(instance, self.wk_weight_params)
 
         # # dk = torch.tensor(k.size(-1), dtype=torch.float32)
         # dk = torch.tensor(k.shape[-1], dtype=torch.int32)
@@ -315,34 +339,44 @@ class CustomAttention(nn.Module):
         
         # scaled_attention_logits = matmul_qk / torch.sqrt(dk)
 
-        # return scaled_attention_logits
-        # Reshape q and k to have a batch dimension if they don't already
-        if q.dim() == 2:
-            q = q.unsqueeze(0)
-        if k.dim() == 2:
-            k = k.unsqueeze(0)
+        
+        chunk_size = 1024  # Adjust this value based on your GPU memory
+        q_chunks = []
+        k_chunks = []
+        
+        for i in range(0, instance.size(0), chunk_size):
+            chunk = instance[i:i+chunk_size]
+            q_chunks.append(torch.matmul(chunk, self.wq_weight_params))
+            k_chunks.append(torch.matmul(chunk, self.wk_weight_params))
+        
+        q = torch.cat(q_chunks, dim=0)
+        k = torch.cat(k_chunks, dim=0)
 
-        # Add head dimension if necessary (num_heads=1 in this case)
-        q = q.unsqueeze(1)
-        k = k.unsqueeze(1)
+        # Use torch.sqrt() directly on a scalar
+        dk = torch.sqrt(torch.tensor(k.size(-1), dtype=torch.float32))
 
-        # Create a dummy value tensor (v) with the same shape as k
-        v = k
+        # Use torch.bmm for batch matrix multiplication
+        # Reshape q and k for bmm
+        q_reshaped = q.view(-1, q.size(-2), q.size(-1))
+        k_reshaped = k.view(-1, k.size(-2), k.size(-1))
+        
+        # Compute attention scores in chunks
+        attention_chunks = []
+        for i in range(0, q_reshaped.size(0), chunk_size):
+            q_chunk = q_reshaped[i:i+chunk_size]
+            k_chunk = k_reshaped[i:i+chunk_size]
+            
+            matmul_qk = torch.bmm(q_chunk, k_chunk.transpose(1, 2))
+            scaled_chunk = matmul_qk / dk
+            attention_chunks.append(scaled_chunk)
+        
+        scaled_attention_logits = torch.cat(attention_chunks, dim=0)
+        
+        # Reshape back to original dimensions
+        scaled_attention_logits = scaled_attention_logits.view(q.shape[:-1] + (k.size(-2),))
+        # pdb.set_trace()
+        return scaled_attention_logits
 
-        # Use scaled_dot_product_attention
-        attn_output = F.scaled_dot_product_attention(
-            q, k, v,
-            attn_mask=None,
-            dropout_p=0.0,  # You can adjust this if you want to add dropout
-            is_causal=False
-        )
-
-        # Remove the head dimension and batch dimension if they were added
-        attn_output = attn_output.squeeze(1)
-        if attn_output.size(0) == 1:
-            attn_output = attn_output.squeeze(0)
-
-        return attn_output
 
 class encoder(nn.Module):
     def __init__(self, input_dim=1024):

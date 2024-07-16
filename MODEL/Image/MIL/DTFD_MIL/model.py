@@ -128,7 +128,7 @@ class DTFD_MIL(BaseAggregator):
         ### model components
         self.classifier = Classifier_1fc(paras.mDim, paras.num_cls, paras.droprate).to(paras.device)
         self.attention = Attention_Gated(paras.mDim).to(paras.device)
-        self.dimReduction = DimReduction(1024, paras.mDim, numLayer_Res=paras.numLayer_Res).to(paras.device)
+        self.dimReduction = DimReduction(paras.input_dim, paras.mDim, numLayer_Res=paras.numLayer_Res).to(paras.device)
         self.attCls = Attention_with_Classifier(L=paras.mDim, num_cls=paras.num_cls, droprate=paras.droprate_2).to(paras.device)
 
     def forward(self, x):
@@ -143,8 +143,7 @@ class DTFD_MIL(BaseAggregator):
         for subFeat_tensor in inputs_pseudo_bags:
 
             slide_sub_labels.append(labels)
-            # subFeat_tensor=subFeat_tensor.to(params.device)
-            # subFeat_tensor = torch.index_select(inputs_pseudo_bags, dim=0, index=torch.LongTensor(tindex).to(params.device))
+
             tmidFeat = self.dimReduction(subFeat_tensor)
             tAA = self.attention(tmidFeat).squeeze(0)
             tattFeats = torch.einsum('ns,n->ns', tmidFeat, tAA)  ### n x fs
@@ -162,11 +161,13 @@ class DTFD_MIL(BaseAggregator):
 if __name__ == "__main__":
     
     default_paras = DTFD_MILParas()
-    rand_tensor = torch.rand(1, 42, 1024).to('mps')
+    default_paras.input_dim = 2048
+    rand_tensor = torch.rand(1, 42, default_paras.input_dim).to('mps')
     model = DTFD_MIL(default_paras)
-    label = torch.tensor(1).to('mps')
+    label = torch.tensor(1).unsqueeze(0).to('mps')
+    
     # rand_tensor
-    model([rand_tensor, label])
+    slide_pseudo_feat, slide_sub_preds, slide_sub_labels = model([rand_tensor, label])
 
     pdb.set_trace()
     

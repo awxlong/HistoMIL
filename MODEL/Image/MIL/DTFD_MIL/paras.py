@@ -24,6 +24,7 @@ class DTFD_MILParas:
 
     ### DTFD-MIL Params according to https://github.com/Dootmaan/DTFD-MIL.PyTorch/blob/main/train_DTFT-MIL.py#L49
     numGroup:int = 5
+    input_dim:int = 1024
     mDim:int = 512
     device:str = get_available_device()
     num_cls:int = 1
@@ -31,7 +32,7 @@ class DTFD_MILParas:
     droprate_2:float = 0
     numLayer_Res:int = 0
     
-    
+
 
     ### OPTIMIZER CONFIGURATIONS
     task:str = 'binary'
