@@ -36,7 +36,7 @@ from HistoMIL.MODEL.Image.MIL.TransMIL.paras import TransMILParas
 from HistoMIL.MODEL.Image.MIL.DSMIL.paras import DSMILParas
 from HistoMIL.MODEL.Image.MIL.Transformer.paras import  DEFAULT_TRANSFORMER_PARAS
 from HistoMIL.MODEL.Image.MIL.AttentionMIL.paras import  DEFAULT_Attention_MIL_PARAS
-from HistoMIL.MODEL.Image.MIL.CAMIL.paras import  CAMILParas
+from HistoMIL.MODEL.Image.MIL.CAMIL.paras import  CAMILParas, custom_camil_collate
 
 from HistoMIL.EXP.paras.env import EnvParas
 from HistoMIL.EXP.workspace.experiment import Experiment
@@ -138,6 +138,7 @@ def run_mil(args):
     gene2k_env.dataset_para.num_workers = args.num_workers   # num_workers for dataloader, e.g. 8
     if args.mil_algorithm == 'CAMIL':
         gene2k_env.dataset_para.additional_feature = 'CAMIL'
+        gene2k_env.dataset_para.add_dataloader = {'collate_fn':custom_camil_collate}
     #----------------> model
     gene2k_env.trainer_para.model_name = model_name
     gene2k_env.trainer_para.model_para = model_para_settings[model_name]

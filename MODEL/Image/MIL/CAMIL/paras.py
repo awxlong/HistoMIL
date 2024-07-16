@@ -1,9 +1,9 @@
 """
 pre-defined parameters for CAMIL model
 """
-import torch.nn as nn
+# import torch.nn as nn
 import attr 
-
+import torch
 #---->
 
 @attr.s(auto_attribs=True)
@@ -52,3 +52,12 @@ class CAMILParas:
     #------> parameters for feature encoder
     #backbone:str="pre-calculated"
     #pretrained:bool=True
+
+def custom_camil_collate(batch):
+    '''
+    custom batching for sparse tensors:
+    '''
+    data_inputs = torch.stack([item[0] for item in batch])
+    adj_matrices = [item[1] for item in batch]
+    labels = [item[2] for item in batch]
+    return data_inputs, adj_matrices, labels

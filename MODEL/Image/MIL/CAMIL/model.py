@@ -24,6 +24,7 @@ import pdb
 ### IMPLEMENTATION ADAPTED FROM https://github.com/olgarithmics/ICLR_CAMIL
 
 
+
 class MILAttentionLayer(nn.Module):
     """Implementation of the attention-based Deep MIL layer.
     Args:
@@ -123,9 +124,10 @@ class NeighborAggregator(nn.Module):
         
         # Convert to dense, sum, and convert back to sparse if needed
         # dense_data_input = sparse_data_input.to_dense()
-        dense_data_input = torch.mul(data_input, adj_matrix)
-        reduced_dense_sum = torch.sum(dense_data_input, dim=1)
-        # Sum along rows
+        
+        # dense_data_input = torch.mul(data_input, adj_matrix)
+        # reduced_dense_sum = torch.sum(dense_data_input, dim=1)
+        # # Sum along rows
         # reduced_sum = torch.sum(sparse_data_input, dim=1)
         # reduced_sum = torch.sparse.sum(sparse_data_input, dim=1)# more efficient apparently
         # The below MAY trigger a reshape not implemented during backward pass
@@ -144,22 +146,29 @@ class NeighborAggregator(nn.Module):
 
         # # Create a new dense tensor with the desired shape
         # A_raw = torch.zeros(data_input.size(1), device=reduced_sum.device)
-
         # # Fill in the values
         # A_raw[indices] = values
-
+        # pdb.set_trace()
+        # Reshape to match the original Keras implementation
+        # A_raw = reduced_dense_sum.view(-1)
         # Convert to dense (this is necessary for softmax)
         # pdb.set_trace()
         # Reshape to match the original Keras implementation; dense tensor occupy more memory
         # A_raw = reduced_sum.to_dense().view(data_input.size(1))
-
-
         
+        # Reshape data_input to (num_patches, num_features)
+        data_input = data_input.squeeze(0)
         # pdb.set_trace()
-        # Reshape to match the original Keras implementation
-        A_raw = reduced_dense_sum.view(-1)
-
-        # Apply softmax to get attention weights
+        # Element-wise multiplication of sparse adj_matrix with dense data_input
+        sparse_data_input = torch.sparse.mm(adj_matrix, data_input)
+        
+        # Sum along the rows
+        reduced_sum = torch.sparse.sum(sparse_data_input, dim=1).to_dense()
+        
+        # Reshape to (num_patches,)
+        A_raw = reduced_sum.view(-1)
+        
+        # Apply softmax
         alpha = F.softmax(A_raw, dim=0)
 
         return alpha, A_raw
