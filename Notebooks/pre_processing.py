@@ -26,7 +26,7 @@ import timm
 from HistoMIL.EXP.paras.env import EnvParas
 from HistoMIL.EXP.workspace.experiment import Experiment
 from HistoMIL import logger
-from HistoMIL.DATA.Database.data_aug import only_naive_transforms_tensor, no_transforms, only_naive_transforms
+from HistoMIL.DATA.Database.data_aug import only_naive_transforms_tensor, no_transforms, only_naive_transforms, naive_transforms
 import logging
 logger.setLevel(logging.INFO)
 
@@ -35,6 +35,10 @@ from huggingface_hub import login
 from dotenv import load_dotenv
 from torchvision import transforms
 
+STR_TO_TRANSFORMATIONS = {
+    'only_naive_transforms_tensor': only_naive_transforms_tensor,
+    'naive_transforms': naive_transforms
+}
 BACKBONES = {
     'uni': {
         'model_name': "hf_hub:MahmoodLab/UNI",
@@ -140,8 +144,9 @@ def preprocessing(args):
         preprocess_env.collector_para.feature.model_instance.eval()
         preprocess_env.collector_para.feature.img_size = (args.step_size, args.step_size)
         preprocess_env.collector_para.feature.out_dim = FEAT_DIMS[args.backbone_name]
-        preprocess_env.collector_para.feature.trans = only_naive_transforms_tensor # no_transforms # only_naive_transforms_tensor # no_transforms
-
+        preprocess_env.collector_para.feature.trans = STR_TO_TRANSFORMATIONS[args.transformations] # default only_naive_transforms_tensor # no_transforms # only_naive_transforms_tensor # no_transforms
+    else:
+        preprocess_env.collector_para.feature.trans = STR_TO_TRANSFORMATIONS[args.transformations]
 
     print(preprocess_env.collector_para.feature)
     

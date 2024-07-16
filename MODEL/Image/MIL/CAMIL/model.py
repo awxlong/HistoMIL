@@ -179,8 +179,8 @@ class NeighborAggregator(nn.Module):
         # reduced_sum = torch.sparse.sum(sparse_data_input, dim=1)
         # Convert the sparse tensor to a dense tensor
         # dense_data_input = sparse_data_input.to_dense()
-        adj_matrix_dense = sparse_to_dense(adj_matrix)
-        dense_data_input = adj_matrix_dense * data_input
+        # adj_matrix_dense = sparse_to_dense(adj_matrix)
+        dense_data_input = adj_matrix * data_input
         # Perform the sum operation on the dense tensor
         reduced_sum = torch.sum(dense_data_input, dim=1)
         # Convert the sparse tensor to a dense tensor

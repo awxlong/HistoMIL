@@ -138,7 +138,7 @@ def run_mil(args):
     gene2k_env.dataset_para.num_workers = args.num_workers   # num_workers for dataloader, e.g. 8
     if args.mil_algorithm == 'CAMIL':
         gene2k_env.dataset_para.additional_feature = 'CAMIL'
-        gene2k_env.dataset_para.add_dataloader = {'collate_fn':custom_camil_collate}
+        # gene2k_env.dataset_para.add_dataloader = {'collate_fn':custom_camil_collate}
     #----------------> model
     gene2k_env.trainer_para.model_name = model_name
     gene2k_env.trainer_para.model_para = model_para_settings[model_name]

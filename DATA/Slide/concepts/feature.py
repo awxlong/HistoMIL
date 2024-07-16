@@ -58,15 +58,26 @@ class Features(Items):
         return ["slide","patch"]
     
     def loc(self):
-        assert self.model_name is not None
-        folder = str(self.wsi_loc.parent).split("/")[-1]
-        fname  = self.wsi_loc.name
-        subdir = self.db_loc.abs_loc("feature")+f"{self.model_name}/"
-        if not os.path.exists(subdir):
-            os.makedirs(subdir)
-            logger.info(f" Built {subdir}")
-        return Path(self.db_loc.abs_loc("feature")+f"/{self.model_name}/"+folder+"."+fname+".pt")
-
+        # pdb.set_trace()
+        if self.paras.trans.__name__ == 'only_naive_transforms' or self.paras.trans.__name__ == 'only_naive_transforms_tensor':
+            assert self.model_name is not None
+            folder = str(self.wsi_loc.parent).split("/")[-1]
+            fname  = self.wsi_loc.name
+            subdir = self.db_loc.abs_loc("feature")+f"{self.model_name}/"
+            if not os.path.exists(subdir):
+                os.makedirs(subdir)
+                logger.info(f" Built {subdir}")
+            return Path(self.db_loc.abs_loc("feature")+f"/{self.model_name}/"+folder+"."+fname+".pt")
+        elif self.paras.trans.__name__ == 'naive_transforms':
+            assert self.model_name is not None
+            folder = str(self.wsi_loc.parent).split("/")[-1]
+            fname  = self.wsi_loc.name
+            subdir = self.db_loc.abs_loc("feature")+f"{self.model_name}/"
+            if not os.path.exists(subdir):
+                os.makedirs(subdir)
+                logger.info(f" Built {subdir}")
+            return Path(self.db_loc.abs_loc("feature")+f"/{self.model_name}/"+folder+"."+fname+"_naive_transform.pt")
+        
     def calc(self,
              slide:WholeSlideImage,
              patches:Patches,

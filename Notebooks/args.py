@@ -175,7 +175,10 @@ def get_args_preprocessing():
         "--cohort-dir", type=str, help='Experiment directory. ')
     parser.add_argument(
         "--task-additional-idx", type=str, nargs='+', default=None, help='additional column names of biomarkers of interest.')
+    parser.add_argument(
+        "--transformations", type=str, default='only_naive_transforms_tensor', help="Tranformations for data augmentation, default is only_naive_transforms_tensor")
     
+
     parser.add_argument(
         "--seed", type=int, default=42, help="Seed to ensure reproducibility")
     # parser.add_argument(

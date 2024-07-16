@@ -132,7 +132,7 @@ class MILFeaturesAdjMatrixSet(Dataset):
         l = self.label_dict[label]
         del collector
         # pdb.set_trace()
-        return data, adj_matrix, l
+        return data, adj_matrix.to_dense(), l
     
     def processing(self,collector:WSICollector):
 

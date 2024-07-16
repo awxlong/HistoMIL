@@ -56,7 +56,7 @@ class Cohort:
         filenames = []
         folders   = []
         P_id      = []
-
+        
         p = Path(slide_root)
         for f in p.rglob(pattern):
             filenames.append(f.name)
@@ -74,8 +74,10 @@ class Cohort:
             data_dict.update({name:zero_list})
         #return pd.DataFrame(data_dict)
         self.table.df = pd.DataFrame(data_dict)
+        # pdb.set_trace()
 
     def add_concept_to_df(self,concepts):
+        # pdb.set_trace()
         for name in concepts:
             if name not in self.table.df.keys():
                 zero_list = [0 for i in range(self.table.df.shape[0])]
@@ -236,6 +238,8 @@ class LocalCohort(Cohort):
         """
         df = self.table.df
         # pdb.set_trace()
+        # usbale_concepts = ['feature']
+
         for name in usbale_concepts: #
             df = df[df[name]==True] # 
         # pdb.set_trace()

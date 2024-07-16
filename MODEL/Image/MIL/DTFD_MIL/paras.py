@@ -14,6 +14,7 @@ class DTFD_MILParas:
     #------> parameters for model
     encoder_name:str = "pre-calculated"# or name of encoder",
     encoder_pretrained:bool = True # or False
+    numGroup:int = 5
     feature_size:int = 512
     embed_size:int = None
     input_dim:int = 1024
