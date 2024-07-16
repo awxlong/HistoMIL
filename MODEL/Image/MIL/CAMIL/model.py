@@ -157,10 +157,10 @@ class NeighborAggregator(nn.Module):
         # A_raw = reduced_sum.to_dense().view(data_input.size(1))
         
         # Reshape data_input to (num_patches, num_features)
-        data_input = data_input.squeeze(0)
+        data_input = data_input[0].squeeze(0)
         # pdb.set_trace()
         # Element-wise multiplication of sparse adj_matrix with dense data_input
-        sparse_data_input = torch.sparse.mm(adj_matrix, data_input)
+        sparse_data_input = torch.sparse.mm(adj_matrix[0], data_input)
         
         # Sum along the rows
         reduced_sum = torch.sparse.sum(sparse_data_input, dim=1).to_dense()

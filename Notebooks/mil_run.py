@@ -154,7 +154,7 @@ def run_mil(args):
     gene2k_env.trainer_para.additional_pl_paras={
                 #---------> paras for pytorch lightning trainner
                 "accumulate_grad_batches":8, # mil need accumulated grad
-                "accelerator":"auto",        #accelerator='gpu', devices=1,
+                "accelerator":"cpu",        #accelerator='gpu', devices=1,
                 'precision': 16,             # Use mixed precision
                 'enable_progress_bar': True, 
                 'enable_model_summary': True,
