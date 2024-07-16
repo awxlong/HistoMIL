@@ -134,8 +134,10 @@ class pl_CAMIL(pl.LightningModule):
         # pdb.set_trace()
         
         x, adj_matrix, y = batch  # x = encoded features, adjmatrix, y = labels
+        # y = y[0]
         # pdb.set_trace()
-        logits, alpha, k_alpha = self.forward([x, adj_matrix])
+        logits, alpha, k_alpha = self.forward([x, adj_matrix[0]])
+        
         # pdb.set_trace()
         if self.paras.task == "binary":
             loss = self.criterion(logits, y.unsqueeze(0).float())
@@ -158,7 +160,9 @@ class pl_CAMIL(pl.LightningModule):
     def validation_step(self, batch, batch_idx):
         # pdb.set_trace()
         x, adj_matrix, y = batch
-        logits, alpha, k_alpha = self.forward([x, adj_matrix])
+
+        # y = y[0]
+        logits, alpha, k_alpha = self.forward([x, adj_matrix[0]])
         # print(y)
         # print(y.shape)
         # pdb.set_trace()
@@ -213,8 +217,9 @@ class pl_CAMIL(pl.LightningModule):
 
     def test_step(self, batch, batch_idx, dataloader_idx=0):
         x, adj_matrix, y = batch  # x = features, coords, y = labels, tiles, patient
+        # y = y[0]
         # pdb.set_trace()
-        logits, alpha, k_alpha = self.forward([x, adj_matrix])
+        logits, alpha, k_alpha = self.forward([x, adj_matrix[0]])
 
         if self.paras.task == "binary":
             y = y.unsqueeze(1)

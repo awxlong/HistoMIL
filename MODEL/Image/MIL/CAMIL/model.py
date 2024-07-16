@@ -25,6 +25,17 @@ import pdb
 
 
 
+class SparseToDense(torch.autograd.Function):
+    @staticmethod
+    def forward(ctx, input_tensor):
+        return input_tensor.to_dense()
+
+    @staticmethod
+    def backward(ctx, grad_output):
+        return grad_output.to_sparse()
+
+sparse_to_dense = SparseToDense.apply
+
 class MILAttentionLayer(nn.Module):
     """Implementation of the attention-based Deep MIL layer.
     Args:
@@ -157,16 +168,26 @@ class NeighborAggregator(nn.Module):
         # A_raw = reduced_sum.to_dense().view(data_input.size(1))
         
         # Reshape data_input to (num_patches, num_features)
-        data_input = data_input[0].squeeze(0)
+        data_input = data_input.squeeze(0)# .float()
+        
         # pdb.set_trace()
         # Element-wise multiplication of sparse adj_matrix with dense data_input
-        sparse_data_input = torch.sparse.mm(adj_matrix[0], data_input)
+        # sparse_data_input = torch.sparse.mm(adj_matrix, data_input)
+        # sparse_data_input = adj_matrix * data_input
         
-        # Sum along the rows
-        reduced_sum = torch.sparse.sum(sparse_data_input, dim=1).to_dense()
+        # Sum along the rows (dim=1)
+        # reduced_sum = torch.sparse.sum(sparse_data_input, dim=1)
+        # Convert the sparse tensor to a dense tensor
+        # dense_data_input = sparse_data_input.to_dense()
+        adj_matrix_dense = sparse_to_dense(adj_matrix)
+        dense_data_input = adj_matrix_dense * data_input
+        # Perform the sum operation on the dense tensor
+        reduced_sum = torch.sum(dense_data_input, dim=1)
+        # Convert the sparse tensor to a dense tensor
+        # reduced_sum_dense = reduced_sum.to_dense()
         
-        # Reshape to (num_patches,)
-        A_raw = reduced_sum.view(-1)
+        # Flatten the tensor to (num_patches,)
+        A_raw = reduced_sum.flatten()
         
         # Apply softmax
         alpha = F.softmax(A_raw, dim=0)

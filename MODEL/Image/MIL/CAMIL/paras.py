@@ -61,6 +61,6 @@ def custom_camil_collate(batch):
     custom batching for sparse tensors, working with computational histopathology 
     '''
     data_inputs = torch.stack([item[0] for item in batch])
-    adj_matrices = [to_coo(item[1]) for item in batch]
-    labels = [item[2] for item in batch]
+    adj_matrices = [item[1] for item in batch]
+    labels = torch.stack([torch.tensor(item[2]) for item in batch])
     return data_inputs, adj_matrices, labels
