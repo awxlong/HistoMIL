@@ -308,12 +308,12 @@ class CustomAttention(nn.Module):
         k = torch.matmul(instance, self.wk_weight_params)
 
         # dk = torch.tensor(k.size(-1), dtype=torch.float32)
-        dk = k.shape[-1]# torch.tensor(k.shape[-1], dtype=torch.float32)
+        dk = torch.tensor(k.shape[-1], dtype=torch.int32)
         # pdb.set_trace()
         matmul_qk = torch.matmul(q, k.transpose(-2, -1))  # (..., seq_len_q, seq_len_k)
         # matmul_qk = torch.tensordot(q, k.transpose(-2, -1), dims=1) # could also be this
         
-        scaled_attention_logits = matmul_qk / math.sqrt(dk)
+        scaled_attention_logits = matmul_qk / torch.sqrt(dk)
 
         return scaled_attention_logits
 
