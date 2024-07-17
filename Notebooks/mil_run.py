@@ -138,7 +138,7 @@ def run_mil(args):
         gene2k_env.trainer_para.backbone_name = "resnet18"
         gene2k_env.trainer_para.additional_pl_paras.update({"accumulate_grad_batches":8})
         gene2k_env.trainer_para.label_format = "int"#"one_hot"  # change here for regression?
-    gene2k_env.cohort_para.update_localcohort = True ## update local_cohort file
+    gene2k_env.cohort_para.update_localcohort = False ## update local_cohort file
     #----------------> pre-processing
     #----------------> dataset
     gene2k_env.dataset_para.dataset_name = args.dataset_name # e.g. "DNAD_L2"
