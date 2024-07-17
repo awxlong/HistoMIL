@@ -399,7 +399,7 @@ class encoder(nn.Module):
         xg = encoder_output.squeeze(0) # ([1, #patches, input_dim])
 
         encoder_output = xg + dense
-
+        # pdb.set_trace()
         attention_matrix = self.custom_att(encoder_output)
 
         norm_alpha, alpha = self.neigh([attention_matrix, sparse_adj]) # attention coefficients
