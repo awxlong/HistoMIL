@@ -156,7 +156,8 @@ class DTFD_MIL(BaseAggregator):
         slide_sub_preds = torch.cat(slide_sub_preds, dim=0) ### numGroup x fs
         slide_sub_labels = torch.cat(slide_sub_labels, dim=0) ### numGroup
 
-        return slide_pseudo_feat, slide_sub_preds, slide_sub_labels
+        gSlidePred = self.attCls(slide_pseudo_feat)
+        return slide_pseudo_feat, slide_sub_preds, slide_sub_labels, gSlidePred
 
 if __name__ == "__main__":
     
@@ -167,7 +168,7 @@ if __name__ == "__main__":
     label = torch.tensor(1).unsqueeze(0).to('mps')
     
     # rand_tensor
-    slide_pseudo_feat, slide_sub_preds, slide_sub_labels = model([rand_tensor, label])
+    slide_pseudo_feat, slide_sub_preds, slide_sub_labels, gSlidePred = model([rand_tensor, label])
 
     pdb.set_trace()
     

@@ -31,6 +31,7 @@ class DTFD_MILParas:
     droprate:float = 0
     droprate_2:float = 0
     numLayer_Res:int = 0
+    grad_clipping:int = 5
     
 
 
@@ -39,12 +40,9 @@ class DTFD_MILParas:
     criterion:str = 'BCEWithLogitsLoss'
 
     epoch:int = 32
-    lr:float = 2e-5 # 1.0e-4 # same as https://arxiv.org/pdf/2106.00908
-    wd:float = 1e-2
-    optimizer = 'AdamW'
-    lr_scheduler = 'CosineAnnealingLR'
-    lr_scheduler_config:dict = {'T_max':epoch, 
-                                'eta_min':1e-6} # assumes cosine annealing
+    lr:float = 1e-4 # same as https://github.com/Dootmaan/DTFD-MIL.PyTorch/blob/main/train_DTFT-MIL.py
+    weight_decay:float = 1e-4
+    lr_decay_ratio:float = 0.2
     
 
 

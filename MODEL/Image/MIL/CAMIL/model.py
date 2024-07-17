@@ -36,7 +36,7 @@ class SparseToDense(torch.autograd.Function):
     def backward(ctx, grad_output):
         return grad_output.to_sparse()
 
-sparse_to_dense = SparseToDense.apply
+# sparse_to_dense = SparseToDense.apply
 class SparseNeighborAggregator(Function):
     @staticmethod
     def forward(ctx, data_input, adj_matrix):
@@ -53,12 +53,19 @@ class SparseNeighborAggregator(Function):
     def backward(ctx, grad_output_alpha, grad_output_A_raw):
         data_input, adj_matrix = ctx.saved_tensors
         
+        # # Compute gradients for data_input
+        # grad_data_input = torch.sparse_coo_tensor(
+        #     adj_matrix._indices(),
+        #     adj_matrix._values() * grad_output_alpha[adj_matrix._indices()[1]],
+        #     adj_matrix.size()
+        # ).to_dense()
+        # data_input, adj_matrix = ctx.saved_tensors
+        
         # Compute gradients for data_input
-        grad_data_input = torch.sparse_coo_tensor(
-            adj_matrix._indices(),
-            adj_matrix._values() * grad_output_alpha[adj_matrix._indices()[1]],
-            adj_matrix.size()
-        ).to_dense()
+        indices = adj_matrix._indices()
+        values = (adj_matrix._values() * grad_output_alpha[indices[1]]).to(data_input.dtype) # adj_matrix._values() * grad_output_alpha[indices[1]]
+        grad_data_input = torch.zeros_like(data_input)
+        grad_data_input.index_add_(0, indices[1], values)
         
         # We don't compute gradients for adj_matrix as it's typically fixed
         grad_adj_matrix = None
