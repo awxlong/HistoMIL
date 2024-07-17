@@ -157,8 +157,8 @@ class pl_DTFDMIL(pl.LightningModule):
         # Perform optimization step if we've accumulated enough gradients
         if self.accumulation_count == self.accumulation_steps:
             # Clip gradients
-            self.clip_gradients(opt0, gradient_clip_val=self.params.grad_clipping, gradient_clip_algorithm="norm")
-            self.clip_gradients(opt1, gradient_clip_val=self.params.grad_clipping, gradient_clip_algorithm="norm")
+            self.clip_gradients(opt0, gradient_clip_val=self.paras.grad_clipping, gradient_clip_algorithm="norm")
+            self.clip_gradients(opt1, gradient_clip_val=self.paras.grad_clipping, gradient_clip_algorithm="norm")
             
             # Step optimizers
             opt0.step()

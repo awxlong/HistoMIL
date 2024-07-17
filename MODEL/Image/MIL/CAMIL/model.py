@@ -27,82 +27,41 @@ from torch.autograd import Function
 
 
 
-class SparseToDense(torch.autograd.Function):
-    @staticmethod
-    def forward(ctx, input_tensor):
-        return input_tensor.to_dense()
-
-    @staticmethod
-    def backward(ctx, grad_output):
-        return grad_output.to_sparse()
-
 # sparse_to_dense = SparseToDense.apply
-class SparseNeighborAggregator(Function):
+class SparseNeighborAggregation(torch.autograd.Function):
     @staticmethod
     def forward(ctx, data_input, adj_matrix):
         ctx.save_for_backward(data_input, adj_matrix)
         
+        # Element-wise multiplication
         sparse_data_input = adj_matrix * data_input
-        reduced_sum = torch.sparse.sum(sparse_data_input, dim=1)
-        A_raw = reduced_sum.to_dense().flatten()
-        alpha = F.softmax(A_raw, dim=0)
         
-        ctx.A_raw = A_raw
-        ctx.alpha = alpha
-
-        return alpha, A_raw
+        # Sum along the rows (dim=1)
+        reduced_sum = torch.sparse.sum(sparse_data_input, dim=1)
+        
+        # Flatten the tensor
+        A_raw = reduced_sum.to_dense().flatten()
+        
+        return A_raw
 
     @staticmethod
-    def backward(ctx, grad_output_alpha, grad_output_A_raw):
+    def backward(ctx, grad_output):
         data_input, adj_matrix = ctx.saved_tensors
         
-        # # Compute gradients for data_input
-        # grad_data_input = torch.sparse_coo_tensor(
-        #     adj_matrix._indices(),
-        #     adj_matrix._values() * grad_output_alpha[adj_matrix._indices()[1]],
-        #     adj_matrix.size()
-        # ).to_dense()
-        # data_input, adj_matrix = ctx.saved_tensors
+        # Reshape grad_output to match adj_matrix's shape
+        grad_output_reshaped = grad_output.view(adj_matrix.size(0), 1)
         
-        # # Compute gradients for data_input
-        # indices = adj_matrix._indices()
-        # values = (adj_matrix._values() * grad_output_alpha[indices[1]]).to(data_input.dtype) # adj_matrix._values() * grad_output_alpha[indices[1]]
-        # grad_data_input = torch.zeros_like(data_input)
-        # grad_data_input.index_add_(0, indices[1], values)
-        
-        # # We don't compute gradients for adj_matrix as it's typically fixed
-        # grad_adj_matrix = None
-
-        dtype = data_input.dtype
-        
-        A_raw = ctx.A_raw
-        alpha = ctx.alpha
-
-        # Gradient of softmax
-        grad_A_raw = (alpha * (grad_output_alpha - (alpha * grad_output_alpha).sum())).to(dtype)
-        grad_A_raw += grad_output_A_raw.to(dtype)
-
-        # Create sparse gradient tensor
+        # Calculate gradients for data_input
+        grad_data = torch.zeros_like(data_input)
         indices = adj_matrix._indices()
-        values = torch.zeros_like(adj_matrix._values(), dtype=dtype)
-        grad_sparse = torch.sparse_coo_tensor(indices, values, adj_matrix.size())
-
-        # Compute gradients
-        row_indices = indices[0]
-        col_indices = indices[1]
+        values = adj_matrix._values()
         
-        # Gradient of adj_matrix
-        grad_values = grad_A_raw[row_indices] * torch.sum(data_input[col_indices], dim=1)
-        grad_sparse._values().copy_(grad_values)
-
-        # Gradient of data_input
-        grad_data_input = torch.zeros_like(data_input)
-        grad_to_add = (grad_A_raw[row_indices].unsqueeze(1) * adj_matrix._values().unsqueeze(1)).to(dtype)
-        grad_data_input.index_add_(0, col_indices, grad_to_add)
+        for i in range(indices.size(1)):
+            row, col = indices[:, i]
+            grad_data[col] += grad_output_reshaped[row] * values[i]
         
-        return grad_data_input, grad_sparse
-    
-        # return grad_data_input, grad_adj_matrix
+        # We don't need to calculate gradients for adj_matrix
+        return grad_data, None
     
 
 class MILAttentionLayer(nn.Module):
@@ -192,6 +151,8 @@ class NeighborAggregator(nn.Module):
     def __init__(self, output_dim):
         super().__init__()
         self.output_dim = output_dim
+        self.sparse_aggregation = SparseNeighborAggregation.apply
+
 
     def forward(self, inputs):
         # Element-wise multiplication of data_input and adj_matrix
@@ -253,8 +214,11 @@ class NeighborAggregator(nn.Module):
         
         # # Apply softmax
         # alpha = F.softmax(A_raw, dim=0)
-        alpha, A_raw = SparseNeighborAggregator.apply(data_input, adj_matrix)
+        A_raw = self.sparse_aggregation(data_input, adj_matrix)
         
+        # Apply softmax
+        alpha = F.softmax(A_raw, dim=0)
+
         return alpha, A_raw
 
     def extra_repr(self):
