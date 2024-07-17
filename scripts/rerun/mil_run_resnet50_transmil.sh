@@ -1,15 +1,15 @@
-#$ -l tmem=6G
+#$ -l tmem=9G
 #$ -l h_rt=36:00:00 
 #$ -S /bin/bash
 #$ -j y
-#$ -l gpu=true
-#$ -N mil_transmil_resnet50_32epochs
+#$ -l gpu=true,gpu_type=a40
+#$ -N mil_transmil_resnet50_100epochs_cv5
 echo "Running on host: $(hostname)"
 echo "Starting at: $(date)"
 cd secrier_lab/persistence/
 source /home/xuelonan/secrier_lab/python3.8.5-biomedai.source
 source /share/apps/source_files/cuda/cuda-11.8.source
-python3 HistoMIL/Notebooks/mil_run.py --exp-name 'mil_transmil_resnet50_32epochs_rerun' \
+python3 HistoMIL/Notebooks/mil_run.py --exp-name 'mil_transmil_resnet50_100epochs_cv5' \
                                       --project-name 'g0-arrest-resnet50-transmil-cv5' \
                                       --wandb-entity-name 'cell-x' --localcohort-name 'COAD' --task-name 'g0_arrest' --pid-name 'PatientID' \
                                       --targets-name 'g0_arrest' \
@@ -18,7 +18,7 @@ python3 HistoMIL/Notebooks/mil_run.py --exp-name 'mil_transmil_resnet50_32epochs
                                       --precomputed 'resnet50' \
                                       --label-dict "{0:0,1:1}" \
                                       --mil-algorithm "TransMIL" \
-                                      --n-epochs 32 \
+                                      --n-epochs 100 \
                                       --monitor-metric 'auroc_val' \
                                       --k-fold 5
 echo "Finished at: $(date)"

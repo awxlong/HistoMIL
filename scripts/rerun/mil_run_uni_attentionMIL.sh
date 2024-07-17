@@ -2,7 +2,7 @@
 #$ -l h_rt=36:00:00 
 #$ -S /bin/bash
 #$ -j y
-#$ -l gpu=true
+#$ -l gpu=true,gpu_type=a40
 #$ -N mil_attentionMIL_uni_32epochs_cv5
 echo "Running on host: $(hostname)"
 echo "Starting at: $(date)"
