@@ -126,20 +126,28 @@ class DTFD_MIL(BaseAggregator):
         self.paras = paras
         
         ### model components
-        self.classifier = Classifier_1fc(paras.mDim, paras.num_cls, paras.droprate).to(paras.device)
-        self.attention = Attention_Gated(paras.mDim).to(paras.device)
-        self.dimReduction = DimReduction(paras.input_dim, paras.mDim, numLayer_Res=paras.numLayer_Res).to(paras.device)
-        self.attCls = Attention_with_Classifier(L=paras.mDim, num_cls=paras.num_cls, droprate=paras.droprate_2).to(paras.device)
-
+        self.classifier = Classifier_1fc(paras.mDim, paras.num_cls, paras.droprate)# .to(paras.device)
+        self.attention = Attention_Gated(paras.mDim).to(paras.device)# .to(paras.device)
+        self.dimReduction = DimReduction(paras.input_dim, paras.mDim, numLayer_Res=paras.numLayer_Res)# .to(paras.device)
+        self.attCls = Attention_with_Classifier(L=paras.mDim, num_cls=paras.num_cls, droprate=paras.droprate_2)# .to(paras.device)
+        # self.attCls = self.attCls.to(paras.device)
+        # self.classifier = self.classifier.to(paras.device)
+        # self.attention = self.attention.to(paras.device)
+        # self.dimReduction = self.dimReduction.to(paras.device)
+        
     def forward(self, x):
         inputs, labels = x
+
+        # inputs = inputs.to(self.paras.device)
+        # labels = labels.to(self.paras.device)
         # inputs= self.encoder(x) #[B, n, 1024]
 
         slide_sub_preds=[]
         slide_sub_labels=[]
         slide_pseudo_feat=[]
         inputs_pseudo_bags=torch.chunk(inputs.squeeze(0), self.paras.numGroup,dim=0)
-
+        # inputs_pseudo_bags = [chunk.to(self.paras.device) for chunk in inputs_pseudo_bags]
+        # pdb.set_trace()
         for subFeat_tensor in inputs_pseudo_bags:
 
             slide_sub_labels.append(labels)
@@ -166,9 +174,10 @@ if __name__ == "__main__":
     rand_tensor = torch.rand(1, 42, default_paras.input_dim).to('mps')
     model = DTFD_MIL(default_paras)
     label = torch.tensor(1).unsqueeze(0).to('mps')
+    criterion = torch.nn.BCEWithLogitsLoss()
     
     # rand_tensor
     slide_pseudo_feat, slide_sub_preds, slide_sub_labels, gSlidePred = model([rand_tensor, label])
-
+    criterion(slide_sub_preds, slide_sub_labels)
     pdb.set_trace()
     

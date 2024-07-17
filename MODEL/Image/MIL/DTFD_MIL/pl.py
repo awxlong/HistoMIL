@@ -23,6 +23,9 @@ from HistoMIL.MODEL.Image.MIL.DTFD_MIL.paras import DTFD_MILParas
 from HistoMIL.MODEL.Image.MIL.DTFD_MIL.model import DTFD_MIL
 from HistoMIL.MODEL.Image.MIL.utils import  get_loss, get_optimizer, get_scheduler
 
+from pytorch_lightning.utilities import rank_zero_only # for saving a single model in a multi-gpu setting
+import os
+import pdb
 #---->
 ####################################################################################
 #      pl protocol class
@@ -33,13 +36,14 @@ class pl_DTFDMIL(pl.LightningModule):
         super().__init__()
         self.automatic_optimization = False
         self.paras = paras
-        self.model = DTFD_MIL(paras)
+        self.model = DTFD_MIL(paras)# 
+
         self.criterion = get_loss(paras.criterion
                                  ) if paras.task == "binary" else get_loss(paras.criterion)
         self.save_hyperparameters()
 
         self.lr = paras.lr
-        self.wd = paras.wd
+        self.weight_decay = paras.weight_decay
 
         self.acc_train = torchmetrics.Accuracy(task=paras.task, num_classes=paras.num_cls)
         self.acc_val = torchmetrics.Accuracy(task=paras.task, num_classes=paras.num_cls)
@@ -98,8 +102,12 @@ class pl_DTFDMIL(pl.LightningModule):
         self.accumulation_steps = 8
         self.accumulation_count = 0
 
+        # for manual model checkpointing
+        self.best_auroc_val = 0
+
     def forward(self, x):
         slide_pseudo_feat, slide_sub_preds, slide_sub_labels, gSlidePred = self.model(x)
+        # pdb.set_trace()
         return slide_pseudo_feat, slide_sub_preds, slide_sub_labels, gSlidePred
 
     def configure_optimizers(self):
@@ -108,7 +116,7 @@ class pl_DTFDMIL(pl.LightningModule):
                                list(self.model.dimReduction.parameters())
 
         optimizer0 = torch.optim.Adam(trainable_parameters, lr=self.paras.lr, weight_decay=self.paras.weight_decay)
-        optimizer1 = torch.optim.Adam(self.attCls.parameters(), lr=self.paras.lr, weight_decay=self.paras.weight_decay)
+        optimizer1 = torch.optim.Adam(self.model.attCls.parameters(), lr=self.paras.lr, weight_decay=self.paras.weight_decay)
 
         scheduler0 = torch.optim.lr_scheduler.MultiStepLR(optimizer0, [100], gamma=self.paras.lr_decay_ratio)
         scheduler1 = torch.optim.lr_scheduler.MultiStepLR(optimizer1, [100], gamma=self.paras.lr_decay_ratio)
@@ -116,7 +124,7 @@ class pl_DTFDMIL(pl.LightningModule):
         return [optimizer0, optimizer1], [scheduler0, scheduler1]
    
 
-    def training_step(self, batch, batch_idx, optimizer_idx):
+    def training_step(self, batch, batch_idx):
         # pdb.set_trace()
         # Get the optimizers
         opt0, opt1 = self.optimizers()
@@ -127,22 +135,22 @@ class pl_DTFDMIL(pl.LightningModule):
         # Forward pass with autocast for mixed precision
         with torch.cuda.amp.autocast():
             inputs, labels = batch  # 
-        
+            
             slide_pseudo_feat, slide_sub_preds, slide_sub_labels, gSlidePred = self.forward(batch)
         
-        
+            # pdb.set_trace()
             labels = labels.unsqueeze(1)
             slide_sub_labels = slide_sub_labels.unsqueeze(1)
             
             ### first loss optimization and logging
             loss0 = self.criterion(slide_sub_preds, slide_sub_labels.float()).mean()
             ### second loss optimization and logging
-            loss1 = self.criterion(gSlidePred, labels).mean()
+            loss1 = self.criterion(gSlidePred, labels.float()).mean()
         # Gradient accumulation for the first optimizer
-        self.manual_backward(loss0 / self.accumulation_steps)
+        self.manual_backward(loss0 / self.accumulation_steps, retain_graph=True)
         
         # Gradient accumulation for the second optimizer
-        self.manual_backward(loss1 / self.accumulation_steps)
+        self.manual_backward(loss1 / self.accumulation_steps, retain_graph=True)
         
         self.accumulation_count += 1
         
@@ -169,7 +177,7 @@ class pl_DTFDMIL(pl.LightningModule):
         # Log training acc
         probs = torch.sigmoid(slide_sub_preds)
         preds = torch.round(probs)
-        self.acc_train(preds, slide_sub_labels.unsqueeze(1).float())
+        self.acc_train(preds, slide_sub_labels.float())
         
         return {"loss0": loss0, "loss1": loss1}
         
@@ -180,35 +188,29 @@ class pl_DTFDMIL(pl.LightningModule):
         self.model.attention.eval()
         self.model.attCls.eval()
         # pdb.set_trace()
+
+        # pdb.set_trace()
         inputs, labels = batch  # 
         with torch.no_grad():
             slide_pseudo_feat, slide_sub_preds, slide_sub_labels, gSlidePred = self.forward(batch)
 
 
         labels = labels.unsqueeze(1)
-        slide_sub_labels = slide_sub_labels.unsqueeze(1)
-        
-        ### first loss optimization and logging
-        loss0 = self.criterion(slide_sub_preds, slide_sub_labels.float()).mean()
-        ### second loss optimization and logging
-        loss1 = self.criterion(gSlidePred, labels).mean()
-        # print(y)
-        # print(y.shape)
-        
-        loss = self.criterion(logits, y.float())
-        probs = torch.sigmoid(logits)
-   
-        # print(y)
-        # print(probs.shape)
-        # print(y.shape)
-        self.acc_val(probs, y)
-        self.auroc_val(probs, y)
-        self.f1_val(probs, y)
-        self.precision_val(probs, y)
-        self.recall_val(probs, y)
-        self.specificity_val(probs, y)
         # pdb.set_trace()
-        self.cm_val(probs, y)
+        loss = self.criterion(gSlidePred, labels.float()).mean()
+        # print(y)
+        probs = torch.sigmoid(gSlidePred)
+        preds = torch.round(probs)
+         
+        # the model's predictions is glidepred
+        self.acc_val(probs, labels)
+        self.auroc_val(probs, labels)
+        self.f1_val(probs, labels)
+        self.precision_val(probs, labels)
+        self.recall_val(probs, labels)
+        self.specificity_val(probs, labels)
+        # pdb.set_trace()
+        self.cm_val(probs, labels)
 
         self.log("loss_val", loss, prog_bar=True)
         self.log("acc_val", self.acc_val, prog_bar=True, on_step=False, on_epoch=True)
@@ -219,7 +221,27 @@ class pl_DTFDMIL(pl.LightningModule):
         self.log(
             "specificity_val", self.specificity_val, prog_bar=False, on_step=False, on_epoch=True
         )
-
+    @rank_zero_only
+    def save_best_model(self, auroc_val):
+        if isinstance(auroc_val, torch.Tensor):
+            auroc_val = auroc_val.item()
+        elif hasattr(auroc_val, 'compute'):
+            auroc_val = auroc_val.compute().item()
+        # pdb.set_trace()
+        if auroc_val >= self.best_auroc_val:
+            self.best_auroc_val = auroc_val
+            epoch = self.current_epoch
+            # pdb.set_trace()
+            filename = self.trainer.checkpoint_callback.filename + f"{epoch:02d}-{auroc_val:.2f}.ckpt"
+            filepath = os.path.join(self.trainer.checkpoint_callback.dirpath, \
+                                    filename)
+            self.trainer.save_checkpoint(filepath)
+            print(f"Saved new best model: {filepath}")
+            
+            # Update the best model path in the ModelCheckpoint callback
+            self.trainer.checkpoint_callback.best_model_path = filepath
+            # pdb.set_trace()   
+            self.trainer.checkpoint_callback.best_model_score = torch.tensor(auroc_val)
     def on_validation_epoch_end(self):
         if self.global_step != 0:
             cm = self.cm_val.compute()
@@ -234,6 +256,7 @@ class pl_DTFDMIL(pl.LightningModule):
             wandb.log({"confusion_matrix_val": wandb.Image(cm)})
 
         self.cm_val.reset()
+        self.save_best_model(self.auroc_val)
 
     def on_test_epoch_start(self) -> None:
         # save test outputs in dataframe per test dataset
@@ -241,27 +264,32 @@ class pl_DTFDMIL(pl.LightningModule):
         self.outputs = pd.DataFrame(columns=column_names)
 
     def test_step(self, batch, batch_idx, dataloader_idx=0):
-        x, y = batch  # x = features, coords, y = labels, tiles, patient
+        self.model.classifier.eval()
+        self.model.dimReduction.eval()
+        self.model.attention.eval()
+        self.model.attCls.eval()
         # pdb.set_trace()
-        logits = self.forward(x)
+        inputs, labels = batch  # 
+        with torch.no_grad():
+            slide_pseudo_feat, slide_sub_preds, slide_sub_labels, gSlidePred = self.forward(batch)
 
-        if self.paras.task == "binary":
-            y = y.unsqueeze(1)
-            loss = self.criterion(logits, y.float())
-            probs = torch.sigmoid(logits)
-            preds = torch.round(probs)
-        else:
-            loss = self.criterion(logits, y)
-            probs = torch.softmax(logits, dim=1)
-            preds = torch.argmax(probs, dim=1, keepdim=True)
 
-        self.acc_test(probs, y)
-        self.auroc_test(probs, y)
-        self.f1_test(probs, y)
-        self.precision_test(probs, y)
-        self.recall_test(probs, y)
-        self.specificity_test(probs, y)
-        self.cm_test(probs, y)
+        labels = labels.unsqueeze(1)
+
+        
+        
+        loss = self.criterion(gSlidePred, labels).mean()
+
+        probs = torch.sigmoid(gSlidePred)
+        preds = torch.round(probs)
+        
+        self.acc_test(probs, labels)
+        self.auroc_test(probs, labels)
+        self.f1_test(probs, labels)
+        self.precision_test(probs, labels)
+        self.recall_test(probs, labels)
+        self.specificity_test(probs, labels)
+        self.cm_test(probs, labels)
 
         self.log("loss_test", loss, prog_bar=False)
         self.log("acc_test", self.acc_test, prog_bar=True, on_step=False, on_epoch=True)
@@ -278,9 +306,9 @@ class pl_DTFDMIL(pl.LightningModule):
         outputs = pd.DataFrame(
             data=[
                 [
-                 y.item(),
+                 labels.item(),
                  preds.item(),
-                 logits.squeeze(), (y == preds).int().item()]
+                 gSlidePred.squeeze(), (labels == preds).int().item()]
             ],
             columns=[ 'ground_truth', 'prediction', 'logits', 'correct']
         )
@@ -304,51 +332,3 @@ class pl_DTFDMIL(pl.LightningModule):
     def lr_scheduler_step(self, scheduler, optimizer_idx, metric):
         scheduler.step()
 
-
-
-import pytorch_lightning as pl
-import torch
-import torch.nn as nn
-
-class TwoOptimizerModel(pl.LightningModule):
-    def __init__(self, params):
-        super().__init__()
-        self.save_hyperparameters()
-        self.params = params
-        self.automatic_optimization = False
-        
-        # Define your model components here
-        self.dimReduction = nn.Linear(params.input_dim, params.hidden_dim)
-        self.attention = nn.Linear(params.hidden_dim, 1)
-        self.classifier = nn.Linear(params.hidden_dim, params.num_classes)
-        self.attCls = nn.Linear(params.hidden_dim, params.num_classes)
-        
-        self.ce_cri = nn.CrossEntropyLoss()
-        
-        
-
-    def forward(self, inputs):
-        # Implement your forward pass here
-        slide_sub_preds, gSlidePred, slide_pseudo_feat = self.process_inputs(inputs)
-        return slide_sub_preds, gSlidePred, slide_pseudo_feat
-
-    def process_inputs(self, inputs):
-        # Implement the logic from your original code here
-        pass
-
-    def training_step(self, batch, batch_idx):
-        # Get the optimizers
-        opt0, opt1 = self.optimizers()
-        
-        # Enable gradient computation if it's not already enabled
-        torch.set_grad_enabled(True)
-        
-        # Forward pass with autocast for mixed precision
-        with torch.cuda.amp.autocast():
-            inputs, labels = batch
-            slide_sub_preds, gSlidePred, _ = self(inputs)
-            
-            loss0 = self.ce_cri(slide_sub_preds, labels.repeat(self.params.numGroup)).mean()
-            loss1 = self.ce_cri(gSlidePred, labels).mean()
-        
-        

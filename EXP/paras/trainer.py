@@ -43,3 +43,25 @@ class PLTrainerParas(object):
                 'enable_model_summary': True,
             }
     
+def get_pl_trainer_additional_paras(mil_algorithm):
+    if mil_algorithm == 'DTFD-MIL':
+        return {
+                #---------> paras for pytorch lightning trainner
+                "accelerator":"auto", 
+                # 'enable_progress_bar': True, 
+                # 'enable_model_summary': True,
+                
+            }
+    else:
+        return {
+                #---------> paras for pytorch lightning trainner
+                "accumulate_grad_batches":8, # mil need accumulated grad
+                "accelerator":"auto",        #accelerator='gpu', devices=1,
+                'precision': 16,             # Use mixed precision
+                'enable_progress_bar': True, 
+                'enable_model_summary': True,
+                # 'gradient_clip_val': 0.5,
+                # 'plugins': [DDPStrategy(find_unused_parameters=False)],
+                # 'strategy':'ddp',
+            }
+    

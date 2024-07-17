@@ -37,9 +37,12 @@ from HistoMIL.MODEL.Image.MIL.DSMIL.paras import DSMILParas
 from HistoMIL.MODEL.Image.MIL.Transformer.paras import  DEFAULT_TRANSFORMER_PARAS
 from HistoMIL.MODEL.Image.MIL.AttentionMIL.paras import  DEFAULT_Attention_MIL_PARAS
 from HistoMIL.MODEL.Image.MIL.CAMIL.paras import  CAMILParas, custom_camil_collate
+from HistoMIL.MODEL.Image.MIL.DTFD_MIL.paras import  DTFD_MILParas
+
 
 from HistoMIL.EXP.paras.env import EnvParas
 from HistoMIL.EXP.workspace.experiment import Experiment
+from HistoMIL.EXP.paras.trainer import get_pl_trainer_additional_paras
 
 
 # from pytorch_lightning.plugins import DDPPlugin
@@ -54,6 +57,7 @@ MDL_TO_FEATURE_DIMS = {
 }
 
 # from datetime import datetime
+
 
 def run_mil(args):
     #--------------------------> task setting
@@ -90,6 +94,11 @@ def run_mil(args):
     DEFAULT_CAMIL_PARAS.input_shape = MDL_TO_FEATURE_DIMS[args.precomputed]
     DEFAULT_CAMIL_PARAS.epoch = args.n_epochs
 
+    DEFAULT_DTFD_MIL_PARAS = DTFD_MILParas()
+    DEFAULT_DTFD_MIL_PARAS.input_dim = MDL_TO_FEATURE_DIMS[args.precomputed]
+    DEFAULT_DTFD_MIL_PARAS.epoch = args.n_epochs
+    # DEFAULT_DTFD_MIL_PARAS.feature_extractor_name = args.precomputed
+
     model_name = args.mil_algorithm  # options are "TransMIL", "ABMIL", "DSMIL" or "Transformer", 'AttentionMIL'
 
     model_para_settings = {"TransMIL":model_para_transmil,
@@ -97,7 +106,7 @@ def run_mil(args):
                            'Transformer':DEFAULT_TRANSFORMER_PARAS,
                            'AttentionMIL': DEFAULT_Attention_MIL_PARAS,
                            'CAMIL': DEFAULT_CAMIL_PARAS,
-                           'DTFD-MIL': None} 
+                           'DTFD-MIL': DEFAULT_DTFD_MIL_PARAS} 
 
     #--------------------------> parameters
     
@@ -151,23 +160,9 @@ def run_mil(args):
                     "mode":"max" if args.monitor_metric == 'auroc_val' else 'min',
                     "monitor":args.monitor_metric,}
     
-    gene2k_env.trainer_para.additional_pl_paras={
-                #---------> paras for pytorch lightning trainner
-                "accumulate_grad_batches":8, # mil need accumulated grad
-                "accelerator":"auto",        #accelerator='gpu', devices=1,
-                'precision': 16,             # Use mixed precision
-                'enable_progress_bar': True, 
-                'enable_model_summary': True,
-                # 'gradient_clip_val': 0.5,
-                # 'plugins': [DDPStrategy(find_unused_parameters=False)],
-                # 'strategy':'ddp',
-            }
+    gene2k_env.trainer_para.additional_pl_paras= get_pl_trainer_additional_paras(args.mil_algorithm)
 
-    gene2k_env.opt_para.max_epochs = args.n_epochs # lower than https://www.cell.com/cancer-cell/fulltext/S1535-6108(23)00278-7
-
-    # pdb.set_trace()
-
-    #k_fold = None
+    gene2k_env.opt_para.max_epochs = args.n_epochs 
     
 
     #--------------------------> init machine and person

@@ -21,7 +21,7 @@ class DTFD_MILParas:
     #------> parameters for model
     encoder_name:str = "pre-calculated"# or name of encoder",
     encoder_pretrained:bool = True # or False
-
+    feature_extractor_name:str = ""
     ### DTFD-MIL Params according to https://github.com/Dootmaan/DTFD-MIL.PyTorch/blob/main/train_DTFT-MIL.py#L49
     numGroup:int = 5
     input_dim:int = 1024
@@ -39,7 +39,7 @@ class DTFD_MILParas:
     task:str = 'binary'
     criterion:str = 'BCEWithLogitsLoss'
 
-    epoch:int = 32
+    epoch:int = 200
     lr:float = 1e-4 # same as https://github.com/Dootmaan/DTFD-MIL.PyTorch/blob/main/train_DTFT-MIL.py
     weight_decay:float = 1e-4
     lr_decay_ratio:float = 0.2

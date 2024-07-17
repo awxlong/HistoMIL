@@ -47,6 +47,9 @@ class SparseNeighborAggregator(Function):
         A_raw = reduced_sum.to_dense().flatten()
         alpha = F.softmax(A_raw, dim=0)
         
+        ctx.A_raw = A_raw
+        ctx.alpha = alpha
+
         return alpha, A_raw
 
     @staticmethod
@@ -61,16 +64,45 @@ class SparseNeighborAggregator(Function):
         # ).to_dense()
         # data_input, adj_matrix = ctx.saved_tensors
         
-        # Compute gradients for data_input
+        # # Compute gradients for data_input
+        # indices = adj_matrix._indices()
+        # values = (adj_matrix._values() * grad_output_alpha[indices[1]]).to(data_input.dtype) # adj_matrix._values() * grad_output_alpha[indices[1]]
+        # grad_data_input = torch.zeros_like(data_input)
+        # grad_data_input.index_add_(0, indices[1], values)
+        
+        # # We don't compute gradients for adj_matrix as it's typically fixed
+        # grad_adj_matrix = None
+
+        dtype = data_input.dtype
+        
+        A_raw = ctx.A_raw
+        alpha = ctx.alpha
+
+        # Gradient of softmax
+        grad_A_raw = (alpha * (grad_output_alpha - (alpha * grad_output_alpha).sum())).to(dtype)
+        grad_A_raw += grad_output_A_raw.to(dtype)
+
+        # Create sparse gradient tensor
         indices = adj_matrix._indices()
-        values = (adj_matrix._values() * grad_output_alpha[indices[1]]).to(data_input.dtype) # adj_matrix._values() * grad_output_alpha[indices[1]]
+        values = torch.zeros_like(adj_matrix._values(), dtype=dtype)
+        grad_sparse = torch.sparse_coo_tensor(indices, values, adj_matrix.size())
+
+        # Compute gradients
+        row_indices = indices[0]
+        col_indices = indices[1]
+        
+        # Gradient of adj_matrix
+        grad_values = grad_A_raw[row_indices] * torch.sum(data_input[col_indices], dim=1)
+        grad_sparse._values().copy_(grad_values)
+
+        # Gradient of data_input
         grad_data_input = torch.zeros_like(data_input)
-        grad_data_input.index_add_(0, indices[1], values)
+        grad_to_add = (grad_A_raw[row_indices].unsqueeze(1) * adj_matrix._values().unsqueeze(1)).to(dtype)
+        grad_data_input.index_add_(0, col_indices, grad_to_add)
         
-        # We don't compute gradients for adj_matrix as it's typically fixed
-        grad_adj_matrix = None
-        
-        return grad_data_input, grad_adj_matrix
+        return grad_data_input, grad_sparse
+    
+        # return grad_data_input, grad_adj_matrix
     
 
 class MILAttentionLayer(nn.Module):

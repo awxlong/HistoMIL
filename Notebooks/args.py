@@ -5,7 +5,7 @@ import random
 import numpy as np
 import torch
 import ast
-
+import pdb
 
 def seed_everything(seed=42):
     random.seed(seed)
@@ -35,7 +35,7 @@ def get_args_machine_config():
     
     args = parser.parse_args()
 
-    
+    # pdb.set_trace()
     assert args.data_dir.endswith(os.path.sep)
     assert args.exp_dir.endswith(os.path.sep)
 

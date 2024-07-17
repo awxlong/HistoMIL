@@ -57,6 +57,9 @@ def create_img_model(train_paras:PLTrainerParas,
         elif model_name == 'CAMIL':
             from HistoMIL.MODEL.Image.MIL.CAMIL.pl import pl_CAMIL
             pl_model = pl_CAMIL(paras=model_para)
+        elif model_name == 'DTFD-MIL':
+            from HistoMIL.MODEL.Image.MIL.DTFD_MIL.pl import pl_DTFDMIL
+            pl_model = pl_DTFDMIL(paras=model_para)
 
     else:
         raise ValueError("model name not availiable")
