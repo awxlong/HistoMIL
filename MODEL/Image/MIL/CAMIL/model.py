@@ -361,9 +361,9 @@ class CustomAttention(nn.Module):
             q_chunk = q[i:i+chunk_size]
             k_chunk = k[i:i+chunk_size]
             
-            matmul_qk = torch.matmul(q_chunk, k_chunk.transpose(-2, -1))
-            matmul_qk = matmul_qk / dk # redefine variable instead of creating new one
-            attention_chunks.append(matmul_qk)
+            # matmul_qk = torch.matmul(q_chunk, k_chunk.transpose(-2, -1))
+            # matmul_qk = matmul_qk / dk # redefine variable instead of creating new one
+            attention_chunks.append(torch.matmul(q_chunk, k_chunk.transpose(-2, -1)) / dk)
         
         attention_chunks = torch.cat(attention_chunks, dim=0)
         
