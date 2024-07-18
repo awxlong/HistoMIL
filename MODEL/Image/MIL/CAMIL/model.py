@@ -353,7 +353,7 @@ class CustomAttention(nn.Module):
         q = torch.cat(q_chunks, dim=0)
         k = torch.cat(k_chunks, dim=0)
 
-        dk = torch.sqrt(torch.tensor(k.size(-1), dtype=torch.float32))
+        dk = k.size(-1) ** 0.5 # torch.sqrt(torch.tensor(k.size(-1), dtype=torch.int8))
 
         # Compute attention scores in chunks
         attention_chunks = []
@@ -362,12 +362,12 @@ class CustomAttention(nn.Module):
             k_chunk = k[i:i+chunk_size]
             
             matmul_qk = torch.matmul(q_chunk, k_chunk.transpose(-2, -1))
-            scaled_chunk = matmul_qk / dk
-            attention_chunks.append(scaled_chunk)
+            matmul_qk = matmul_qk / dk # redefine variable instead of creating new one
+            attention_chunks.append(matmul_qk)
         
-        scaled_attention_logits = torch.cat(attention_chunks, dim=0)
+        attention_chunks = torch.cat(attention_chunks, dim=0)
         
-        return scaled_attention_logits
+        return attention_chunks
     # def forward(self, inputs):
     #     return self.compute_attention_scores(inputs)
 
