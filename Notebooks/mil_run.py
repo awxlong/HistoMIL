@@ -132,6 +132,7 @@ def run_mil(args):
         gene2k_env.trainer_para.use_pre_calculated = True ### FOR LOADING COMPUTED FEATURES
         gene2k_env.trainer_para.backbone_name = args.precomputed
         gene2k_env.collector_para.feature.model_name = args.precomputed # if i want to reuse precomputed prov-gigapath # this model_name is different to the model_name below
+        gene2k_env.collector_para.feature.img_size = (args.step_size,  args.step_size)
         gene2k_env.collector_para.patch.step_size = args.step_size
         gene2k_env.collector_para.patch.patch_size = (args.step_size,  args.step_size)
     else:
