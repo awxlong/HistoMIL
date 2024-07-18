@@ -342,10 +342,10 @@ class CustomAttention(nn.Module):
         # dk = torch.tensor(k.size(-1), dtype=torch.float32)
         dk = torch.tensor(k.shape[-1], dtype=torch.int32)
         # pdb.set_trace()
-        matmul_qk = torch.matmul(q, k.transpose(-2, -1))  # (..., seq_len_q, seq_len_k)
+        matmul_qk = torch.matmul(q, k.transpose(-2, -1))  / torch.sqrt(dk) # (..., seq_len_q, seq_len_k)
         # matmul_qk = torch.tensordot(q, k.transpose(-2, -1), dims=1) # could also be this
         
-        scaled_attention_logits = matmul_qk / torch.sqrt(dk)
+        # scaled_attention_logits = matmul_qk / torch.sqrt(dk)
 
         
         # chunk_size = 1024  # Adjust this value based on your GPU memory
@@ -383,7 +383,7 @@ class CustomAttention(nn.Module):
         # # Reshape back to original dimensions
         # scaled_attention_logits = scaled_attention_logits.view(q.shape[:-1] + (k.size(-2),))
         # # pdb.set_trace()
-        return scaled_attention_logits
+        return matmul_qk
 
 
 class encoder(nn.Module):
