@@ -22,6 +22,7 @@ import pdb
 
 from torch.cuda.amp import autocast
 from torch.autograd import Function
+from torch.utils.checkpoint import checkpoint
 
 ### IMPLEMENTATION ADAPTED FROM https://github.com/olgarithmics/ICLR_CAMIL
 
@@ -330,60 +331,96 @@ class CustomAttention(nn.Module):
 
         # Regularization is typically applied during the loss computation in PyTorch
         self.kernel_regularizer = kernel_regularizer
-
     def forward(self, inputs):
-        return self.compute_attention_scores(inputs)
+        return checkpoint(self.compute_attention_scores, inputs)
 
     def compute_attention_scores(self, instance):
-        ### can futher optimize this using F.scaled_dot_product 
-        q = torch.matmul(instance, self.wq_weight_params)
-        k = torch.matmul(instance, self.wk_weight_params)
+        chunk_size = 1024  # Adjust based on your GPU memory
+        
+        def process_chunk(chunk):
+            q = torch.matmul(chunk, self.wq_weight_params)
+            k = torch.matmul(chunk, self.wk_weight_params)
+            return q, k
+        
+        q_chunks = []
+        k_chunks = []
+        for i in range(0, instance.size(0), chunk_size):
+            chunk = instance[i:i+chunk_size]
+            q, k = process_chunk(chunk)
+            q_chunks.append(q)
+            k_chunks.append(k)
+        
+        q = torch.cat(q_chunks, dim=0)
+        k = torch.cat(k_chunks, dim=0)
 
-        # dk = torch.tensor(k.size(-1), dtype=torch.float32)
-        dk = torch.tensor(k.shape[-1], dtype=torch.int32)
-        # pdb.set_trace()
-        matmul_qk = torch.matmul(q, k.transpose(-2, -1))  / torch.sqrt(dk) # (..., seq_len_q, seq_len_k)
-        # matmul_qk = torch.tensordot(q, k.transpose(-2, -1), dims=1) # could also be this
-        
-        # scaled_attention_logits = matmul_qk / torch.sqrt(dk)
+        dk = torch.sqrt(torch.tensor(k.size(-1), dtype=torch.float32))
 
-        
-        # chunk_size = 1024  # Adjust this value based on your GPU memory
-        # q_chunks = []
-        # k_chunks = []
-        
-        # for i in range(0, instance.size(0), chunk_size):
-        #     chunk = instance[i:i+chunk_size]
-        #     q_chunks.append(torch.matmul(chunk, self.wq_weight_params))
-        #     k_chunks.append(torch.matmul(chunk, self.wk_weight_params))
-        
-        # q = torch.cat(q_chunks, dim=0)
-        # k = torch.cat(k_chunks, dim=0)
-
-        # # Use torch.sqrt() directly on a scalar
-        # dk = torch.sqrt(torch.tensor(k.size(-1), dtype=torch.float32))
-
-        # # Use torch.bmm for batch matrix multiplication
-        # # Reshape q and k for bmm
-        # q_reshaped = q.view(-1, q.size(-2), q.size(-1))
-        # k_reshaped = k.view(-1, k.size(-2), k.size(-1))
-        
-        # # Compute attention scores in chunks
-        # attention_chunks = []
-        # for i in range(0, q_reshaped.size(0), chunk_size):
-        #     q_chunk = q_reshaped[i:i+chunk_size]
-        #     k_chunk = k_reshaped[i:i+chunk_size]
+        # Compute attention scores in chunks
+        attention_chunks = []
+        for i in range(0, q.size(0), chunk_size):
+            q_chunk = q[i:i+chunk_size]
+            k_chunk = k[i:i+chunk_size]
             
-        #     matmul_qk = torch.bmm(q_chunk, k_chunk.transpose(1, 2))
-        #     scaled_chunk = matmul_qk / dk
-        #     attention_chunks.append(scaled_chunk)
+            matmul_qk = torch.matmul(q_chunk, k_chunk.transpose(-2, -1))
+            scaled_chunk = matmul_qk / dk
+            attention_chunks.append(scaled_chunk)
         
-        # scaled_attention_logits = torch.cat(attention_chunks, dim=0)
+        scaled_attention_logits = torch.cat(attention_chunks, dim=0)
         
-        # # Reshape back to original dimensions
-        # scaled_attention_logits = scaled_attention_logits.view(q.shape[:-1] + (k.size(-2),))
-        # # pdb.set_trace()
-        return matmul_qk
+        return scaled_attention_logits
+    # def forward(self, inputs):
+    #     return self.compute_attention_scores(inputs)
+
+    # def compute_attention_scores(self, instance):
+    #     ### can futher optimize this using F.scaled_dot_product 
+    #     # q = torch.matmul(instance, self.wq_weight_params)
+    #     # k = torch.matmul(instance, self.wk_weight_params)
+
+    #     # # dk = torch.tensor(k.size(-1), dtype=torch.float32)
+    #     # dk = torch.tensor(k.shape[-1], dtype=torch.int32)
+    #     # # pdb.set_trace()
+    #     # matmul_qk = torch.matmul(q, k.transpose(-2, -1))  / torch.sqrt(dk) # (..., seq_len_q, seq_len_k)
+    #     # matmul_qk = torch.tensordot(q, k.transpose(-2, -1), dims=1) # could also be this
+        
+    #     # scaled_attention_logits = matmul_qk / torch.sqrt(dk)
+
+        
+    #     chunk_size = 1024  # Adjust this value based on your GPU memory
+    #     q_chunks = []
+    #     k_chunks = []
+        
+    #     for i in range(0, instance.size(0), chunk_size):
+    #         chunk = instance[i:i+chunk_size]
+    #         q_chunks.append(torch.matmul(chunk, self.wq_weight_params))
+    #         k_chunks.append(torch.matmul(chunk, self.wk_weight_params))
+        
+    #     q = torch.cat(q_chunks, dim=0)
+    #     k = torch.cat(k_chunks, dim=0)
+
+    #     # Use torch.sqrt() directly on a scalar
+    #     dk = torch.sqrt(torch.tensor(k.size(-1), dtype=torch.float32))
+
+    #     # Use torch.bmm for batch matrix multiplication
+    #     # Reshape q and k for bmm
+    #     q_reshaped = q.view(-1, q.size(-2), q.size(-1))
+    #     k_reshaped = k.view(-1, k.size(-2), k.size(-1))
+        
+    #     # Compute attention scores in chunks
+    #     attention_chunks = []
+    #     for i in range(0, q_reshaped.size(0), chunk_size):
+    #         q_chunk = q_reshaped[i:i+chunk_size]
+    #         k_chunk = k_reshaped[i:i+chunk_size]
+            
+    #         matmul_qk = torch.bmm(q_chunk, k_chunk.transpose(1, 2))
+    #         scaled_chunk = matmul_qk / dk
+    #         attention_chunks.append(scaled_chunk)
+        
+    #     scaled_attention_logits = torch.cat(attention_chunks, dim=0)
+        
+    #     # Reshape back to original dimensions
+    #     scaled_attention_logits = scaled_attention_logits.view(q.shape[:-1] + (k.size(-2),))
+    #     # # pdb.set_trace()
+    #     return scaled_attention_logits
 
 
 class encoder(nn.Module):
@@ -470,6 +507,6 @@ if __name__ == "__main__":
     default_paras = CAMILParas()
     rand_tensor = torch.rand(1, 1, 1024) 
     model = CAMIL(paras=default_paras)
-
+    # y = model(rand_tensor)
     pdb.set_trace()
     
