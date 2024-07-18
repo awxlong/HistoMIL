@@ -1,4 +1,4 @@
-#$ -l tmem=9G
+#$ -l tmem=142G
 #$ -l h_rt=6:30:00 
 #$ -S /bin/bash
 #$ -j y
@@ -10,7 +10,8 @@ cd secrier_lab/persistence/
 source /home/xuelonan/secrier_lab/python3.8.5-biomedai.source
 source /share/apps/source_files/cuda/cuda-11.8.source
 python3 HistoMIL/Notebooks/mil_run.py --exp-name 'mil_camil_uni_30epochs_cv5' \
-                                      --project-name 'g0-arrest-uni-cv5-camil' --wandb-entity-name 'cell-x' --localcohort-name 'COAD' --task-name 'g0_arrest' --pid-name 'PatientID' \
+                                      --project-name 'g0-arrest-uni-cv5-camil' \
+                                      --wandb-entity-name 'anwangxuelong' --localcohort-name 'COAD' --task-name 'g0_arrest' --pid-name 'PatientID' \
                                       --targets-name 'g0_arrest' \
                                       --cohort-dir '/home/xuelonan/secrier_lab/persistence/' \
                                       --split-ratio 0.9 0.1 --step-size 224 \
@@ -20,5 +21,5 @@ python3 HistoMIL/Notebooks/mil_run.py --exp-name 'mil_camil_uni_30epochs_cv5' \
                                       --n-epochs 30 \
                                       --monitor-metric 'auroc_val' \
                                       --k-fold 5 \
-                                      --num-workers 0
+                                      --num-workers 4
 echo "Finished at: $(date)"
