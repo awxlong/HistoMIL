@@ -242,7 +242,7 @@ class Last_Sigmoid(nn.Module):
 
     def __init__(self, input_dim, output_dim, subtyping, 
                  kernel_initializer='glorot_uniform', bias_initializer='zeros',
-                 pooling_mode="sum", use_bias=True):
+                 pooling_mode="mean", use_bias=True):
         super(Last_Sigmoid, self).__init__()
         
         self.output_dim = output_dim
@@ -271,17 +271,22 @@ class Last_Sigmoid(nn.Module):
     def sum_pooling(self, x):
         return torch.sum(x, dim=0, keepdim=True)
 
+    def mean_pooling(self, x):
+        return torch.mean(x, dim=0, keepdim=True)
+    
     def forward(self, x):
         # pdb.set_trace()
         if x.size(0) == 1:
             x = x.squeeze(0)
-
+        # pdb.set_trace()
         # Apply pooling
         if self.pooling_mode == 'max':
             x = self.max_pooling(x)
         elif self.pooling_mode == 'sum':
             x = self.sum_pooling(x)
-
+        elif self.pooling_mode == 'mean':
+            x = self.mean_pooling(x)
+        # pdb.set_trace()
         # Apply linear transformation
         x = torch.matmul(x, self.kernel)
         
@@ -331,53 +336,53 @@ class CustomAttention(nn.Module):
 
     def compute_attention_scores(self, instance):
         ### can futher optimize this using F.scaled_dot_product 
-        # q = torch.matmul(instance, self.wq_weight_params)
-        # k = torch.matmul(instance, self.wk_weight_params)
+        q = torch.matmul(instance, self.wq_weight_params)
+        k = torch.matmul(instance, self.wk_weight_params)
 
-        # # dk = torch.tensor(k.size(-1), dtype=torch.float32)
-        # dk = torch.tensor(k.shape[-1], dtype=torch.int32)
-        # # pdb.set_trace()
-        # matmul_qk = torch.matmul(q, k.transpose(-2, -1))  # (..., seq_len_q, seq_len_k)
-        # # matmul_qk = torch.tensordot(q, k.transpose(-2, -1), dims=1) # could also be this
-        
-        # scaled_attention_logits = matmul_qk / torch.sqrt(dk)
-
-        
-        chunk_size = 1024  # Adjust this value based on your GPU memory
-        q_chunks = []
-        k_chunks = []
-        
-        for i in range(0, instance.size(0), chunk_size):
-            chunk = instance[i:i+chunk_size]
-            q_chunks.append(torch.matmul(chunk, self.wq_weight_params))
-            k_chunks.append(torch.matmul(chunk, self.wk_weight_params))
-        
-        q = torch.cat(q_chunks, dim=0)
-        k = torch.cat(k_chunks, dim=0)
-
-        # Use torch.sqrt() directly on a scalar
-        dk = torch.sqrt(torch.tensor(k.size(-1), dtype=torch.float32))
-
-        # Use torch.bmm for batch matrix multiplication
-        # Reshape q and k for bmm
-        q_reshaped = q.view(-1, q.size(-2), q.size(-1))
-        k_reshaped = k.view(-1, k.size(-2), k.size(-1))
-        
-        # Compute attention scores in chunks
-        attention_chunks = []
-        for i in range(0, q_reshaped.size(0), chunk_size):
-            q_chunk = q_reshaped[i:i+chunk_size]
-            k_chunk = k_reshaped[i:i+chunk_size]
-            
-            matmul_qk = torch.bmm(q_chunk, k_chunk.transpose(1, 2))
-            scaled_chunk = matmul_qk / dk
-            attention_chunks.append(scaled_chunk)
-        
-        scaled_attention_logits = torch.cat(attention_chunks, dim=0)
-        
-        # Reshape back to original dimensions
-        scaled_attention_logits = scaled_attention_logits.view(q.shape[:-1] + (k.size(-2),))
+        # dk = torch.tensor(k.size(-1), dtype=torch.float32)
+        dk = torch.tensor(k.shape[-1], dtype=torch.int32)
         # pdb.set_trace()
+        matmul_qk = torch.matmul(q, k.transpose(-2, -1))  # (..., seq_len_q, seq_len_k)
+        # matmul_qk = torch.tensordot(q, k.transpose(-2, -1), dims=1) # could also be this
+        
+        scaled_attention_logits = matmul_qk / torch.sqrt(dk)
+
+        
+        # chunk_size = 1024  # Adjust this value based on your GPU memory
+        # q_chunks = []
+        # k_chunks = []
+        
+        # for i in range(0, instance.size(0), chunk_size):
+        #     chunk = instance[i:i+chunk_size]
+        #     q_chunks.append(torch.matmul(chunk, self.wq_weight_params))
+        #     k_chunks.append(torch.matmul(chunk, self.wk_weight_params))
+        
+        # q = torch.cat(q_chunks, dim=0)
+        # k = torch.cat(k_chunks, dim=0)
+
+        # # Use torch.sqrt() directly on a scalar
+        # dk = torch.sqrt(torch.tensor(k.size(-1), dtype=torch.float32))
+
+        # # Use torch.bmm for batch matrix multiplication
+        # # Reshape q and k for bmm
+        # q_reshaped = q.view(-1, q.size(-2), q.size(-1))
+        # k_reshaped = k.view(-1, k.size(-2), k.size(-1))
+        
+        # # Compute attention scores in chunks
+        # attention_chunks = []
+        # for i in range(0, q_reshaped.size(0), chunk_size):
+        #     q_chunk = q_reshaped[i:i+chunk_size]
+        #     k_chunk = k_reshaped[i:i+chunk_size]
+            
+        #     matmul_qk = torch.bmm(q_chunk, k_chunk.transpose(1, 2))
+        #     scaled_chunk = matmul_qk / dk
+        #     attention_chunks.append(scaled_chunk)
+        
+        # scaled_attention_logits = torch.cat(attention_chunks, dim=0)
+        
+        # # Reshape back to original dimensions
+        # scaled_attention_logits = scaled_attention_logits.view(q.shape[:-1] + (k.size(-2),))
+        # # pdb.set_trace()
         return scaled_attention_logits
 
 
@@ -394,13 +399,13 @@ class encoder(nn.Module):
     def forward(self, inputs):
         dense, sparse_adj = inputs  # adjacency matrix
 
-        encoder_output = self.nyst_att(dense, return_attn=False)
+        encoder_output = self.nyst_att(dense, return_attn=False) # this is the nystroformer
 
         xg = encoder_output.squeeze(0) # ([1, #patches, input_dim])
 
-        encoder_output = xg + dense
+        encoder_output = xg + dense # key + query
         # pdb.set_trace()
-        attention_matrix = self.custom_att(encoder_output)
+        attention_matrix = self.custom_att(encoder_output) # one of the main comp. bottleneck
 
         norm_alpha, alpha = self.neigh([attention_matrix, sparse_adj]) # attention coefficients
 
@@ -454,9 +459,9 @@ class CAMIL(nn.Module):
 
         out = self.class_fc(attn_output)
         
-        # alpha = self.neigh(x, adjacency_matrix)
-        # k_alpha = self.attcls(x)
-        # attn_output = k_alpha * x
+        # alpha = self.neigh([bag, adjacency_matrix])
+        # k_alpha = self.attcls(bag)
+        # attn_output = k_alpha * bag
         # out = self.class_fc(attn_output)
         return out, alpha, k_alpha
 
