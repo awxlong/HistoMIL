@@ -317,9 +317,9 @@ class CustomAttention(nn.Module):
 
         # Initialize weights
         self.wq_weight_params = nn.Parameter(torch.Tensor(input_dim, 
-                                                          weight_params_dim))
+                                                          weight_params_dim), requires_grad=True)
         self.wk_weight_params = nn.Parameter(torch.Tensor(input_dim, 
-                                                          weight_params_dim))
+                                                          weight_params_dim), requires_grad=True)
 
         # Initialize weights using the specified initializer
         if kernel_initializer == "xavier_uniform":
@@ -332,11 +332,17 @@ class CustomAttention(nn.Module):
         # Regularization is typically applied during the loss computation in PyTorch
         self.kernel_regularizer = kernel_regularizer
     def forward(self, inputs):
+        inputs.requires_grad_(True)
+        inputs = inputs.to(torch.float16)
+
         return checkpoint(self.compute_attention_scores, inputs)
 
     def compute_attention_scores(self, instance):
         chunk_size = 1024  # Adjust based on your GPU memory
-        
+        # Cast input to float16
+        # instance = instance.to(torch.float16)
+        # print(instance.dtype)
+
         def process_chunk(chunk):
             q = torch.matmul(chunk, self.wq_weight_params)
             k = torch.matmul(chunk, self.wk_weight_params)
@@ -366,7 +372,7 @@ class CustomAttention(nn.Module):
             attention_chunks.append(torch.matmul(q_chunk, k_chunk.transpose(-2, -1)) / dk)
         
         attention_chunks = torch.cat(attention_chunks, dim=0)
-        
+        # print(attention_chunks.dtype)
         return attention_chunks
     # def forward(self, inputs):
     #     return self.compute_attention_scores(inputs)
