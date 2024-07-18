@@ -56,8 +56,7 @@ class Cohort:
         filenames = []
         folders   = []
         P_id      = []
-        # slide_root = '/Users/awxlong/Desktop/my-studies/temp_data/CRC/Feature/resnet18/'
-        # pattern = '*.pt'
+        
         p = Path(slide_root)
         for f in p.rglob(pattern):
             filenames.append(f.name)
