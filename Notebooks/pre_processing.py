@@ -146,6 +146,7 @@ def preprocessing(args):
         preprocess_env.collector_para.feature.out_dim = FEAT_DIMS[args.backbone_name]
         preprocess_env.collector_para.feature.trans = STR_TO_TRANSFORMATIONS[args.transformations] # default only_naive_transforms_tensor # no_transforms # only_naive_transforms_tensor # no_transforms
     else:
+        preprocess_env.collector_para.feature.img_size = (args.step_size, args.step_size)
         preprocess_env.collector_para.feature.trans = STR_TO_TRANSFORMATIONS[args.transformations]
 
     print(preprocess_env.collector_para.feature)

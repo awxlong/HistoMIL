@@ -63,20 +63,20 @@ class Features(Items):
             assert self.model_name is not None
             folder = str(self.wsi_loc.parent).split("/")[-1]
             fname  = self.wsi_loc.name
-            subdir = self.db_loc.abs_loc("feature")+f"{self.model_name}/"
+            subdir = self.db_loc.abs_loc("feature")+f"{self.model_name}_{self.paras.img_size[0]}/"
             if not os.path.exists(subdir):
                 os.makedirs(subdir)
                 logger.info(f" Built {subdir}")
-            return Path(self.db_loc.abs_loc("feature")+f"/{self.model_name}/"+folder+"."+fname+".pt")
+            return Path(subdir+folder+"."+fname+".pt")
         elif self.paras.trans.__name__ == 'naive_transforms':
             assert self.model_name is not None
             folder = str(self.wsi_loc.parent).split("/")[-1]
             fname  = self.wsi_loc.name
-            subdir = self.db_loc.abs_loc("feature")+f"{self.model_name}/"
+            subdir = self.db_loc.abs_loc("feature")+f"{self.model_name}_{self.paras.img_size[0]}/"
             if not os.path.exists(subdir):
                 os.makedirs(subdir)
                 logger.info(f" Built {subdir}")
-            return Path(self.db_loc.abs_loc("feature")+f"/{self.model_name}/"+folder+"."+fname+"_naive_transform.pt")
+            return Path(subdir+folder+"."+fname+"_naive_transform.pt")
         
     def calc(self,
              slide:WholeSlideImage,
