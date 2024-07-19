@@ -106,8 +106,7 @@ def run_mil(args):
     DEFAULT_GRAPHTRANSFORMER_PARAS = GraphTransformerParas()
     DEFAULT_GRAPHTRANSFORMER_PARAS.n_features = MDL_TO_FEATURE_DIMS[args.precomputed]
     DEFAULT_GRAPHTRANSFORMER_PARAS.epoch = args.n_epochs
-    DEFAULT_GRAPHTRANSFORMER_PARAS.lr_scheduler_config = {'T_max':args.n_epochs, 
-                                                           'eta_min':1e-6}
+    
 
     model_name = args.mil_algorithm  # options are "TransMIL", "ABMIL", "DSMIL" or "Transformer", 'AttentionMIL'
 

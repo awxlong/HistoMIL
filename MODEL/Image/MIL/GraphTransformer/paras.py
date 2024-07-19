@@ -37,12 +37,12 @@ class GraphTransformerParas:
     criterion:str = 'BCEWithLogitsLoss'
     # pos_weight = torch.ones(1)
     epoch:int = 42
-    lr:float = 2.0e-5 # same as https://github.com/peng-lab/HistoBistro/blob/main/config.yaml
-    wd:float = 2.0e-05
-    optimizer = 'AdamW'
-    lr_scheduler = 'CosineAnnealingLR'
-    lr_scheduler_config:dict = {'T_max':42, 
-                                'eta_min':1e-6} # assumes cosine annealing
+    lr:float = 1e-3 #  2.0e-5 # 
+    wd:float = 5e-4 # same as https://github.com/vkola-lab/tmi2022
+    optimizer = 'Adam'
+    lr_scheduler = 'MultiStepLR'
+    lr_scheduler_config:dict = {'milestones':[20], 
+                                'gamma':0.1} # assumes cosine annealing
     
 DEFAULT_GRAPHTRANSFORMER_PARAS = GraphTransformerParas()
     
