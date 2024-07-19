@@ -33,10 +33,20 @@ def _rank3_trace(x: Tensor) -> Tensor:
 
 
 def _rank3_diag(x: Tensor) -> Tensor:
-    eye = torch.eye(x.size(1)).type_as(x)
-    out = eye * x.unsqueeze(2).expand(x.size(0), x.size(1), x.size(1))
+    '''
+    dafuq is this function? it's putting the values of x as the diagnoal entries of the identity matrix
+    '''
+    # pdb.set_trace()
+    # eye = torch.eye(x.size(1)).type_as(x)
+    # out = eye * x.unsqueeze(2).expand(x.size(0), x.size(1), x.size(1))
+    # Create a sparse identity matrix
+    indices = torch.arange(x.size(1), dtype=torch.long).unsqueeze(0).expand(2, x.size(1))
+    values = x[0] # x is (1, #patches, #features) # torch.ones(x.size(1), dtype=x.dtype, device=x.device)
+    eye_sparse = torch.sparse_coo_tensor(indices, values, (x.size(1), x.size(1))).to(x.device)
 
-    return out
+    # Expand x to match the shape for batch multiplication
+    
+    return eye_sparse.unsqueeze(0) # eye_sparse * x.unsqueeze(2).expand(x.size(0), x.size(1), x.size(1))
 
 def dense_mincut_pool(
     x: Tensor,
@@ -74,8 +84,11 @@ def dense_mincut_pool(
     # pdb.set_trace()
     d_flat = d_flat.to_dense()
     d = _rank3_diag(d_flat)
+    # pdb.set_trace()
+    # mincut_den = _rank3_trace(
+    #     torch.matmul(torch.matmul(s.transpose(1, 2), d), s))
     mincut_den = _rank3_trace(
-        torch.matmul(torch.matmul(s.transpose(1, 2), d), s))
+        torch.matmul(torch.matmul(s_traspose, d[0]), s))
     mincut_loss = -(mincut_num / mincut_den)
     mincut_loss = torch.mean(mincut_loss)
 

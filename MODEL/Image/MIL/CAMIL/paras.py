@@ -24,7 +24,7 @@ class CAMILParas:
     epoch:int = 30
     lr:float = 0.0002 # 2e-5 # same as https://github.com/olgarithmics/ICLR_CAMIL/blob/ddd8e2e3973d234310f47c6a528ebbb2eaf369a0/args.py#L3
     wd:float = 1e-5
-    optimizer = 'Adam'
+    optimizer = 'Adam' # 'AdamW'
     lr_scheduler = 'ReduceLROnPlateau'
     lr_scheduler_config:dict = {'factor':0.2,
                                 'mode': 'min',
