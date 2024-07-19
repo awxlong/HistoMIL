@@ -233,7 +233,7 @@ class pl_DTFDMIL(pl.LightningModule):
             epoch = self.trainer.current_epoch
             # pdb.set_trace()
             filename = self.trainer.checkpoint_callback.filename # .format() + f"{epoch:02d}-{self.best_auroc_val:.2f}.ckpt"
-            filename = filename.format(epoch=epoch, auroc_val=self.best_auroc_val)
+            filename = filename.format(epoch=epoch, auroc_val=self.best_auroc_val) + ".ckpt"
             filepath = os.path.join(self.trainer.checkpoint_callback.dirpath, \
                                     filename)
             self.trainer.save_checkpoint(filepath)
