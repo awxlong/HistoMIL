@@ -115,17 +115,12 @@ class pl_DTFDMIL(pl.LightningModule):
                                list(self.model.attention.parameters()) + \
                                list(self.model.dimReduction.parameters())
 
-        # optimizer0 = torch.optim.Adam(trainable_parameters, lr=self.paras.lr, weight_decay=self.paras.weight_decay)
-        # optimizer1 = torch.optim.Adam(self.model.attCls.parameters(), lr=self.paras.lr, weight_decay=self.paras.weight_decay)
-        # Define the AdamW optimizer
-        optimizer0 = torch.optim.AdamW(trainable_parameters, lr=self.paras.lr, weight_decay=self.paras.weight_decay)
-        optimizer1 = torch.optim.AdamW(self.model.attCls.parameters(), lr=self.paras.lr, weight_decay=self.paras.weight_decay)
-
-        # scheduler0 = torch.optim.lr_scheduler.MultiStepLR(optimizer0, [100], gamma=self.paras.lr_decay_ratio)
-        # scheduler1 = torch.optim.lr_scheduler.MultiStepLR(optimizer1, [100], gamma=self.paras.lr_decay_ratio)
-        scheduler0 = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer0, T_max=self.paras.epoch, eta_min=1e-6)
-        scheduler1 = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer1, T_max=self.paras.epoch, eta_min=1e-6)
-
+        optimizer0 = torch.optim.Adam(trainable_parameters, lr=self.paras.lr, weight_decay=self.paras.weight_decay)
+        optimizer1 = torch.optim.Adam(self.model.attCls.parameters(), lr=self.paras.lr, weight_decay=self.paras.weight_decay)
+       
+        scheduler0 = torch.optim.lr_scheduler.MultiStepLR(optimizer0, [25], gamma=self.paras.lr_decay_ratio)
+        scheduler1 = torch.optim.lr_scheduler.MultiStepLR(optimizer1, [25], gamma=self.paras.lr_decay_ratio)
+        
         return [optimizer0, optimizer1], [scheduler0, scheduler1]
    
 
