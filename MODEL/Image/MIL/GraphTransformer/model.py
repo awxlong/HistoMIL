@@ -45,7 +45,10 @@ def dense_mincut_pool(
     mask: Optional[Tensor] = None,
     temp: float = 1.0,
 ) -> Tuple[Tensor, Tensor, Tensor, Tensor]:
-    "https://pytorch-geometric.readthedocs.io/en/latest/_modules/torch_geometric/nn/dense/mincut_pool.html#dense_mincut_pool"
+    '''
+    copied from https://pytorch-geometric.readthedocs.io/en/latest/_modules/torch_geometric/nn/dense/mincut_pool.html#dense_mincut_pool
+    to avoid pip installing the whole library
+    '''
     x = x.unsqueeze(0) if x.dim() == 2 else x
     adj = adj.unsqueeze(0) if adj.dim() == 2 else adj
     s = s.unsqueeze(0) if s.dim() == 2 else s
@@ -98,7 +101,7 @@ class Classifier(nn.Module):
 
         self.transformer = VisionTransformer(num_classes=paras.n_class, embed_dim=self.embed_dim)
         self.cls_token = nn.Parameter(torch.zeros(1, 1, self.embed_dim))
-        self.criterion = nn.CrossEntropyLoss()
+        # self.criterion = nn.CrossEntropyLoss()
 
         self.bn = 1
         self.add_self = 1
@@ -112,7 +115,7 @@ class Classifier(nn.Module):
         # cls_loss=node_feat.new_zeros(self.num_layers)
         # rank_loss=node_feat.new_zeros(self.num_layers-1)
         X = node_feat # (1, #of nodes, #of features)
-        mask = torch.ones((1, X.shape[1])) # (1, #of nodes)
+        mask = torch.ones((1, X.shape[1]), device=X.device) # (1, #of nodes)
         # p_t=[]
         # pred_logits=0
         # visualize_tools=[]
@@ -149,7 +152,7 @@ class Classifier(nn.Module):
         # loss = self.criterion(out, labels)
         # loss = loss + mc1 + o1
         # # pred
-        pred = out.data.max(1)[1]
+        # pred = out.data.max(1)[1]
 
         if graphcam_flag:
             print('GraphCAM enabled')
@@ -176,19 +179,16 @@ class Classifier(nn.Module):
 
 
 if __name__ == "__main__":
-    # model_config = {'heads': 8, 
-    #             'dim_head': 64, 
-    #             'dim': 512, 
-    #             'mlp_dim': 512, 
-    #             'input_dim':768,
-    #             'num_classes':1}
+    
     default_paras = GraphTransformerParas(n_features=1024)
     
-    
-    model = Classifier(default_paras)
-    rand_tensor = torch.rand((1, 29015, 1024))
-    uni_adj_matrix = torch.load('/Users/awxlong/Desktop/my-studies/temp_data/CRC/Feature/uni_adj_matrix/temp_sparse_matrix.pt')
-    output = model(rand_tensor, uni_adj_matrix.to_dense())
+    device = 'cpu'
+    model = Classifier(default_paras)# .to('mps')
+    rand_tensor = torch.rand((1, 29015, 1024))# .to('mps')
+    uni_adj_matrix = torch.load('/Users/awxlong/Desktop/my-studies/temp_data/CRC/Feature/uni_adj_matrix/temp_sparse_matrix.pt')# .to('mps')
+    uni_adj_matrix = uni_adj_matrix.to_dense()# .to('mps')
+    # pdb.set_trace()
+    output = model(rand_tensor, uni_adj_matrix)
     pdb.set_trace()
     # Load the modified state dictionary into your model
     # model.load_state_dict(new_state_dict)

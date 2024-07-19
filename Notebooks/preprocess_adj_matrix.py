@@ -207,8 +207,8 @@ def compute_adj_coords(wsi_coords, wsi_feats, wsi_name, adj_coord_save_path, adj
             # sparse_matrix = torch.sparse.FloatTensor(indices, values, torch.Size([wsi_feats.shape[0], wsi_feats.shape[0]]))
             sparse_matrix = torch.sparse_coo_tensor(indices, values, torch.Size([wsi_feats.shape[0], wsi_feats.shape[0]]))
             # pdb.set_trace()
-            # torch.save(sparse_matrix, f'{adj_matrix_save_path}{wsi_name}.pt')
-            torch.save(sparse_matrix, f'{adj_matrix_save_path}')
+            torch.save(sparse_matrix, f'{adj_matrix_save_path}{wsi_name}.pt')
+            # torch.save(sparse_matrix, f'{adj_matrix_save_path}') # refactor in future iterations
             logger.info(f'Adjacency matrix stored at {adj_matrix_save_path}')
         else:
              logger.info(f'Adjacency matrix already exists at: {adj_matrix_save_path}{wsi_name}.pt')

@@ -5,7 +5,9 @@ import torch
 import torch.nn as nn
 from einops import rearrange
 import math
-import warnings 
+import warnings
+
+import pdb
 
 # from torch.nn.parameter import Tensor
 
@@ -737,6 +739,7 @@ class GCNBlock(nn.Module):
             start_index.append(ssum)
             for i in range(x.shape[0]):
                 bn_tensor_bf[start_index[i]:start_index[i+1]]=y[i,0:index[i]]
+            # pdb.set_trace()
             bn_tensor_bf=self.bn_layer(bn_tensor_bf)
             for i in range(x.shape[0]):
                 bn_tensor_af[i,0:index[i]]=bn_tensor_bf[start_index[i]:start_index[i+1]]
