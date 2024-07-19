@@ -84,27 +84,33 @@ class MILAttentionLayer(nn.Module):
         self.use_gated = use_gated
 
         # Initialize weights
-        self.v_weight_params = nn.Parameter(
-            torch.Tensor(input_dim, self.weight_params_dim),
-            requires_grad = True,)
-        self.w_weight_params = nn.Parameter(
-            torch.Tensor(self.weight_params_dim, 1),
-            requires_grad = True)
+        
+        self.v_weight = nn.Linear(input_dim, self.weight_params_dim)
+        
+        self.w_weight = nn.Linear(self.weight_params_dim, 1)
+        
+        # self.v_weight_params = nn.Parameter(
+        #     torch.Tensor(input_dim, self.weight_params_dim),
+        #     requires_grad = True,)
+        # self.w_weight_params = nn.Parameter(
+        #     torch.Tensor(self.weight_params_dim, 1),
+        #     requires_grad = True)
 
         if self.use_gated:
-            self.u_weight_params = nn.Parameter(
-                torch.Tensor(input_dim, self.weight_params_dim),
-                requires_grad=True,)
+            self.u_weight = nn.Linear(input_dim, self.weight_params_dim)
+            # self.u_weight_params = nn.Parameter(
+            #     torch.Tensor(input_dim, self.weight_params_dim),
+            #     requires_grad=True,)
         else:
-            self.register_parameter('u_weight_params', None)
+            self.register_parameter('u_weight', None)
 
-        self.reset_parameters()
+        # self.reset_parameters()
 
-    def reset_parameters(self):
-        nn.init.xavier_uniform_(self.v_weight_params)
-        nn.init.xavier_uniform_(self.w_weight_params)
-        if self.use_gated:
-            nn.init.xavier_uniform_(self.u_weight_params)
+    # def reset_parameters(self):
+    #     nn.init.xavier_uniform_(self.v_weight_params)
+    #     nn.init.xavier_uniform_(self.w_weight_params)
+    #     if self.use_gated:
+    #         nn.init.xavier_uniform_(self.u_weight_params)
 
     def forward(self, inputs):
         # Compute attention scores
@@ -120,16 +126,17 @@ class MILAttentionLayer(nn.Module):
 
         # tanh(v*h_k^T)
         # pdb.set_trace()
-        instance = torch.tanh(torch.matmul(instance, self.v_weight_params))
+        instance = torch.tanh(self.v_weight(instance)) # torch.tanh(torch.matmul(instance, self.v_weight_params))
 
         # for learning non-linear relations efficiently
         if self.use_gated:
-            gate = torch.sigmoid(
-                torch.matmul(original_instance, self.u_weight_params)) # maybe torch.matmul(original_instance, self.u_weight_params.T) 
+            # gate = torch.sigmoid(
+            #     torch.matmul(original_instance, self.u_weight_params)) # maybe torch.matmul(original_instance, self.u_weight_params.T) 
+            gate = torch.sigmoid(self.u_weight(original_instance))
             instance = instance * gate
 
         # w^T*(tanh(v*h_k^T)) / w^T*(tanh(v*h_k^T)*sigmoid(u*h_k^T))
-        return torch.matmul(instance, self.w_weight_params) # axes = 1?
+        return self.w_weight(instance) # torch.matmul(instance, self.w_weight_params) # axes = 1?
     
 class NeighborAggregator(nn.Module):
     """
@@ -253,7 +260,7 @@ class Last_Sigmoid(nn.Module):
 
         # Initialize weights
         if kernel_initializer == 'glorot_uniform':
-            self.kernel = nn.Parameter(torch.nn.init.xavier_uniform_(torch.empty(input_dim, output_dim)))
+            self.kernel = nn.Linear(input_dim, output_dim) # nn.Parameter(torch.nn.init.xavier_uniform_(torch.empty(input_dim, output_dim)))
         else:
             self.kernel = nn.Parameter(torch.randn(input_dim, output_dim))
 
@@ -289,7 +296,7 @@ class Last_Sigmoid(nn.Module):
             x = self.mean_pooling(x)
         # pdb.set_trace()
         # Apply linear transformation
-        x = torch.matmul(x, self.kernel)
+        x = self.kernel(x) # torch.matmul(x, self.kernel)
         
         if self.use_bias:
             x = x + self.bias
@@ -315,22 +322,25 @@ class CustomAttention(nn.Module):
 
         self.weight_params_dim = weight_params_dim
 
+        self.wq = nn.Linear(input_dim, self.weight_params_dim)
+        self.wk = nn.Linear(input_dim, self.weight_params_dim)
         # Initialize weights
-        self.wq_weight_params = nn.Parameter(torch.Tensor(input_dim, 
-                                                          weight_params_dim), requires_grad=True)
-        self.wk_weight_params = nn.Parameter(torch.Tensor(input_dim, 
-                                                          weight_params_dim), requires_grad=True)
+        # self.wq_weight_params = nn.Parameter(torch.Tensor(input_dim, 
+        #                                                   weight_params_dim), requires_grad=True)
+        
+        # self.wk_weight_params = nn.Parameter(torch.Tensor(input_dim, 
+        #                                                   weight_params_dim), requires_grad=True)
 
-        # Initialize weights using the specified initializer
-        if kernel_initializer == "xavier_uniform":
-            nn.init.xavier_uniform_(self.wq_weight_params)
-            nn.init.xavier_uniform_(self.wk_weight_params)
-        else:
-            # Add other initializers as needed
-            raise ValueError(f"Unsupported initializer: {kernel_initializer}")
+        # # Initialize weights using the specified initializer
+        # if kernel_initializer == "xavier_uniform":
+        #     nn.init.xavier_uniform_(self.wq_weight_params)
+        #     nn.init.xavier_uniform_(self.wk_weight_params)
+        # else:
+        #     # Add other initializers as needed
+        #     raise ValueError(f"Unsupported initializer: {kernel_initializer}")
 
-        # Regularization is typically applied during the loss computation in PyTorch
-        self.kernel_regularizer = kernel_regularizer
+        # # Regularization is typically applied during the loss computation in PyTorch
+        # self.kernel_regularizer = kernel_regularizer
     def forward(self, inputs):
         inputs.requires_grad_(True)
         inputs = inputs.to(torch.float16)
@@ -344,8 +354,8 @@ class CustomAttention(nn.Module):
         # print(instance.dtype)
 
         def process_chunk(chunk):
-            q = torch.matmul(chunk, self.wq_weight_params)
-            k = torch.matmul(chunk, self.wk_weight_params)
+            q = self.wq(chunk) # torch.matmul(chunk, self.wq_weight_params)
+            k = self.wk(chunk) # torch.matmul(chunk, self.wk_weight_params)
             return q, k
         
         q_chunks = []
@@ -511,8 +521,10 @@ class CAMIL(nn.Module):
 if __name__ == "__main__":
     
     default_paras = CAMILParas()
-    rand_tensor = torch.rand(1, 1, 1024) 
+    rand_tensor = torch.rand(1, 420, 1024) 
+    uni_adj_matrix = torch.load('/Users/awxlong/Desktop/my-studies/temp_data/CRC/Feature/uni_adj_matrix/temp_sparse_matrix.pt')
+
     model = CAMIL(paras=default_paras)
-    # y = model(rand_tensor)
+    y = model([rand_tensor, uni_adj_matrix])
     pdb.set_trace()
     

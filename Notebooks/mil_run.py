@@ -177,15 +177,19 @@ def run_mil(args):
     if args.ckpt_filename:
         ### Resume from checkpoing for continuing crashed experiments
         mdl_ckpt_root = gene2k_env.exp_locs.abs_loc('saved_models')
-        gene2k_env.trainer_para.additional_pl_paras={
-                    #---------> paras for pytorch lightning trainner
-                    "accumulate_grad_batches":8, # mil need accumulated grad
-                    "accelerator":"auto",        #accelerator='gpu', devices=1,
-                    'precision': 16,             # Use mixed precision
-                    'enable_progress_bar': True, 
-                    'enable_model_summary': True,
-                    'resume_from_checkpoint': f'{mdl_ckpt_root}{args.ckpt_filename}.ckpt' # e.g. /home/xuelonan/secrier_lab/persistence/SavedModels/attentionMIL_uni_32epoch_reruncv=3_epoch=23-auroc_val=0.65.ckpt
-                }
+        # gene2k_env.trainer_para.additional_pl_paras={
+        #             #---------> paras for pytorch lightning trainner
+        #             "accumulate_grad_batches":8, # mil need accumulated grad
+        #             "accelerator":"auto",        #accelerator='gpu', devices=1,
+        #             'precision': 16,             # Use mixed precision
+        #             'enable_progress_bar': True, 
+        #             'enable_model_summary': True,
+        #             'resume_from_checkpoint': f'{mdl_ckpt_root}{args.ckpt_filename}.ckpt' # e.g. /home/xuelonan/secrier_lab/persistence/SavedModels/attentionMIL_uni_32epoch_reruncv=3_epoch=23-auroc_val=0.65.ckpt
+        #         }
+        gene2k_env.trainer_para.additional_pl_paras=get_pl_trainer_additional_paras(args.mil_algorithm)
+        gene2k_env.trainer_para.additional_pl_paras.update(
+                      {'resume_from_checkpoint':  f'{mdl_ckpt_root}{args.ckpt_filename}.ckpt'}
+                      )
         # can refactor as additional_pl_paras.update('resume_from_checkpoint: f'' ')
     else:
         ### Start experiment from scratch
