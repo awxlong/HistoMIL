@@ -263,14 +263,19 @@ def get_args_mil():
 
     parser.add_argument(
         "--seed", type=int, default=42, help="Seed to ensure reproducibility")
+    
+    parser.add_argument(
+        "--last-cv", default=0, type=int, help='Last cross-validation fold (count from zero) when experiment failed and from which to resume, e.g, . 3 if experiment failed at the 4th fold')
+    parser.add_argument(
+        "--ckpt-filename", default=None, type=str, help='Filename (exclude .ckpt extension) of the model checkpoint saved before the experiment crashed, e.g. attentionMIL_uni_32epoch_reruncv=3_epoch=23-auroc_val=0.65')
+    
+    
     # parser.add_argument(
     #     "--id", type=str, default='0001', help="Unique ID of the user")
     # parser.add_argument(
     #     "--username", default='draco',type=str, help="Unique name of the experimenter")
     # parser.add_argument(
     #     "--api-dir",type=str, help="Directory where API.env for storing API keys is saved")
-    # parser.add_argument(
-    #     "--last-cv", default=0, type=int, help='Last cross-validation fold (count from zero) when experiment failed and from which to resume, e.g, . 3 if experiment failed at the 4th fold')
     
     args = parser.parse_args()
 
@@ -339,7 +344,7 @@ def get_args_mil_rerun():
         "--k-fold", default=0, type=int, help='Number of folds for cross-validation, e.g. 3 for 3-fold cross-validation. Default is 0, no cross-validation')
     
     parser.add_argument(
-        "--last-cv", type=int, help='Last cross-validation fold (count from zero) when experiment failed and from which to resume, e.g, . 3 if experiment failed at the 4th fold')
+        "--last-cv", default=0, type=int, help='Last cross-validation fold (count from zero) when experiment failed and from which to resume, e.g, . 3 if experiment failed at the 4th fold')
     parser.add_argument(
         "--ckpt-filename", default=None, type=str, help='Filename (exclude .ckpt extension) of the model checkpoint saved before the experiment crashed, e.g. attentionMIL_uni_32epoch_reruncv=3_epoch=23-auroc_val=0.65')
     

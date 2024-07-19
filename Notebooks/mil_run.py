@@ -86,14 +86,16 @@ def run_mil(args):
     DEFAULT_TRANSFORMER_PARAS.epoch = args.n_epochs
     DEFAULT_TRANSFORMER_PARAS.lr_scheduler_config = {'T_max':args.n_epochs, 
                                                     'eta_min':1e-6}
-    # pdb.set_trace()
+    # AttentionMIL
     DEFAULT_Attention_MIL_PARAS.input_dim = MDL_TO_FEATURE_DIMS[args.precomputed]
     DEFAULT_Attention_MIL_PARAS.epoch = args.n_epochs
 
+    # CAMIL
     DEFAULT_CAMIL_PARAS = CAMILParas()
     DEFAULT_CAMIL_PARAS.input_shape = MDL_TO_FEATURE_DIMS[args.precomputed]
     DEFAULT_CAMIL_PARAS.epoch = args.n_epochs
 
+    # DTFD-MIL
     DEFAULT_DTFD_MIL_PARAS = DTFD_MILParas()
     DEFAULT_DTFD_MIL_PARAS.input_dim = MDL_TO_FEATURE_DIMS[args.precomputed]
     DEFAULT_DTFD_MIL_PARAS.epoch = args.n_epochs
@@ -161,8 +163,7 @@ def run_mil(args):
                     "mode":"max" if args.monitor_metric == 'auroc_val' else 'min',
                     "monitor":args.monitor_metric,}
     
-    gene2k_env.trainer_para.additional_pl_paras= get_pl_trainer_additional_paras(args.mil_algorithm)
-
+    
     gene2k_env.opt_para.max_epochs = args.n_epochs 
     
 
@@ -172,15 +173,24 @@ def run_mil(args):
         [data_locs,exp_locs,machine,user] = pickle.load(f)
     gene2k_env.data_locs = data_locs
     gene2k_env.exp_locs = exp_locs
-    #---------------> wandb 
-    # wandb.setup(settings=wandb.Settings(
-    #     _disable_stats=True,
-    #     # disable_git=True,
-    #     api_key=user.wandb_api_key  
-    # ))
+    
+    if args.ckpt_filename:
+        ### Resume from checkpoing for continuing crashed experiments
+        mdl_ckpt_root = gene2k_env.exp_locs.abs_loc('saved_models')
+        gene2k_env.trainer_para.additional_pl_paras={
+                    #---------> paras for pytorch lightning trainner
+                    "accumulate_grad_batches":8, # mil need accumulated grad
+                    "accelerator":"auto",        #accelerator='gpu', devices=1,
+                    'precision': 16,             # Use mixed precision
+                    'enable_progress_bar': True, 
+                    'enable_model_summary': True,
+                    'resume_from_checkpoint': f'{mdl_ckpt_root}{args.ckpt_filename}.ckpt' # e.g. /home/xuelonan/secrier_lab/persistence/SavedModels/attentionMIL_uni_32epoch_reruncv=3_epoch=23-auroc_val=0.65.ckpt
+                }
+        # can refactor as additional_pl_paras.update('resume_from_checkpoint: f'' ')
+    else:
+        ### Start experiment from scratch
+        gene2k_env.trainer_para.additional_pl_paras= get_pl_trainer_additional_paras(args.mil_algorithm)
 
-    # wandb.init(project=gene2k_env.project, 
-    #            entity=gene2k_env.entity)   ### ADD THIS IN CLUSTER
     
     #--------------------------> setup experiment
     logging.info("setup MIL experiment")
@@ -196,8 +206,9 @@ def run_mil(args):
 
     # pdb.set_trace()
     if exp.paras.trainer_para.k_fold > 1:
-       exp.setup_cv_experiment(main_data_source="slide",
-                            need_train=True)
+       exp.setup_cv_experiment(last_cv=args.last_cv,
+                               main_data_source="slide",
+                               need_train=True)
     else:
         
         

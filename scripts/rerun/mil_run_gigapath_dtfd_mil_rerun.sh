@@ -9,7 +9,7 @@ echo "Starting at: $(date)"
 cd secrier_lab/persistence/
 source /home/xuelonan/secrier_lab/python3.8.5-biomedai.source
 source /share/apps/source_files/cuda/cuda-11.8.source
-python3 HistoMIL/Notebooks/mil_rerun_crashed.py --exp-name 'mil_dtfd_gigapath_42epochs_cv5' \
+python3 HistoMIL/Notebooks/mil_run.py --exp-name 'mil_dtfd_gigapath_42epochs_cv5' \
                                       --project-name 'g0-arrest-gigapath-dtfdmil-cv5' \
                                       --wandb-entity-name 'anwangxuelong' --localcohort-name 'COAD' --task-name 'g0_arrest' --pid-name 'PatientID' \
                                       --targets-name 'g0_arrest' \

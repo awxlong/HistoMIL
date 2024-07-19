@@ -131,6 +131,7 @@ class Transformer(BaseAggregator):
 
         x = self.dropout(x)
         x = self.transformer(x, register_hook=register_hook)
+        pdb.set_trace()
         x = x.mean(dim=1) if self.pool == 'mean' else x[:, 0]
         # pdb.set_trace()
         return self.mlp_head(self.norm(x))
@@ -145,13 +146,16 @@ if __name__ == "__main__":
     #             'num_classes':1}
     default_paras = TransformerParas(input_dim=1024, \
                                     # pretrained_weights_dir='/Users/awxlong/Desktop/my-studies/hpc_exps/HistoMIL/MODEL/Image/MIL/Transformer/pretrained_weights/',
-                                    pretrained_weights='MSI_high_CRC_model.pth', \
+                                    pretrained_weights=None, \
                                     encoder_name='pre-calculated')
-    default_paras.pretrained_weights_dir = '/Users/awxlong/Desktop/my-studies/hpc_exps/HistoMIL/MODEL/Image/MIL/Transformer/pretrained_weights/'
+    default_paras.pretrained_weights_dir = ''
     default_paras.selective_finetuning = False
     
     model = Transformer(default_paras)
+    rand_tensor = torch.rand((1, 420, 1024))
+    y = model(rand_tensor)
 
+    pdb.set_trace()
     
     # pdb.set_trace()
     # Load the modified state dictionary into your model
