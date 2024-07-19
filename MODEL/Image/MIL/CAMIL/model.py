@@ -387,7 +387,7 @@ class CustomAttention(nn.Module):
         # attention_chunks = torch.cat(attention_chunks, dim=0)
         # # print(attention_chunks.dtype)
         # Initialize the full attention matrix
-        attention_matrix = torch.zeros((num_patches, num_patches), device=instance.device, dtype=torch.float16)
+        attention_matrix = torch.zeros((num_patches, num_patches), dtype=torch.float16)
 
         for i in range(num_chunks):
             start_i = i * chunk_size
@@ -408,7 +408,7 @@ class CustomAttention(nn.Module):
         # Clear unused variables and empty cache to free up memory
         # del q_chunks, k_chunks
         torch.cuda.empty_cache()
-        return attention_matrix # attention_chunks
+        return attention_matrix.to(device=instance.device) # attention_chunks
     # def forward(self, inputs):
     #     return self.compute_attention_scores(inputs)
 
