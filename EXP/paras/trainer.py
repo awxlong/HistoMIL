@@ -56,7 +56,7 @@ def get_pl_trainer_additional_paras(mil_algorithm):
         return {
                 #---------> paras for pytorch lightning trainner
                 "accumulate_grad_batches":8, # mil need accumulated grad
-                "accelerator":"auto",        #accelerator='gpu', devices=1,
+                "accelerator":"cpu",        #accelerator='gpu', devices=1,
                 # 'precision': 16,             # torch.matmul unavailable for sparse tensors in mixed precision regime
                 'enable_progress_bar': True, 
                 'enable_model_summary': True,
