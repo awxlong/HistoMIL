@@ -35,13 +35,13 @@ class GraphTransformerParas:
     encoder_name:str = 'pre-calculated' # by default we'll be using the foundational models for feature extraction, so we avoid SSL
     task:str = 'binary'
     criterion:str = 'BCEWithLogitsLoss'
-    pos_weight = torch.ones(1)
-    epoch:int = 4
+    # pos_weight = torch.ones(1)
+    epoch:int = 42
     lr:float = 2.0e-5 # same as https://github.com/peng-lab/HistoBistro/blob/main/config.yaml
     wd:float = 2.0e-05
-    optimizer = 'Adam'
+    optimizer = 'AdamW'
     lr_scheduler = 'CosineAnnealingLR'
-    lr_scheduler_config:dict = {'T_max':epoch, 
+    lr_scheduler_config:dict = {'T_max':42, 
                                 'eta_min':1e-6} # assumes cosine annealing
     
 DEFAULT_GRAPHTRANSFORMER_PARAS = GraphTransformerParas()

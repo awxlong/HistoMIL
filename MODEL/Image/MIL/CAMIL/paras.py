@@ -19,7 +19,7 @@ class CAMILParas:
     subtyping:bool = False
     ### OPTIMIZER CONFIGURATIONS
     task:str = 'binary'
-    criterion:str = 'BCELoss'# 'BCEWithLogitsLoss'
+    criterion:str = 'BCEWithLogitsLoss'
 
     epoch:int = 30
     lr:float = 0.0002 # 2e-5 # same as https://github.com/olgarithmics/ICLR_CAMIL/blob/ddd8e2e3973d234310f47c6a528ebbb2eaf369a0/args.py#L3

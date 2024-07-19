@@ -9,7 +9,6 @@ from HistoMIL.EXP.paras.optloss import OptLossParas
 from HistoMIL.MODEL.Image.MIL.init import aviliable_mil_models
 from HistoMIL.MODEL.Image.PL_protocol.MIL import pl_MIL
 
-from HistoMIL.MODEL.Image.MIL.Transformer.paras import TransformerParas, DEFAULT_TRANSFORMER_PARAS
 
 import pdb
 def create_img_model(train_paras:PLTrainerParas,
@@ -60,6 +59,9 @@ def create_img_model(train_paras:PLTrainerParas,
         elif model_name == 'DTFD-MIL':
             from HistoMIL.MODEL.Image.MIL.DTFD_MIL.pl import pl_DTFDMIL
             pl_model = pl_DTFDMIL(paras=model_para)
+        elif model_name == 'GraphTransformer':
+            from HistoMIL.MODEL.Image.MIL.GraphTransformer.pl import pl_GraphTransformer
+            pl_model = pl_GraphTransformer(paras=model_para)
 
     else:
         raise ValueError("model name not availiable")

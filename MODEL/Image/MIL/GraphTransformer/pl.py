@@ -7,16 +7,16 @@ import torchmetrics
 import wandb
 from matplotlib import pyplot as plt
 
-from HistoMIL.MODEL.Image.MIL.Transformer.paras import TransformerParas, DEFAULT_TRANSFORMER_PARAS
-from HistoMIL.MODEL.Image.MIL.Transformer.model import Transformer
+from HistoMIL.MODEL.Image.MIL.GraphTransformer.paras import GraphTransformerParas, DEFAULT_GRAPHTRANSFORMER_PARAS
+from HistoMIL.MODEL.Image.MIL.GraphTransformer.model import GraphTransformer
 from HistoMIL.MODEL.Image.MIL.utils import  get_loss, get_optimizer, get_scheduler
 
 import pdb
-class pl_Transformer(pl.LightningModule):
-    def __init__(self, paras:TransformerParas = DEFAULT_TRANSFORMER_PARAS):
+class pl_GraphTransformer(pl.LightningModule):
+    def __init__(self, paras:GraphTransformerParas = DEFAULT_GRAPHTRANSFORMER_PARAS):
         super().__init__()
         self.paras = paras
-        self.model = Transformer(paras)
+        self.model = GraphTransformer(paras)
         self.criterion = get_loss(paras.criterion
                                  ) if paras.task == "binary" else get_loss(paras.criterion)
         self.save_hyperparameters()
@@ -24,63 +24,63 @@ class pl_Transformer(pl.LightningModule):
         self.lr = paras.lr
         self.wd = paras.wd
 
-        self.acc_train = torchmetrics.Accuracy(task=paras.task, num_classes=paras.num_classes)
-        self.acc_val = torchmetrics.Accuracy(task=paras.task, num_classes=paras.num_classes)
-        self.acc_test = torchmetrics.Accuracy(task=paras.task, num_classes=paras.num_classes)
+        self.acc_train = torchmetrics.Accuracy(task=paras.task, num_classes=paras.n_class)
+        self.acc_val = torchmetrics.Accuracy(task=paras.task, num_classes=paras.n_class)
+        self.acc_test = torchmetrics.Accuracy(task=paras.task, num_classes=paras.n_class)
 
         self.auroc_val = torchmetrics.AUROC(
             task=paras.task,
-            num_classes=paras.num_classes,
+            num_classes=paras.n_class,
         )
         self.auroc_test = torchmetrics.AUROC(
             task=paras.task,
-            num_classes=paras.num_classes,
+            num_classes=paras.n_class,
         )
 
         self.f1_val = torchmetrics.F1Score(
             task=paras.task,
-            num_classes=paras.num_classes,
+            num_classes=paras.n_class,
         )
         self.f1_test = torchmetrics.F1Score(
             task=paras.task,
-            num_classes=paras.num_classes,
+            num_classes=paras.n_class,
         )
 
         self.precision_val = torchmetrics.Precision(
             task=paras.task,
-            num_classes=paras.num_classes,
+            num_classes=paras.n_class,
         )
         self.precision_test = torchmetrics.Precision(
             task=paras.task,
-            num_classes=paras.num_classes,
+            num_classes=paras.n_class,
         )
 
         self.recall_val = torchmetrics.Recall(
             task=paras.task,
-            num_classes=paras.num_classes,
+            num_classes=paras.n_class,
         )
         self.recall_test = torchmetrics.Recall(
             task=paras.task,
-            num_classes=paras.num_classes,
+            num_classes=paras.n_class,
         )
 
         self.specificity_val = torchmetrics.Specificity(
             task=paras.task,
-            num_classes=paras.num_classes,
+            num_classes=paras.n_class,
         )
         self.specificity_test = torchmetrics.Specificity(
             task=paras.task,
-            num_classes=paras.num_classes,
+            num_classes=paras.n_class,
         )
 
-        self.cm_val = torchmetrics.ConfusionMatrix(task=paras.task, num_classes=paras.num_classes)
+        self.cm_val = torchmetrics.ConfusionMatrix(task=paras.task, num_classes=paras.n_class)
         self.cm_test = torchmetrics.ConfusionMatrix(
-            task=paras.task, num_classes=paras.num_classes
+            task=paras.task, num_classes=paras.n_class
         )
 
-    def forward(self, x):
-        logits = self.model(x)
-        return logits
+    def forward(self, x, sparse_adj_matrix):
+        logits, mc1, o1 = self.model(x, sparse_adj_matrix)
+        return logits, mc1, o1
 
     def configure_optimizers(self, ):
         optimizer = get_optimizer(
@@ -102,13 +102,12 @@ class pl_Transformer(pl.LightningModule):
 
     def training_step(self, batch, batch_idx):
         # pdb.set_trace()
-        # x, coords, y, _, _ = batch  # x = features, coords, y = labels, tiles, patient
-        x, y = batch  # x = features, y = labels
+        x, sparse_adj_matrix, y = batch  # x = features, y = labels
         
-        logits = self.forward(x)
+        logits, mc1, o1 = self.forward(x, sparse_adj_matrix[0])
         # pdb.set_trace()
         if self.paras.task == "binary":
-            loss = self.criterion(logits, y.unsqueeze(0).float())
+            loss = self.criterion(logits, y.unsqueeze(0).float()) + mc1 + o1
             probs = torch.sigmoid(logits)
             preds = torch.round(probs)
         else:
@@ -127,13 +126,14 @@ class pl_Transformer(pl.LightningModule):
 
     def validation_step(self, batch, batch_idx):
         # pdb.set_trace()
-        x, y = batch  # x = features, y = labels 
-        logits = self.forward(x)
+        x, sparse_adj_matrix, y = batch  # x = features, y = labels
+        
+        logits, mc1, o1 = self.forward(x, sparse_adj_matrix[0])
         # print(y)
         # print(y.shape)
         if self.paras.task == "binary":
             y = y.unsqueeze(1)
-            loss = self.criterion(logits, y.float())
+            loss = self.criterion(logits, y.float())  + mc1 + o1
             probs = torch.sigmoid(logits)
         else:
             loss = self.criterion(logits, y)
@@ -181,13 +181,13 @@ class pl_Transformer(pl.LightningModule):
         self.outputs = pd.DataFrame(columns=column_names)
 
     def test_step(self, batch, batch_idx, dataloader_idx=0):
-        x, y = batch  # x = features, coords, y = labels, tiles, patient
-        # pdb.set_trace()
-        logits = self.forward(x)
+        x, sparse_adj_matrix, y = batch  # x = features, y = labels
+        
+        logits, mc1, o1 = self.forward(x, sparse_adj_matrix[0])
 
         if self.paras.task == "binary":
             y = y.unsqueeze(1)
-            loss = self.criterion(logits, y.float())
+            loss = self.criterion(logits, y.float()) + mc1 + o1
             probs = torch.sigmoid(logits)
             preds = torch.round(probs)
         else:

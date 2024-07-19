@@ -351,8 +351,8 @@ def create_slide_dataset(data_locs:Locations,
     # Load precomputed features. data_list is ['tcga_folder_name', 'tcga_filename.svs', label e.g. 1]
     elif len(data_list[0]) == 3:
         
-        if dataset_paras.additional_feature == 'CAMIL':
-            logger.info(f"Dataset::Using pre-calculated features along with {dataset_paras.additional_feature} adjacency matrices for MIL.")
+        if dataset_paras.additional_feature == 'AdjMatrix':
+            logger.info(f"Dataset::Using pre-calculated features along with adjacency matrices for MIL.")
             return MILFeaturesAdjMatrixSet(data_locs=data_locs,
                         data_list=data_list,
                         label_dict = dataset_paras.label_dict,

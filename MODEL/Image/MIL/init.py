@@ -5,6 +5,7 @@ from HistoMIL.MODEL.Image.MIL.Transformer.model import Transformer
 from HistoMIL.MODEL.Image.MIL.AttentionMIL.model import AttentionMIL
 from HistoMIL.MODEL.Image.MIL.CAMIL.model import CAMIL
 from HistoMIL.MODEL.Image.MIL.DTFD_MIL.model import DTFD_MIL
+from HistoMIL.MODEL.Image.MIL.GraphTransformer.model import GraphTransformer
 
 
 
@@ -22,4 +23,6 @@ aviliable_mil_models = {
                     'CAMIL': CAMIL,
 
                     'DTFD-MIL': DTFD_MIL,
+
+                    'GraphTransformer': GraphTransformer,
     }

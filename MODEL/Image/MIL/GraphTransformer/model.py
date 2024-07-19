@@ -97,9 +97,9 @@ def dense_mincut_pool(
     out_adj = (out_adj / d) / d.transpose(1, 2)
 
     return out, out_adj, mincut_loss, ortho_loss
-class Classifier(nn.Module):
+class GraphTransformer(nn.Module):
     def __init__(self, paras:GraphTransformerParas):
-        super(Classifier, self).__init__()
+        super().__init__()
 
         self.embed_dim = 64
         self.num_layers = 3
@@ -154,13 +154,13 @@ class Classifier(nn.Module):
         cls_token = self.cls_token.repeat(b, 1, 1)
         X = torch.cat([cls_token, X], dim=1)
 
-        out = self.transformer(X)
+        out = self.transformer(X) # unnormalized, thus use BCEwithLogits
 
         # # loss
         # loss = self.criterion(out, labels)
         # loss = loss + mc1 + o1
         # # pred
-        # pred = out.data.max(1)[1]
+        # pred = out.data.max(1)[1] # taking max, therefore i'd use 
 
         if graphcam_flag:
             print('GraphCAM enabled')
@@ -183,7 +183,7 @@ class Classifier(nn.Module):
 
                 torch.save(cam, path.join('graphcam', 'cam_{}.pt'.format(index_)))
 
-        return out # labels, loss
+        return out, mc1, o1 # labels, loss
 
 
 if __name__ == "__main__":
@@ -191,7 +191,7 @@ if __name__ == "__main__":
     default_paras = GraphTransformerParas(n_features=1024)
     
     device = 'cpu'
-    model = Classifier(default_paras)# .to('mps')
+    model = GraphTransformer(default_paras)# .to('mps')
     rand_tensor = torch.rand((1, 29015, 1024))# .to('mps')
     uni_adj_matrix = torch.load('/Users/awxlong/Desktop/my-studies/temp_data/CRC/Feature/uni_adj_matrix/temp_sparse_matrix.pt')# .to('mps')
     # uni_adj_matrix = uni_adj_matrix.to_dense()# .to('mps')

@@ -38,6 +38,8 @@ from HistoMIL.MODEL.Image.MIL.Transformer.paras import  DEFAULT_TRANSFORMER_PARA
 from HistoMIL.MODEL.Image.MIL.AttentionMIL.paras import  DEFAULT_Attention_MIL_PARAS
 from HistoMIL.MODEL.Image.MIL.CAMIL.paras import  CAMILParas, custom_camil_collate
 from HistoMIL.MODEL.Image.MIL.DTFD_MIL.paras import  DTFD_MILParas
+from HistoMIL.MODEL.Image.MIL.GraphTransformer.paras import  GraphTransformerParas
+
 
 
 from HistoMIL.EXP.paras.env import EnvParas
@@ -101,6 +103,12 @@ def run_mil(args):
     DEFAULT_DTFD_MIL_PARAS.epoch = args.n_epochs
     # DEFAULT_DTFD_MIL_PARAS.feature_extractor_name = args.precomputed
 
+    DEFAULT_GRAPHTRANSFORMER_PARAS = GraphTransformerParas()
+    DEFAULT_GRAPHTRANSFORMER_PARAS.n_features = MDL_TO_FEATURE_DIMS[args.precomputed]
+    DEFAULT_GRAPHTRANSFORMER_PARAS.epoch = args.n_epochs
+    DEFAULT_GRAPHTRANSFORMER_PARAS.lr_scheduler_config = {'T_max':args.n_epochs, 
+                                                           'eta_min':1e-6}
+
     model_name = args.mil_algorithm  # options are "TransMIL", "ABMIL", "DSMIL" or "Transformer", 'AttentionMIL'
 
     model_para_settings = {"TransMIL":model_para_transmil,
@@ -108,7 +116,8 @@ def run_mil(args):
                            'Transformer':DEFAULT_TRANSFORMER_PARAS,
                            'AttentionMIL': DEFAULT_Attention_MIL_PARAS,
                            'CAMIL': DEFAULT_CAMIL_PARAS,
-                           'DTFD-MIL': DEFAULT_DTFD_MIL_PARAS} 
+                           'DTFD-MIL': DEFAULT_DTFD_MIL_PARAS,
+                           'GraphTransformer': DEFAULT_GRAPHTRANSFORMER_PARAS} 
 
     #--------------------------> parameters
     
@@ -148,8 +157,8 @@ def run_mil(args):
     gene2k_env.dataset_para.concepts = args.concepts_name    # default ["slide","patch","feature"]
     gene2k_env.dataset_para.split_ratio = args.split_ratio   # default [0.8,0.2]
     gene2k_env.dataset_para.num_workers = args.num_workers   # num_workers for dataloader, e.g. 8
-    if args.mil_algorithm == 'CAMIL':
-        gene2k_env.dataset_para.additional_feature = 'CAMIL'
+    if args.mil_algorithm == 'CAMIL' or args.mil_algorithm == 'GraphTransformer':
+        gene2k_env.dataset_para.additional_feature = 'AdjMatrix'
         gene2k_env.dataset_para.add_dataloader = {'collate_fn':custom_camil_collate}
     #----------------> model
     gene2k_env.trainer_para.model_name = model_name
