@@ -40,9 +40,9 @@ def _rank3_diag(x: Tensor) -> Tensor:
     # eye = torch.eye(x.size(1)).type_as(x)
     # out = eye * x.unsqueeze(2).expand(x.size(0), x.size(1), x.size(1))
     # Create a sparse identity matrix
-    indices = torch.arange(x.size(1), dtype=torch.long).unsqueeze(0).expand(2, x.size(1))
+    indices = torch.arange(x.size(1), dtype=torch.long, device=x.device).unsqueeze(0).expand(2, x.size(1))
     values = x[0] # x is (1, #patches, #features) # torch.ones(x.size(1), dtype=x.dtype, device=x.device)
-    eye_sparse = torch.sparse_coo_tensor(indices, values, (x.size(1), x.size(1))).to(x.device)
+    eye_sparse = torch.sparse_coo_tensor(indices, values, (x.size(1), x.size(1)), device=x.device)# .to(x.device)
 
     # Expand x to match the shape for batch multiplication
     
