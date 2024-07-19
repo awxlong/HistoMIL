@@ -44,3 +44,5 @@ class GraphTransformerParas:
     lr_scheduler_config:dict = {'T_max':epoch, 
                                 'eta_min':1e-6} # assumes cosine annealing
     
+DEFAULT_GRAPHTRANSFORMER_PARAS = GraphTransformerParas()
+    

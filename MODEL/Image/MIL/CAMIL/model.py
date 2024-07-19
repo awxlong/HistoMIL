@@ -163,66 +163,21 @@ class NeighborAggregator(nn.Module):
 
 
     def forward(self, inputs):
-        # Element-wise multiplication of data_input and adj_matrix
-        # dense_data_input = torch.mul(data_input, adj_matrix.to_dense())
-        # sparse_data_input = adj_matrix * data_input # according to another perplexity's answer; sparse_data_input is sparse
-        # pdb.set_trace()
-        # sparse_data_input = torch.sparse.mm(adj_matrix, data_input)
         
-        # Convert to dense, sum, and convert back to sparse if needed
-        # dense_data_input = sparse_data_input.to_dense()
-        
-        # dense_data_input = torch.mul(data_input, adj_matrix)
-        # reduced_dense_sum = torch.sum(dense_data_input, dim=1)
-        # # Sum along rows
-        # reduced_sum = torch.sum(sparse_data_input, dim=1)
-        # reduced_sum = torch.sparse.sum(sparse_data_input, dim=1)# more efficient apparently
-        # The below MAY trigger a reshape not implemented during backward pass
-        # # Reshape to match the expected shape
-        # # A_raw = reduced_sum.view(-1)
-        # # A_raw = reduced_sum.reshape(-1)
-        # # A_raw = reduced_sum.view(data_input.size(1))
-
-        # ### perplexity
-        # # Ensure the sparse tensor is coalesced
-        # reduced_sum = reduced_sum.coalesce()     # most likely triggers the reshape not implemented during backward pass    
-
-        # # Get the indices and values
-        # indices = reduced_sum.indices().squeeze()
-        # values = reduced_sum.values()
-
-        # # Create a new dense tensor with the desired shape
-        # A_raw = torch.zeros(data_input.size(1), device=reduced_sum.device)
-        # # Fill in the values
-        # A_raw[indices] = values
-        # pdb.set_trace()
-        # Reshape to match the original Keras implementation
-        # A_raw = reduced_dense_sum.view(-1)
-        # Convert to dense (this is necessary for softmax)
-        # pdb.set_trace()
-        # Reshape to match the original Keras implementation; dense tensor occupy more memory
-        # A_raw = reduced_sum.to_dense().view(data_input.size(1))
-        # pdb.set_trace()
-        # Element-wise multiplication of sparse adj_matrix with dense data_input
-        # sparse_data_input = torch.sparse.mm(adj_matrix, data_input)
-        # Reshape data_input to (num_patches, num_features)
         data_input, adj_matrix = inputs  # [attention_matrix, sparse_adj] in encoder's forward function
 
-        # data_input = data_input.squeeze(0)# .float() the custom attention returns [#patches, #patches] so get rid of this
         
-        # sparse_data_input = adj_matrix * data_input
-        # # Perform sparse operation outside of autocast
+        sparse_data_input = adj_matrix * data_input
         
-        # # pdb.set_trace()
-        # # Sum along the rows (dim=1)
-        # reduced_sum = torch.sparse.sum(sparse_data_input, dim=1)
+        reduced_sum = torch.sparse.sum(sparse_data_input, dim=1)
       
         # # Flatten the tensor to (num_patches,)
-        # A_raw = reduced_sum.flatten()
+        A_raw = reduced_sum.to_dense().flatten()
         
         # # Apply softmax
         # alpha = F.softmax(A_raw, dim=0)
-        A_raw = self.sparse_aggregation(data_input, adj_matrix)
+
+        # A_raw = self.sparse_aggregation(data_input, adj_matrix)
         
         # Apply softmax
         alpha = F.softmax(A_raw, dim=0)
@@ -324,144 +279,44 @@ class CustomAttention(nn.Module):
 
         self.wq = nn.Linear(input_dim, self.weight_params_dim)
         self.wk = nn.Linear(input_dim, self.weight_params_dim)
-        # Initialize weights
-        # self.wq_weight_params = nn.Parameter(torch.Tensor(input_dim, 
-        #                                                   weight_params_dim), requires_grad=True)
         
-        # self.wk_weight_params = nn.Parameter(torch.Tensor(input_dim, 
-        #                                                   weight_params_dim), requires_grad=True)
+    # def forward(self, inputs):
+    #     # inputs.requires_grad_(True)
+    #     inputs = inputs.to(torch.float16)
 
-        # # Initialize weights using the specified initializer
-        # if kernel_initializer == "xavier_uniform":
-        #     nn.init.xavier_uniform_(self.wq_weight_params)
-        #     nn.init.xavier_uniform_(self.wk_weight_params)
-        # else:
-        #     # Add other initializers as needed
-        #     raise ValueError(f"Unsupported initializer: {kernel_initializer}")
-
-        # # Regularization is typically applied during the loss computation in PyTorch
-        # self.kernel_regularizer = kernel_regularizer
-    def forward(self, inputs):
-        # inputs.requires_grad_(True)
+    #     return self.compute_attention_scores(inputs)
+    
+    def forward(self, inputs, sparse_adj_matrix):
+        # Cast input to float16
         inputs = inputs.to(torch.float16)
 
-        return self.compute_attention_scores(inputs)
-
-    def compute_attention_scores(self, instance):
-        chunk_size = 1024  # Adjust based on your GPU memory
-        num_patches = instance.size(1)
-        num_chunks = math.ceil(num_patches / chunk_size)
-
-        # def process_chunk(chunk):
-        #     q = self.wq(chunk) # torch.matmul(chunk, self.wq_weight_params)
-        #     k = self.wk(chunk) # torch.matmul(chunk, self.wk_weight_params)
-        #     return q, k
-        
-        # q_chunks = []
-        # k_chunks = []
-        # for i in range(0, instance.size(0), chunk_size):
-        #     chunk = instance[i:i+chunk_size]
-        #     q, k = process_chunk(chunk)
-        #     q_chunks.append(q)
-        #     k_chunks.append(k)
-        
-        # q = torch.cat(q_chunks, dim=0)
-        # k = torch.cat(k_chunks, dim=0)
-        q = self.wq(instance)
-        k = self.wk(instance)
+        # Compute Q and K
+        q = self.wq(inputs)
+        k = self.wk(inputs)
         q = q.squeeze(0)
-        k = k.squeeze(0)
-        dk = k.size(-1) ** 0.5 # torch.sqrt(torch.tensor(k.size(-1), dtype=torch.int8))
-
-        # # Compute attention scores in chunks
-        # attention_chunks = []
-        # for i in range(0, q.size(0), chunk_size):
-        #     q_chunk = q[i:i+chunk_size]
-        #     k_chunk = k[i:i+chunk_size]
-            
-        #     # matmul_qk = torch.matmul(q_chunk, k_chunk.transpose(-2, -1))
-        #     # matmul_qk = matmul_qk / dk # redefine variable instead of creating new one
-        #     # pdb.set_trace()
-        #     attention_chunks.append(torch.matmul(q_chunk, k_chunk.transpose(-2, -1)) / dk)
+        k = k.squeeze(0) # [#patches, 256]
         # pdb.set_trace()
-        # attention_chunks = torch.cat(attention_chunks, dim=0)
-        # # print(attention_chunks.dtype)
-        # Initialize the full attention matrix
-        attention_matrix = torch.zeros((num_patches, num_patches), dtype=torch.float16)
-
-        for i in range(num_chunks):
-            start_i = i * chunk_size
-            end_i = min((i + 1) * chunk_size, num_patches)
-            q_chunk = q[start_i:end_i, :]
-
-            for j in range(num_chunks):
-                start_j = j * chunk_size
-                end_j = min((j + 1) * chunk_size, num_patches)
-                k_chunk = k[start_j:end_j, :]
-
-                # Compute attention scores for this chunk
-                scores = torch.matmul(q_chunk, k_chunk.transpose(-2, -1)) / dk  # torch.einsum('bik,bjk->bij', q_chunk, k_chunk) / dk
-
-                # Place the scores in the correct position in the full matrix
-                attention_matrix[start_i:end_i, start_j:end_j] = scores
-        # pdb.set_trace()
-        # Clear unused variables and empty cache to free up memory
-        # del q_chunks, k_chunks
-        torch.cuda.empty_cache()
-        return attention_matrix.to(device=instance.device) # attention_chunks
-    # def forward(self, inputs):
-    #     return self.compute_attention_scores(inputs)
-
-    # def compute_attention_scores(self, instance):
-    #     ### can futher optimize this using F.scaled_dot_product 
-    #     # q = torch.matmul(instance, self.wq_weight_params)
-    #     # k = torch.matmul(instance, self.wk_weight_params)
-
-    #     # # dk = torch.tensor(k.size(-1), dtype=torch.float32)
-    #     # dk = torch.tensor(k.shape[-1], dtype=torch.int32)
-    #     # # pdb.set_trace()
-    #     # matmul_qk = torch.matmul(q, k.transpose(-2, -1))  / torch.sqrt(dk) # (..., seq_len_q, seq_len_k)
-    #     # matmul_qk = torch.tensordot(q, k.transpose(-2, -1), dims=1) # could also be this
+        dk = k.size(-1) ** 0.5 
+        # Get indices of non-zero elements in sparse_adj_matrix
+        indices = sparse_adj_matrix._indices()
         
-    #     # scaled_attention_logits = matmul_qk / torch.sqrt(dk)
+        # Compute attention scores only for non-zero indices
+        q_selected = q[indices[0]]  # Select relevant rows from q
+        k_selected = k[indices[1]]  # Select relevant columns from k
+        
+        # Compute dot product for selected elements
+        attn_scores = torch.sum(q_selected * k_selected, dim=-1)
+        
+        # Scale the attention scores
+        # dk = (self.weight_params_dim ** 0.5)
+        attn_scores = attn_scores / dk
 
-        
-    #     chunk_size = 1024  # Adjust this value based on your GPU memory
-    #     q_chunks = []
-    #     k_chunks = []
-        
-    #     for i in range(0, instance.size(0), chunk_size):
-    #         chunk = instance[i:i+chunk_size]
-    #         q_chunks.append(torch.matmul(chunk, self.wq_weight_params))
-    #         k_chunks.append(torch.matmul(chunk, self.wk_weight_params))
-        
-    #     q = torch.cat(q_chunks, dim=0)
-    #     k = torch.cat(k_chunks, dim=0)
+        # Create a new sparse matrix with computed attention scores
+        values = attn_scores
+        sparse_attn_matrix = torch.sparse_coo_tensor(indices, values, sparse_adj_matrix.size())
 
-    #     # Use torch.sqrt() directly on a scalar
-    #     dk = torch.sqrt(torch.tensor(k.size(-1), dtype=torch.float32))
-
-    #     # Use torch.bmm for batch matrix multiplication
-    #     # Reshape q and k for bmm
-    #     q_reshaped = q.view(-1, q.size(-2), q.size(-1))
-    #     k_reshaped = k.view(-1, k.size(-2), k.size(-1))
-        
-    #     # Compute attention scores in chunks
-    #     attention_chunks = []
-    #     for i in range(0, q_reshaped.size(0), chunk_size):
-    #         q_chunk = q_reshaped[i:i+chunk_size]
-    #         k_chunk = k_reshaped[i:i+chunk_size]
-            
-    #         matmul_qk = torch.bmm(q_chunk, k_chunk.transpose(1, 2))
-    #         scaled_chunk = matmul_qk / dk
-    #         attention_chunks.append(scaled_chunk)
-        
-    #     scaled_attention_logits = torch.cat(attention_chunks, dim=0)
-        
-    #     # Reshape back to original dimensions
-    #     scaled_attention_logits = scaled_attention_logits.view(q.shape[:-1] + (k.size(-2),))
-    #     # # pdb.set_trace()
-    #     return scaled_attention_logits
+        return sparse_attn_matrix
+    
 
 
 class encoder(nn.Module):
@@ -483,7 +338,7 @@ class encoder(nn.Module):
 
         encoder_output = xg + dense # key + query
         # pdb.set_trace()
-        attention_matrix = self.custom_att(encoder_output) # one of the main comp. bottleneck
+        attention_matrix = self.custom_att(encoder_output, sparse_adj) # one of the main comp. bottleneck
 
         norm_alpha, alpha = self.neigh([attention_matrix, sparse_adj]) # attention coefficients
 
@@ -552,5 +407,187 @@ if __name__ == "__main__":
 
         model = CAMIL(paras=default_paras).to('cpu')
         y = model([rand_tensor, uni_adj_matrix])
-    # pdb.set_trace()
+    pdb.set_trace()
     
+
+
+
+### PREV CODE: 
+### CUSTOM ATTENTION
+        # Initialize weights
+        # self.wq_weight_params = nn.Parameter(torch.Tensor(input_dim, 
+        #                                                   weight_params_dim), requires_grad=True)
+        
+        # self.wk_weight_params = nn.Parameter(torch.Tensor(input_dim, 
+        #                                                   weight_params_dim), requires_grad=True)
+
+        # # Initialize weights using the specified initializer
+        # if kernel_initializer == "xavier_uniform":
+        #     nn.init.xavier_uniform_(self.wq_weight_params)
+        #     nn.init.xavier_uniform_(self.wk_weight_params)
+        # else:
+        #     # Add other initializers as needed
+        #     raise ValueError(f"Unsupported initializer: {kernel_initializer}")
+
+        # # Regularization is typically applied during the loss computation in PyTorch
+        # self.kernel_regularizer = kernel_regularizer
+        # def compute_attention_scores(self, instance):
+    #     chunk_size = 1024  # Adjust based on your GPU memory
+    #     num_patches = instance.size(1)
+    #     num_chunks = math.ceil(num_patches / chunk_size)
+
+    #     # def process_chunk(chunk):
+    #     #     q = self.wq(chunk) # torch.matmul(chunk, self.wq_weight_params)
+    #     #     k = self.wk(chunk) # torch.matmul(chunk, self.wk_weight_params)
+    #     #     return q, k
+        
+    #     # q_chunks = []
+    #     # k_chunks = []
+    #     # for i in range(0, instance.size(0), chunk_size):
+    #     #     chunk = instance[i:i+chunk_size]
+    #     #     q, k = process_chunk(chunk)
+    #     #     q_chunks.append(q)
+    #     #     k_chunks.append(k)
+        
+    #     # q = torch.cat(q_chunks, dim=0)
+    #     # k = torch.cat(k_chunks, dim=0)
+    #     q = self.wq(instance)
+    #     k = self.wk(instance)
+    #     q = q.squeeze(0)
+    #     k = k.squeeze(0)
+    #     dk = k.size(-1) ** 0.5 # torch.sqrt(torch.tensor(k.size(-1), dtype=torch.int8))
+
+    #     # # Compute attention scores in chunks
+    #     # attention_chunks = []
+    #     # for i in range(0, q.size(0), chunk_size):
+    #     #     q_chunk = q[i:i+chunk_size]
+    #     #     k_chunk = k[i:i+chunk_size]
+            
+    #     #     # matmul_qk = torch.matmul(q_chunk, k_chunk.transpose(-2, -1))
+    #     #     # matmul_qk = matmul_qk / dk # redefine variable instead of creating new one
+    #     #     # pdb.set_trace()
+    #     #     attention_chunks.append(torch.matmul(q_chunk, k_chunk.transpose(-2, -1)) / dk)
+    #     # pdb.set_trace()
+    #     # attention_chunks = torch.cat(attention_chunks, dim=0)
+    #     # # print(attention_chunks.dtype)
+    #     # Initialize the full attention matrix
+    #     attention_matrix = torch.zeros((num_patches, num_patches), dtype=torch.float16)
+
+    #     for i in range(num_chunks):
+    #         start_i = i * chunk_size
+    #         end_i = min((i + 1) * chunk_size, num_patches)
+    #         q_chunk = q[start_i:end_i, :]
+
+    #         for j in range(num_chunks):
+    #             start_j = j * chunk_size
+    #             end_j = min((j + 1) * chunk_size, num_patches)
+    #             k_chunk = k[start_j:end_j, :]
+
+    #             # Compute attention scores for this chunk
+    #             scores = torch.matmul(q_chunk, k_chunk.transpose(-2, -1)) / dk  # torch.einsum('bik,bjk->bij', q_chunk, k_chunk) / dk
+
+    #             # Place the scores in the correct position in the full matrix
+    #             attention_matrix[start_i:end_i, start_j:end_j] = scores
+    #     # pdb.set_trace()
+    #     # Clear unused variables and empty cache to free up memory
+    #     # del q_chunks, k_chunks
+    #     torch.cuda.empty_cache()
+    #     return attention_matrix.to(device=instance.device) # attention_chunks
+    # def forward(self, inputs):
+    #     return self.compute_attention_scores(inputs)
+
+    # def compute_attention_scores(self, instance):
+    #     ### can futher optimize this using F.scaled_dot_product 
+    #     # q = torch.matmul(instance, self.wq_weight_params)
+    #     # k = torch.matmul(instance, self.wk_weight_params)
+
+    #     # # dk = torch.tensor(k.size(-1), dtype=torch.float32)
+    #     # dk = torch.tensor(k.shape[-1], dtype=torch.int32)
+    #     # # pdb.set_trace()
+    #     # matmul_qk = torch.matmul(q, k.transpose(-2, -1))  / torch.sqrt(dk) # (..., seq_len_q, seq_len_k)
+    #     # matmul_qk = torch.tensordot(q, k.transpose(-2, -1), dims=1) # could also be this
+        
+    #     # scaled_attention_logits = matmul_qk / torch.sqrt(dk)
+
+        
+    #     chunk_size = 1024  # Adjust this value based on your GPU memory
+    #     q_chunks = []
+    #     k_chunks = []
+        
+    #     for i in range(0, instance.size(0), chunk_size):
+    #         chunk = instance[i:i+chunk_size]
+    #         q_chunks.append(torch.matmul(chunk, self.wq_weight_params))
+    #         k_chunks.append(torch.matmul(chunk, self.wk_weight_params))
+        
+    #     q = torch.cat(q_chunks, dim=0)
+    #     k = torch.cat(k_chunks, dim=0)
+
+    #     # Use torch.sqrt() directly on a scalar
+    #     dk = torch.sqrt(torch.tensor(k.size(-1), dtype=torch.float32))
+
+    #     # Use torch.bmm for batch matrix multiplication
+    #     # Reshape q and k for bmm
+    #     q_reshaped = q.view(-1, q.size(-2), q.size(-1))
+    #     k_reshaped = k.view(-1, k.size(-2), k.size(-1))
+        
+    #     # Compute attention scores in chunks
+    #     attention_chunks = []
+    #     for i in range(0, q_reshaped.size(0), chunk_size):
+    #         q_chunk = q_reshaped[i:i+chunk_size]
+    #         k_chunk = k_reshaped[i:i+chunk_size]
+            
+    #         matmul_qk = torch.bmm(q_chunk, k_chunk.transpose(1, 2))
+    #         scaled_chunk = matmul_qk / dk
+    #         attention_chunks.append(scaled_chunk)
+        
+    #     scaled_attention_logits = torch.cat(attention_chunks, dim=0)
+        
+    #     # Reshape back to original dimensions
+    #     scaled_attention_logits = scaled_attention_logits.view(q.shape[:-1] + (k.size(-2),))
+    #     # # pdb.set_trace()
+    #     return scaled_attention_logits
+        
+### NEIGBOR CONSTRAINED MODULE
+        # Element-wise multiplication of data_input and adj_matrix
+        # dense_data_input = torch.mul(data_input, adj_matrix.to_dense())
+        # sparse_data_input = adj_matrix * data_input # according to another perplexity's answer; sparse_data_input is sparse
+        # pdb.set_trace()
+        # sparse_data_input = torch.sparse.mm(adj_matrix, data_input)
+        
+        # Convert to dense, sum, and convert back to sparse if needed
+        # dense_data_input = sparse_data_input.to_dense()
+        
+        # dense_data_input = torch.mul(data_input, adj_matrix)
+        # reduced_dense_sum = torch.sum(dense_data_input, dim=1)
+        # # Sum along rows
+        # reduced_sum = torch.sum(sparse_data_input, dim=1)
+        # reduced_sum = torch.sparse.sum(sparse_data_input, dim=1)# more efficient apparently
+        # The below MAY trigger a reshape not implemented during backward pass
+        # # Reshape to match the expected shape
+        # # A_raw = reduced_sum.view(-1)
+        # # A_raw = reduced_sum.reshape(-1)
+        # # A_raw = reduced_sum.view(data_input.size(1))
+
+        # ### perplexity
+        # # Ensure the sparse tensor is coalesced
+        # reduced_sum = reduced_sum.coalesce()     # most likely triggers the reshape not implemented during backward pass    
+
+        # # Get the indices and values
+        # indices = reduced_sum.indices().squeeze()
+        # values = reduced_sum.values()
+
+        # # Create a new dense tensor with the desired shape
+        # A_raw = torch.zeros(data_input.size(1), device=reduced_sum.device)
+        # # Fill in the values
+        # A_raw[indices] = values
+        # pdb.set_trace()
+        # Reshape to match the original Keras implementation
+        # A_raw = reduced_dense_sum.view(-1)
+        # Convert to dense (this is necessary for softmax)
+        # pdb.set_trace()
+        # Reshape to match the original Keras implementation; dense tensor occupy more memory
+        # A_raw = reduced_sum.to_dense().view(data_input.size(1))
+        # pdb.set_trace()
+        # Element-wise multiplication of sparse adj_matrix with dense data_input
+        # sparse_data_input = torch.sparse.mm(adj_matrix, data_input)
+        # Reshape data_input to (num_patches, num_features)

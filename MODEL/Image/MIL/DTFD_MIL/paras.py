@@ -39,8 +39,8 @@ class DTFD_MILParas:
     task:str = 'binary'
     criterion:str = 'BCEWithLogitsLoss'
 
-    epoch:int = 200
-    lr:float = 1e-4 # same as https://github.com/Dootmaan/DTFD-MIL.PyTorch/blob/main/train_DTFT-MIL.py
+    epoch:int = 42
+    lr:float = 1e-5 # same as https://github.com/Dootmaan/DTFD-MIL.PyTorch/blob/main/train_DTFT-MIL.py
     weight_decay:float = 1e-4
     lr_decay_ratio:float = 0.2
     

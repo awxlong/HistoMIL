@@ -62,11 +62,17 @@ def dense_mincut_pool(
         x, s = x * mask, s * mask
 
     out = torch.matmul(s.transpose(1, 2), x)
-    out_adj = torch.matmul(torch.matmul(s.transpose(1, 2), adj), s)
+    # pdb.set_trace()
+    s_traspose = s.transpose(1, 2).squeeze(0)
+    out_adj = torch.matmul(torch.sparse.mm(s_traspose, adj[0]), s)
+    # out_adj = out_adj.to_dense()
+    # out_adj = torch.matmul(torch.matmul(s.transpose(1, 2), adj), s)
 
     # MinCut regularization.
     mincut_num = _rank3_trace(out_adj)
     d_flat = torch.einsum('ijk->ij', adj)
+    # pdb.set_trace()
+    d_flat = d_flat.to_dense()
     d = _rank3_diag(d_flat)
     mincut_den = _rank3_trace(
         torch.matmul(torch.matmul(s.transpose(1, 2), d), s))
@@ -126,7 +132,9 @@ class Classifier(nn.Module):
         # layer_acc=[]
                 
         X = mask.unsqueeze(2) * X
+        # pdb.set_trace()
         X = self.conv1(X, adj, mask)
+        # pdb.set_trace()
         s = self.pool1(X)
 
         if graphcam_flag:
@@ -186,7 +194,7 @@ if __name__ == "__main__":
     model = Classifier(default_paras)# .to('mps')
     rand_tensor = torch.rand((1, 29015, 1024))# .to('mps')
     uni_adj_matrix = torch.load('/Users/awxlong/Desktop/my-studies/temp_data/CRC/Feature/uni_adj_matrix/temp_sparse_matrix.pt')# .to('mps')
-    uni_adj_matrix = uni_adj_matrix.to_dense()# .to('mps')
+    # uni_adj_matrix = uni_adj_matrix.to_dense()# .to('mps')
     # pdb.set_trace()
     output = model(rand_tensor, uni_adj_matrix)
     pdb.set_trace()

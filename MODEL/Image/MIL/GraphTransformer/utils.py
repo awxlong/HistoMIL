@@ -719,7 +719,8 @@ class GCNBlock(nn.Module):
             self.bias = None
 
     def forward(self, x, adj, mask):
-        y = torch.matmul(adj, x)
+        # pdb.set_trace()
+        y = torch.matmul(adj, x) # adj here can be sparse, and y becomes dense
         if self.add_self:
             y += x
         y = torch.matmul(y, self.weight)
