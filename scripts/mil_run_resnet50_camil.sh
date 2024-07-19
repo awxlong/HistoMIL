@@ -1,9 +1,9 @@
-#$ -l tmem=142G
-#$ -l h_rt=6:30:00 
+#$ -l tmem=8G
+#$ -l h_rt=320:30:00 
 #$ -S /bin/bash
 #$ -j y
 #$ -l gpu=true
-#$ -N mil_camil_resnet50_30epochs_cv5_last_try
+#$ -N mil_camil_resnet50_30epochs_cv5
 echo "Running on host: $(hostname)"
 echo "Starting at: $(date)"
 cd secrier_lab/persistence/
@@ -21,5 +21,5 @@ python3 HistoMIL/Notebooks/mil_run.py --exp-name 'mil_camil_resnet50_30epochs_cv
                                       --n-epochs 30 \
                                       --monitor-metric 'auroc_val' \
                                       --k-fold 5 \
-                                      --num-workers 0
+                                      --num-workers 4
 echo "Finished at: $(date)"
