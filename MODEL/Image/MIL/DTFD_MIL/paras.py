@@ -40,28 +40,9 @@ class DTFD_MILParas:
     criterion:str = 'BCEWithLogitsLoss'
 
     epoch:int = 42
-    lr:float = 1e-5 # same as https://github.com/Dootmaan/DTFD-MIL.PyTorch/blob/main/train_DTFT-MIL.py
+    lr:float = 2e-5 # same as https://github.com/Dootmaan/DTFD-MIL.PyTorch/blob/main/train_DTFT-MIL.py
     weight_decay:float = 1e-4
     lr_decay_ratio:float = 0.2
     
 
 
-
-# @attr.s(auto_attribs=True)
-# class TransMILParas:
-#     """
-#     include all paras for create TransMIL model
-#     """
-#     #------> parameters for model
-#     encoder_name="pre-calculated"# or name of encoder",
-#     encoder_pretrained:bool = True # or False
-#     feature_size:int=512
-#     embed_size:int=None
-
-#     n_classes:int=2
-#     norm_layer=nn.LayerNorm
-    #class_nb:int=1
-
-    #------> parameters for feature encoder
-    #backbone:str="pre-calculated"
-    #pretrained:bool=True

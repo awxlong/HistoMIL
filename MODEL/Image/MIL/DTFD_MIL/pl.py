@@ -235,9 +235,10 @@ class pl_DTFDMIL(pl.LightningModule):
         # pdb.set_trace()
         if auroc_val >= self.best_auroc_val:
             self.best_auroc_val = auroc_val
-            epoch = self.current_epoch
+            epoch = self.trainer.current_epoch
             # pdb.set_trace()
-            filename = self.trainer.checkpoint_callback.filename + f"{epoch:02d}-{auroc_val:.2f}.ckpt"
+            filename = self.trainer.checkpoint_callback.filename # .format() + f"{epoch:02d}-{self.best_auroc_val:.2f}.ckpt"
+            filename = filename.format(epoch=epoch, auroc_val=self.best_auroc_val)
             filepath = os.path.join(self.trainer.checkpoint_callback.dirpath, \
                                     filename)
             self.trainer.save_checkpoint(filepath)
