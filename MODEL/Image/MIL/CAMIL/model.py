@@ -208,7 +208,7 @@ class NeighborAggregator(nn.Module):
         # Reshape data_input to (num_patches, num_features)
         data_input, adj_matrix = inputs  # [attention_matrix, sparse_adj] in encoder's forward function
 
-        data_input = data_input.squeeze(0)# .float()
+        # data_input = data_input.squeeze(0)# .float() the custom attention returns [#patches, #patches] so get rid of this
         
         # sparse_data_input = adj_matrix * data_input
         # # Perform sparse operation outside of autocast
@@ -342,48 +342,73 @@ class CustomAttention(nn.Module):
         # # Regularization is typically applied during the loss computation in PyTorch
         # self.kernel_regularizer = kernel_regularizer
     def forward(self, inputs):
-        inputs.requires_grad_(True)
+        # inputs.requires_grad_(True)
         inputs = inputs.to(torch.float16)
 
-        return checkpoint(self.compute_attention_scores, inputs)
+        return self.compute_attention_scores(inputs)
 
     def compute_attention_scores(self, instance):
         chunk_size = 1024  # Adjust based on your GPU memory
-        # Cast input to float16
-        # instance = instance.to(torch.float16)
-        # print(instance.dtype)
+        num_patches = instance.size(1)
+        num_chunks = math.ceil(num_patches / chunk_size)
 
-        def process_chunk(chunk):
-            q = self.wq(chunk) # torch.matmul(chunk, self.wq_weight_params)
-            k = self.wk(chunk) # torch.matmul(chunk, self.wk_weight_params)
-            return q, k
+        # def process_chunk(chunk):
+        #     q = self.wq(chunk) # torch.matmul(chunk, self.wq_weight_params)
+        #     k = self.wk(chunk) # torch.matmul(chunk, self.wk_weight_params)
+        #     return q, k
         
-        q_chunks = []
-        k_chunks = []
-        for i in range(0, instance.size(0), chunk_size):
-            chunk = instance[i:i+chunk_size]
-            q, k = process_chunk(chunk)
-            q_chunks.append(q)
-            k_chunks.append(k)
+        # q_chunks = []
+        # k_chunks = []
+        # for i in range(0, instance.size(0), chunk_size):
+        #     chunk = instance[i:i+chunk_size]
+        #     q, k = process_chunk(chunk)
+        #     q_chunks.append(q)
+        #     k_chunks.append(k)
         
-        q = torch.cat(q_chunks, dim=0)
-        k = torch.cat(k_chunks, dim=0)
-
+        # q = torch.cat(q_chunks, dim=0)
+        # k = torch.cat(k_chunks, dim=0)
+        q = self.wq(instance)
+        k = self.wk(instance)
+        q = q.squeeze(0)
+        k = k.squeeze(0)
         dk = k.size(-1) ** 0.5 # torch.sqrt(torch.tensor(k.size(-1), dtype=torch.int8))
 
-        # Compute attention scores in chunks
-        attention_chunks = []
-        for i in range(0, q.size(0), chunk_size):
-            q_chunk = q[i:i+chunk_size]
-            k_chunk = k[i:i+chunk_size]
+        # # Compute attention scores in chunks
+        # attention_chunks = []
+        # for i in range(0, q.size(0), chunk_size):
+        #     q_chunk = q[i:i+chunk_size]
+        #     k_chunk = k[i:i+chunk_size]
             
-            # matmul_qk = torch.matmul(q_chunk, k_chunk.transpose(-2, -1))
-            # matmul_qk = matmul_qk / dk # redefine variable instead of creating new one
-            attention_chunks.append(torch.matmul(q_chunk, k_chunk.transpose(-2, -1)) / dk)
-        
-        attention_chunks = torch.cat(attention_chunks, dim=0)
-        # print(attention_chunks.dtype)
-        return attention_chunks
+        #     # matmul_qk = torch.matmul(q_chunk, k_chunk.transpose(-2, -1))
+        #     # matmul_qk = matmul_qk / dk # redefine variable instead of creating new one
+        #     # pdb.set_trace()
+        #     attention_chunks.append(torch.matmul(q_chunk, k_chunk.transpose(-2, -1)) / dk)
+        # pdb.set_trace()
+        # attention_chunks = torch.cat(attention_chunks, dim=0)
+        # # print(attention_chunks.dtype)
+        # Initialize the full attention matrix
+        attention_matrix = torch.zeros((num_patches, num_patches), device=instance.device, dtype=torch.float16)
+
+        for i in range(num_chunks):
+            start_i = i * chunk_size
+            end_i = min((i + 1) * chunk_size, num_patches)
+            q_chunk = q[start_i:end_i, :]
+
+            for j in range(num_chunks):
+                start_j = j * chunk_size
+                end_j = min((j + 1) * chunk_size, num_patches)
+                k_chunk = k[start_j:end_j, :]
+
+                # Compute attention scores for this chunk
+                scores = torch.matmul(q_chunk, k_chunk.transpose(-2, -1)) / dk  # torch.einsum('bik,bjk->bij', q_chunk, k_chunk) / dk
+
+                # Place the scores in the correct position in the full matrix
+                attention_matrix[start_i:end_i, start_j:end_j] = scores
+        # pdb.set_trace()
+        # Clear unused variables and empty cache to free up memory
+        # del q_chunks, k_chunks
+        torch.cuda.empty_cache()
+        return attention_matrix # attention_chunks
     # def forward(self, inputs):
     #     return self.compute_attention_scores(inputs)
 
@@ -520,11 +545,12 @@ class CAMIL(nn.Module):
 
 if __name__ == "__main__":
     
-    default_paras = CAMILParas()
-    rand_tensor = torch.rand(1, 420, 1024) 
-    uni_adj_matrix = torch.load('/Users/awxlong/Desktop/my-studies/temp_data/CRC/Feature/uni_adj_matrix/temp_sparse_matrix.pt')
+    with torch.amp.autocast(device_type='cpu'):
+        default_paras = CAMILParas()
+        rand_tensor = torch.rand(1, 29015, 1024, dtype=torch.bfloat16).to('cpu') 
+        uni_adj_matrix = torch.load('/Users/awxlong/Desktop/my-studies/temp_data/CRC/Feature/uni_adj_matrix/temp_sparse_matrix.pt')
 
-    model = CAMIL(paras=default_paras)
-    y = model([rand_tensor, uni_adj_matrix])
-    pdb.set_trace()
+        model = CAMIL(paras=default_paras).to('cpu')
+        y = model([rand_tensor, uni_adj_matrix])
+    # pdb.set_trace()
     

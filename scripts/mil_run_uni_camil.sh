@@ -1,8 +1,8 @@
-#$ -l tmem=142G
+#$ -l tmem=18G
 #$ -l h_rt=6:30:00 
 #$ -S /bin/bash
 #$ -j y
-#$ -l gpu=true,gpu_type=(a40|a100)
+#$ -l gpu=true,gpu_type=(p100|v100|rtx4090)
 #$ -N mil_camil_uni_30epochs_cv5
 echo "Running on host: $(hostname)"
 echo "Starting at: $(date)"
