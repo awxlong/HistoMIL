@@ -205,7 +205,7 @@ class Last_Sigmoid(nn.Module):
 
     def __init__(self, input_dim, output_dim, subtyping, 
                  kernel_initializer='glorot_uniform', bias_initializer='zeros',
-                 pooling_mode="mean", use_bias=True):
+                 pooling_mode="sum", use_bias=True):
         super(Last_Sigmoid, self).__init__()
         
         self.output_dim = output_dim
@@ -256,13 +256,13 @@ class Last_Sigmoid(nn.Module):
         if self.use_bias:
             x = x + self.bias
         # pdb.set_trace()
-        # # Apply activation; commented out since we use BCEWithLogitsLoss
-        # if self.subtyping:
-        #     out = F.softmax(x, dim=-1)
-        # else:
-        #     out = torch.sigmoid(x)
+        # # Apply activation;
+        if self.subtyping:
+            out = F.softmax(x, dim=-1)
+        else:
+            out = torch.sigmoid(x)
 
-        return x
+        return out
     
 
 class CustomAttention(nn.Module):

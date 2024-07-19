@@ -1,4 +1,4 @@
-#$ -l tmem=8G
+#$ -l tmem=11G
 #$ -l h_rt=320:30:00 
 #$ -S /bin/bash
 #$ -j y

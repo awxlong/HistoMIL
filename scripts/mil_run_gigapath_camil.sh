@@ -1,8 +1,8 @@
-#$ -l tmem=142G
-#$ -l h_rt=6:30:00 
+#$ -l tmem=12G
+#$ -l h_rt=320:30:00 
 #$ -S /bin/bash
 #$ -j y
-#$ -l gpu=true,gpu_type=(a40|a100)
+#$ -l gpu=true
 #$ -N mil_camil_gigapath_30epochs_cv5
 echo "Running on host: $(hostname)"
 echo "Starting at: $(date)"
