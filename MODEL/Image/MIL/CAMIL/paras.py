@@ -24,14 +24,14 @@ class CAMILParas:
     epoch:int = 30
     lr:float = 0.0002 # 2e-5 # same as https://github.com/olgarithmics/ICLR_CAMIL/blob/ddd8e2e3973d234310f47c6a528ebbb2eaf369a0/args.py#L3
     wd:float = 1e-5
-    optimizer = 'AdamW'
-    lr_scheduler = 'CosineAnnealingLR'
-    # lr_scheduler_config:dict = {'factor':0.2,
-    #                             'mode': 'min',
-    #                             # 'monitor':'loss_val'
-    #                             } 
-    lr_scheduler_config:dict = {'T_max':30, 
-                                'eta_min':1e-6} # assumes cosine annealing
+    optimizer = 'Adam'
+    lr_scheduler = 'ReduceLROnPlateau'
+    lr_scheduler_config:dict = {'factor':0.2,
+                                'mode': 'min',
+                                # 'monitor':'loss_val'
+                                } 
+    # lr_scheduler_config:dict = {'T_max':30, 
+    #                             'eta_min':1e-6} # assumes cosine annealing
 
 
 

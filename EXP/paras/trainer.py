@@ -52,6 +52,18 @@ def get_pl_trainer_additional_paras(mil_algorithm):
                 # 'enable_model_summary': True,
                 
             }
+    elif mil_algorithm == 'GraphTransformer':
+        return {
+                #---------> paras for pytorch lightning trainner
+                "accumulate_grad_batches":8, # mil need accumulated grad
+                "accelerator":"auto",        #accelerator='gpu', devices=1,
+                # 'precision': 16,             # torch.matmul unavailable for sparse tensors in mixed precision regime
+                'enable_progress_bar': True, 
+                'enable_model_summary': True,
+                # 'gradient_clip_val': 0.5,
+                # 'plugins': [DDPStrategy(find_unused_parameters=False)],
+                # 'strategy':'ddp',
+            }
     else:
         return {
                 #---------> paras for pytorch lightning trainner
