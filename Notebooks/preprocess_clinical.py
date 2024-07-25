@@ -14,7 +14,7 @@ torch.multiprocessing.set_sharing_strategy('file_system') # avoid multiprocessin
 import warnings
 warnings.filterwarnings("ignore", category=DeprecationWarning) # stop skimage warning
 import imageio.core.util
-import skimage 
+# import skimage 
 def ignore_warnings(*args, **kwargs):
     pass
 imageio.core.util._precision_warn = ignore_warnings
@@ -42,15 +42,15 @@ import torch
 import os
 
 import pandas as pd
-from skimpy import skim
+# from skimpy import skim
 import numpy as np
-import matplotlib.pyplot as plt
-import seaborn as sns
-import random
+# import matplotlib.pyplot as plt
+# import seaborn as sns
+# import random
 import pdb
-import math
+# import math
 from sklearn.preprocessing import OneHotEncoder
-from sklearn.model_selection import KFold
+# from sklearn.model_selection import KFold
 np.random.seed(42)
 # import pandas_profiling
 
@@ -455,12 +455,12 @@ def preprocess_clinical(args):
                     # pdb.set_trace()
                     # Check if the file already exists
                     if os.path.exists(file_path):
-                        # Load the existing tensor
-                        existing_tensor = torch.load(file_path)
+                        # # Load the existing tensor
+                        # existing_tensor = torch.load(file_path)
                         
-                        # Check if the existing tensor is the same as the new tensor
-                        if torch.equal(existing_tensor, tensor):
-                            print(f"Tensor for patient ID {patient_id} already exists and is identical. Skipping...")
+                        # # Check if the existing tensor is the same as the new tensor
+                        # if torch.equal(existing_tensor, tensor):
+                        #     print(f"Tensor for patient ID {patient_id} already exists and is identical. Skipping...")
                             continue
                     
                     # Save the tensor to a .pt file
