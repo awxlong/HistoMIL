@@ -130,7 +130,7 @@ class Transformer(BaseAggregator):
             x = torch.cat((cls_tokens, x), dim=1)
 
         x = self.dropout(x)
-        x = self.transformer(x, register_hook=register_hook)
+        x = self.transformer(x, register_hook=register_hook) # (#batch_size 1, #patches + 1 421, weight_dim 256)
         pdb.set_trace()
         x = x.mean(dim=1) if self.pool == 'mean' else x[:, 0]
         # pdb.set_trace()

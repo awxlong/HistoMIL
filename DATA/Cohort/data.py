@@ -117,7 +117,7 @@ class DataCohort:
     def split_train_phase(self,
                         ratio:list=[0.9,0.1],#in dataset_para
                         label_name:str="HRD",    #select one category name
-                        K_fold:int=0,target_df=None):
+                        K_fold:int=5,target_df=None):
         # target_df can be customized 
         target_df = self.task_cohort.table.df if target_df is None else target_df
         test_size = 1-ratio[0]

@@ -66,8 +66,8 @@ def dict_type_mil(string):
     if not isinstance(value, dict):
         raise argparse.ArgumentTypeError(f"Value {value} is not a dict")
     for key, val in value.items():
-        if not isinstance(key, int):
-            raise argparse.ArgumentTypeError(f"Key {key} in the dictionary is not a int")
+        # if not isinstance(key, int):
+        #     raise argparse.ArgumentTypeError(f"Key {key} in the dictionary is not a int")
         if not isinstance(val, int):
             raise argparse.ArgumentTypeError(f"Value {val} for key {key} in the dictionary is not an integer")
     return value
@@ -189,7 +189,9 @@ def get_args_preprocessing():
         "--api-dir",type=str, help="Directory where API.env for storing API keys is saved")
     parser.add_argument(
         "--array-job-idx",type=int, default=None, help="Index of the split dataset file. OPTIONAL, this is for array job submission in the cluster")
-
+    parser.add_argument(
+        "--k-fold", default=0, type=int, help='Number of folds for cross-validation, e.g. 3 for 3-fold cross-validation. Default is 0, no cross-validation')
+    
     args = parser.parse_args()
 
     

@@ -22,7 +22,7 @@ class PLTrainerParas(object):
     label_format:str = "int"  # or "one_hot" for classification or "float" regression or "box" or "mask" for detection.segmentation
 
     shuffle_data:bool = True
-    k_fold:int = 4 # None for no k-fold
+    k_fold:int = 5 # None for no k-fold
     #------> parameters for pl trainer
     out_loc:str = None
     with_logger:str = "wandb"

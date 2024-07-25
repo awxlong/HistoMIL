@@ -159,6 +159,71 @@ class MILFeaturesAdjMatrixSet(Dataset):
         idxs=random.sample(full_idx,self.sample_nb)
         return idxs
 
+class MILFeaturesAdjMatrixClinical(Dataset):
+    def __init__(self, data_locs:Locations,
+                        data_list:list,
+                        label_dict:dict,
+                        collector_paras:CollectorParas,
+                        dataset_paras:DatasetParas,
+                        sample_nb:int=None):
+        logger.info(f"Dataset::Using {collector_paras.feature.model_name} feature for MIL, \n {collector_paras.feature.model_name} computed adjacency matrices \n along with clinical features")
+        
+        self.locs = data_locs
+        self.data = data_list
+
+        self.collector_paras = collector_paras
+        self.label_dict = label_dict
+        self.sample_nb = sample_nb
+
+        self.dataset_paras = dataset_paras
+
+    def __len__(self):
+        return len(self.data)
+
+    def __getitem__(self, idx):
+        
+        [ folder,filename,label] = self.data[idx]
+        
+        collector = read_wsi_collector(self.locs,
+                                    folder, 
+                                    filename,
+                                    concepts=["feature"],
+                                    paras=self.collector_paras,
+                                    )
+        data = self.processing(collector=collector)
+        adj_matrix = torch.load(f"{self.locs.abs_loc('feature')}{self.collector_paras.feature.model_name}_adj_matrix/{folder}.{filename}.pt{folder}.{filename}.pt") # CHANGE THIS FOR GIGAPATH
+        # adj_matrix = torch.load(f"{self.locs.abs_loc('feature')}{self.collector_paras.feature.model_name}_adj_matrix/{folder}.{filename}.pt") # CHANGE THIS FOR GIGAPATH
+        
+        clinical_feat = torch.load(f"{self.locs.abs_loc('feature')}Clinical/{self.dataset_paras.current_fold}/{folder}.{filename}.pt")
+        l = self.label_dict[label]
+        del collector
+        # pdb.set_trace()
+        return data, clinical_feat, adj_matrix, l
+    
+    def processing(self,collector:WSICollector):
+
+        # fully select or sample with a number self.sample_nb
+        if self.sample_nb is not None:
+            idxs = self.get_idxs(full_data=collector.feature.feature_embedding)
+            data = torch.index_select(collector.feature.feature_embedding,
+                                    dim=0,
+                                    index = idxs,
+                                    )
+        else:
+            data = collector.feature.feature_embedding
+        return data
+
+    def get_balanced_weight(self,device):
+        L = [l for [_,_,l] in self.data]
+        L_dict,ratio=get_list_item_count(L,self.label_dict)
+        ratio = torch.FloatTensor(ratio).to(device)
+        return ratio,L_dict
+    
+    def get_idxs(self,full_data):
+        total_nb = full_data.shape[0]
+        full_idx = list(range(total_nb))
+        idxs=random.sample(full_idx,self.sample_nb)
+        return idxs
 
 # for some use case, we only want read the image once and 
 class PatchFeatureset(Dataset):
@@ -357,6 +422,14 @@ def create_slide_dataset(data_locs:Locations,
                         data_list=data_list,
                         label_dict = dataset_paras.label_dict,
                         collector_paras=concept_paras,
+                        ) 
+        elif dataset_paras.additional_feature == 'AdjMatrix':
+            logger.info(f"Dataset::Using pre-calculated features along with adjacency matrices for MIL.")
+            return MILFeaturesAdjMatrixClinical(data_locs=data_locs,
+                        data_list=data_list,
+                        label_dict = dataset_paras.label_dict,
+                        collector_paras=concept_paras,
+                        dataset_paras=dataset_paras
                         ) 
         else:   
             # pdb.set_trace()
