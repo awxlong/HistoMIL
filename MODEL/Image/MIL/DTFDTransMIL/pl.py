@@ -111,14 +111,12 @@ class pl_DTFDTransMIL(pl.LightningModule):
         return slide_pseudo_feat, slide_sub_preds, slide_sub_labels, gSlidePred
 
     def configure_optimizers(self):
-        trainable_parameters = list(self.model.classifier.parameters()) + \
-                               list(self.model.attention.parameters()) + \
-                               list(self.model.dimReduction.parameters())
+        trainable_parameters = list(self.model.TransMIL.parameters())
 
-        optimizer0 = torch.optim.Adam(trainable_parameters, lr=self.paras.lr, weight_decay=self.paras.weight_decay)
+        optimizer0 = torch.optim.AdamW(trainable_parameters, lr=self.paras.lr, weight_decay=self.paras.weight_decay)
         optimizer1 = torch.optim.Adam(self.model.attCls.parameters(), lr=self.paras.lr, weight_decay=self.paras.weight_decay)
        
-        scheduler0 = torch.optim.lr_scheduler.MultiStepLR(optimizer0, [25], gamma=self.paras.lr_decay_ratio)
+        scheduler0 = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer0, T_max=42, eta_min=1e-6)
         scheduler1 = torch.optim.lr_scheduler.MultiStepLR(optimizer1, [25], gamma=self.paras.lr_decay_ratio)
         
         return [optimizer0, optimizer1], [scheduler0, scheduler1]
@@ -183,9 +181,7 @@ class pl_DTFDTransMIL(pl.LightningModule):
         
 
     def validation_step(self, batch, batch_idx):
-        self.model.classifier.eval()
-        self.model.dimReduction.eval()
-        self.model.attention.eval()
+        self.model.TransMIL.eval()
         self.model.attCls.eval()
         # pdb.set_trace()
 
@@ -265,9 +261,7 @@ class pl_DTFDTransMIL(pl.LightningModule):
         self.outputs = pd.DataFrame(columns=column_names)
 
     def test_step(self, batch, batch_idx, dataloader_idx=0):
-        self.model.classifier.eval()
-        self.model.dimReduction.eval()
-        self.model.attention.eval()
+        self.model.TransMIL.eval()
         self.model.attCls.eval()
         # pdb.set_trace()
         inputs, labels = batch  # 

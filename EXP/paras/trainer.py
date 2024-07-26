@@ -44,7 +44,7 @@ class PLTrainerParas(object):
             }
     
 def get_pl_trainer_additional_paras(mil_algorithm):
-    if mil_algorithm == 'DTFD-MIL':
+    if mil_algorithm == 'DTFD-MIL' or mil_algorithm == 'DTFDTransMIL':
         return {
                 #---------> paras for pytorch lightning trainner
                 "accelerator":"auto", 

@@ -112,6 +112,7 @@ def run_mil(args):
     DEFAULT_DTFD_MIL_PARAS.epoch = args.n_epochs
     # DEFAULT_DTFD_MIL_PARAS.feature_extractor_name = args.precomputed
 
+    # Graph Transformer
     DEFAULT_GRAPHTRANSFORMER_PARAS = GraphTransformerParas()
     DEFAULT_GRAPHTRANSFORMER_PARAS.n_features = MDL_TO_FEATURE_DIMS[args.precomputed]
     DEFAULT_GRAPHTRANSFORMER_PARAS.epoch = args.n_epochs

@@ -50,7 +50,8 @@ def create_img_model(
         "CAMIL": "HistoMIL.MODEL.Image.MIL.CAMIL.pl",
         "DTFD-MIL": "HistoMIL.MODEL.Image.MIL.DTFD_MIL.pl",
         "GraphTransformer": "HistoMIL.MODEL.Image.MIL.GraphTransformer.pl",
-        "TransMILMultimodal": "HistoMIL.MODEL.Image.MIL.TransMILMultimodal.pl"
+        "TransMILMultimodal": "HistoMIL.MODEL.Image.MIL.TransMILMultimodal.pl",
+        "DTFDTransMIL": "HistoMIL.MODEL.Image.MIL.DTFDTransMIL.pl",
     }
 
     if model_name not in model_classes:
@@ -74,7 +75,7 @@ def create_img_model(
 
     
 
-def ____create_img_model_(train_paras:PLTrainerParas,
+def _deprecated_create_img_model_(train_paras:PLTrainerParas,
                      dataset_paras:DatasetParas,
                      optloss_paras:OptLossParas,
                      model_para):
