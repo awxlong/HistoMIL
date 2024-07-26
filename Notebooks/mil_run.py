@@ -130,7 +130,7 @@ def run_mil(args):
                            'Transformer':DEFAULT_TRANSFORMER_PARAS,
                            'AttentionMIL': DEFAULT_Attention_MIL_PARAS,
                            'CAMIL': DEFAULT_CAMIL_PARAS,
-                           'DTFD-MIL': DEFAULT_DTFD_MIL_PARAS,
+                           'DTFD_MIL': DEFAULT_DTFD_MIL_PARAS,
                            'GraphTransformer': DEFAULT_GRAPHTRANSFORMER_PARAS,
                            'TransMILMultimodal': DEFAULT_MULTIMODAL_TRANSMIL_PARAS,
                            'DTFDTransMIL': DEFAULT_DTFDMIL_TRANSMIL_PARAS} 

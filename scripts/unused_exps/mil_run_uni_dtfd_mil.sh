@@ -17,7 +17,7 @@ python3 HistoMIL/Notebooks/mil_run.py --exp-name 'mil_dtfd_uni_42epochs_cv5_mult
                                       --split-ratio 0.9 0.1 --step-size 224 \
                                       --precomputed 'uni' \
                                       --label-dict "{0:0,1:1}" \
-                                      --mil-algorithm "DTFD-MIL" \
+                                      --mil-algorithm "DTFD_MIL" \
                                       --n-epochs 42 \
                                       --monitor-metric 'auroc_val' \
                                       --k-fold 5

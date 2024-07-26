@@ -48,7 +48,7 @@ def create_img_model(
         "Transformer": "HistoMIL.MODEL.Image.MIL.Transformer.pl",
         "AttentionMIL": "HistoMIL.MODEL.Image.MIL.AttentionMIL.pl",
         "CAMIL": "HistoMIL.MODEL.Image.MIL.CAMIL.pl",
-        "DTFD-MIL": "HistoMIL.MODEL.Image.MIL.DTFD_MIL.pl",
+        "DTFD_MIL": "HistoMIL.MODEL.Image.MIL.DTFD_MIL.pl",
         "GraphTransformer": "HistoMIL.MODEL.Image.MIL.GraphTransformer.pl",
         "TransMILMultimodal": "HistoMIL.MODEL.Image.MIL.TransMILMultimodal.pl",
         "DTFDTransMIL": "HistoMIL.MODEL.Image.MIL.DTFDTransMIL.pl",

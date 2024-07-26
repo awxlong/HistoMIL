@@ -24,7 +24,7 @@ aviliable_mil_models = {
 
                     'CAMIL': CAMIL,
 
-                    'DTFD-MIL': DTFD_MIL,
+                    'DTFD_MIL': DTFD_MIL,
 
                     'GraphTransformer': GraphTransformer,
 
