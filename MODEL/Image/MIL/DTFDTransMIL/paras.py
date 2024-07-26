@@ -32,8 +32,9 @@ class DTFDTransMILParas:
     droprate_2:float = 0
     numLayer_Res:int = 0
     grad_clipping:int = 5
-    
 
+    ### transmil configurations
+    pos_enc:str = 'PPEG'
 
     ### OPTIMIZER CONFIGURATIONS
     task:str = 'binary'

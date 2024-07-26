@@ -41,6 +41,8 @@ from HistoMIL.MODEL.Image.MIL.AttentionMIL.paras import  DEFAULT_Attention_MIL_P
 from HistoMIL.MODEL.Image.MIL.CAMIL.paras import  CAMILParas, custom_camil_collate
 from HistoMIL.MODEL.Image.MIL.DTFD_MIL.paras import  DTFD_MILParas
 from HistoMIL.MODEL.Image.MIL.GraphTransformer.paras import  GraphTransformerParas
+from HistoMIL.MODEL.Image.MIL.DTFDTransMIL.paras import  DTFDTransMILParas
+
 
 
 
@@ -79,7 +81,7 @@ def run_mil(args):
     DEFAULT_MULTIMODAL_TRANSMIL_PARAS = TransMILMultimodalParas()
     DEFAULT_MULTIMODAL_TRANSMIL_PARAS.epoch = args.n_epochs
     DEFAULT_MULTIMODAL_TRANSMIL_PARAS.input_dim = MDL_TO_FEATURE_DIMS[args.precomputed]
-    
+
     # for dsmil
     model_para_dsmil = DSMILParas()
     model_para_dsmil.feature_dim = MDL_TO_FEATURE_DIMS[args.precomputed]
@@ -114,6 +116,11 @@ def run_mil(args):
     DEFAULT_GRAPHTRANSFORMER_PARAS.n_features = MDL_TO_FEATURE_DIMS[args.precomputed]
     DEFAULT_GRAPHTRANSFORMER_PARAS.epoch = args.n_epochs
     
+    # DTFD-MIL-TransMIL
+    DEFAULT_DTFDMIL_TRANSMIL_PARAS = DTFDTransMILParas()
+    DEFAULT_DTFDMIL_TRANSMIL_PARAS.input_dim = MDL_TO_FEATURE_DIMS[args.precomputed]
+    DEFAULT_DTFDMIL_TRANSMIL_PARAS.epoch = args.n_epochs
+
 
     model_name = args.mil_algorithm  # options are "TransMIL", "ABMIL", "DSMIL" or "Transformer", 'AttentionMIL'
 
@@ -124,7 +131,8 @@ def run_mil(args):
                            'CAMIL': DEFAULT_CAMIL_PARAS,
                            'DTFD-MIL': DEFAULT_DTFD_MIL_PARAS,
                            'GraphTransformer': DEFAULT_GRAPHTRANSFORMER_PARAS,
-                           'TransMILMultimodal': DEFAULT_MULTIMODAL_TRANSMIL_PARAS} 
+                           'TransMILMultimodal': DEFAULT_MULTIMODAL_TRANSMIL_PARAS,
+                           'DTFDTransMIL': DEFAULT_DTFDMIL_TRANSMIL_PARAS} 
 
     #--------------------------> parameters
     
