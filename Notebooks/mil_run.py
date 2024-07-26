@@ -33,6 +33,8 @@ from args import get_args_mil
 
 ### Getting parameters for MIL model architectures/algorithms
 from HistoMIL.MODEL.Image.MIL.TransMIL.paras import TransMILParas
+from HistoMIL.MODEL.Image.MIL.TransMILMultimodal.paras import TransMILMultimodalParas
+
 from HistoMIL.MODEL.Image.MIL.DSMIL.paras import DSMILParas
 from HistoMIL.MODEL.Image.MIL.Transformer.paras import  DEFAULT_TRANSFORMER_PARAS
 from HistoMIL.MODEL.Image.MIL.AttentionMIL.paras import  DEFAULT_Attention_MIL_PARAS
@@ -73,6 +75,11 @@ def run_mil(args):
                                                 'eta_min':1e-6}
     model_para_transmil.epoch = args.n_epochs
 
+    # for multimodal TransMIL
+    DEFAULT_MULTIMODAL_TRANSMIL_PARAS = TransMILMultimodalParas()
+    DEFAULT_MULTIMODAL_TRANSMIL_PARAS.epoch = args.n_epochs
+    DEFAULT_MULTIMODAL_TRANSMIL_PARAS.input_dim = MDL_TO_FEATURE_DIMS[args.precomputed]
+    
     # for dsmil
     model_para_dsmil = DSMILParas()
     model_para_dsmil.feature_dim = MDL_TO_FEATURE_DIMS[args.precomputed]
@@ -116,7 +123,8 @@ def run_mil(args):
                            'AttentionMIL': DEFAULT_Attention_MIL_PARAS,
                            'CAMIL': DEFAULT_CAMIL_PARAS,
                            'DTFD-MIL': DEFAULT_DTFD_MIL_PARAS,
-                           'GraphTransformer': DEFAULT_GRAPHTRANSFORMER_PARAS} 
+                           'GraphTransformer': DEFAULT_GRAPHTRANSFORMER_PARAS,
+                           'TransMILMultimodal': DEFAULT_MULTIMODAL_TRANSMIL_PARAS} 
 
     #--------------------------> parameters
     
@@ -159,6 +167,9 @@ def run_mil(args):
     if args.mil_algorithm == 'CAMIL' or args.mil_algorithm == 'GraphTransformer':
         gene2k_env.dataset_para.additional_feature = 'AdjMatrix'
         gene2k_env.dataset_para.add_dataloader = {'collate_fn':custom_camil_collate}
+    if args.mil_algorithm == 'TransMILMultimodal':
+        gene2k_env.dataset_para.additional_feature = 'Clinical'
+        
     #----------------> model
     gene2k_env.trainer_para.model_name = model_name
     gene2k_env.trainer_para.model_para = model_para_settings[model_name]

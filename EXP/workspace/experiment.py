@@ -232,6 +232,8 @@ class Experiment:
                 self.paras.dataset_para=self.exp_worker.dataset_para
                 self.paras.trainer_para=self.exp_worker.trainer_para
                 self.paras.opt_para=self.exp_worker.opt_para
+                # for clinical
+                self.paras.dataset_para.current_fold = f'cv{kfold}'
                 # pdb.set_trace()
                 self.exp_worker.train()
                 # pdb.set_trace()

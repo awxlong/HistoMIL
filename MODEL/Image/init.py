@@ -7,11 +7,74 @@ from HistoMIL.EXP.paras.dataset import DatasetParas
 from HistoMIL.EXP.paras.optloss import OptLossParas
 
 from HistoMIL.MODEL.Image.MIL.init import aviliable_mil_models
-from HistoMIL.MODEL.Image.PL_protocol.MIL import pl_MIL
+# from HistoMIL.MODEL.Image.PL_protocol.MIL import pl_MIL
 
 
 import pdb
-def create_img_model(train_paras:PLTrainerParas,
+
+from typing import Dict, Any
+# from HistoMIL.MODEL.Image.MIL import (
+#     ABMIL, TransMIL, DSMIL, Transformer, AttentionMIL, CAMIL, DTFD_MIL, GraphTransformer, TransMILMultimodal
+# )
+
+
+def create_img_model(
+    train_paras: PLTrainerParas,
+    dataset_paras: DatasetParas,
+    optloss_paras: OptLossParas,
+    model_para: Dict[str, Any]
+) -> Any:
+    """
+    Create and return an image processing model based on the specified parameters.
+
+    Args:
+        train_paras (PLTrainerParas): Training parameters.
+        dataset_paras (DatasetParas): Dataset parameters.
+        optloss_paras (OptLossParas): Optimization and loss parameters.
+        model_para (Dict[str, Any]): Model-specific parameters.
+
+    Returns:
+        Any: The created model instance.
+
+    Raises:
+        ValueError: If the specified model name is not available.
+    """
+    model_name = train_paras.model_name
+
+    model_classes = {
+        "ABMIL": "HistoMIL.MODEL.Image.MIL.ABMIL.pl",
+        "TransMIL": "HistoMIL.MODEL.Image.MIL.TransMIL.pl",
+        "DSMIL": "HistoMIL.MODEL.Image.MIL.DSMIL.pl",
+        "Transformer": "HistoMIL.MODEL.Image.MIL.Transformer.pl",
+        "AttentionMIL": "HistoMIL.MODEL.Image.MIL.AttentionMIL.pl",
+        "CAMIL": "HistoMIL.MODEL.Image.MIL.CAMIL.pl",
+        "DTFD-MIL": "HistoMIL.MODEL.Image.MIL.DTFD_MIL.pl",
+        "GraphTransformer": "HistoMIL.MODEL.Image.MIL.GraphTransformer.pl",
+        "TransMILMultimodal": "HistoMIL.MODEL.Image.MIL.TransMILMultimodal.pl"
+    }
+
+    if model_name not in model_classes:
+        raise ValueError(f"Model name '{model_name}' is not available")
+
+    module_path = model_classes[model_name]
+    module = __import__(module_path, fromlist=[''])
+    model_class = getattr(module, f"pl_{model_name}")
+
+    if model_name in ["ABMIL", "DSMIL"]:
+        return model_class(
+            data_paras=dataset_paras,
+            opt_paras=optloss_paras,
+            trainer_paras=train_paras,
+            model_para=model_para
+        )
+    elif model_name == "AttentionMIL":
+        return model_class(dataset_paras=dataset_paras, paras=model_para)
+    else:
+        return model_class(paras=model_para)
+
+    
+
+def ____create_img_model_(train_paras:PLTrainerParas,
                      dataset_paras:DatasetParas,
                      optloss_paras:OptLossParas,
                      model_para):
@@ -62,11 +125,15 @@ def create_img_model(train_paras:PLTrainerParas,
         elif model_name == 'GraphTransformer':
             from HistoMIL.MODEL.Image.MIL.GraphTransformer.pl import pl_GraphTransformer
             pl_model = pl_GraphTransformer(paras=model_para)
+        elif model_name == 'TransMILMultimodal':
+            from HistoMIL.MODEL.Image.MIL.TransMILMultimodal.pl import pl_TransMILMultimodal
+            pl_model = pl_TransMILMultimodal(paras=model_para)
 
     else:
         raise ValueError("model name not availiable")
     return pl_model
 
+    
 def create_img_mode_paras(train_paras:PLTrainerParas,):
     #--------> get model paras
     model_name = train_paras.model_name

@@ -1,5 +1,7 @@
 from HistoMIL.MODEL.Image.MIL.ABMIL.model import ABMIL
 from HistoMIL.MODEL.Image.MIL.TransMIL.model import TransMIL
+from HistoMIL.MODEL.Image.MIL.TransMILMultimodal.model import TransMILMultimodal
+
 from HistoMIL.MODEL.Image.MIL.DSMIL.model import DSMIL
 from HistoMIL.MODEL.Image.MIL.Transformer.model import Transformer
 from HistoMIL.MODEL.Image.MIL.AttentionMIL.model import AttentionMIL
@@ -25,4 +27,6 @@ aviliable_mil_models = {
                     'DTFD-MIL': DTFD_MIL,
 
                     'GraphTransformer': GraphTransformer,
+
+                    'TransMILMultimodal': TransMILMultimodal
     }

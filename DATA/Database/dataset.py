@@ -191,14 +191,14 @@ class MILFeaturesAdjMatrixClinical(Dataset):
                                     paras=self.collector_paras,
                                     )
         data = self.processing(collector=collector)
-        adj_matrix = torch.load(f"{self.locs.abs_loc('feature')}{self.collector_paras.feature.model_name}_adj_matrix/{folder}.{filename}.pt{folder}.{filename}.pt") # CHANGE THIS FOR GIGAPATH
+        # adj_matrix = torch.load(f"{self.locs.abs_loc('feature')}{self.collector_paras.feature.model_name}_adj_matrix/{folder}.{filename}.pt{folder}.{filename}.pt") # CHANGE THIS FOR GIGAPATH
         # adj_matrix = torch.load(f"{self.locs.abs_loc('feature')}{self.collector_paras.feature.model_name}_adj_matrix/{folder}.{filename}.pt") # CHANGE THIS FOR GIGAPATH
         
-        clinical_feat = torch.load(f"{self.locs.abs_loc('feature')}Clinical/{self.dataset_paras.current_fold}/{folder}.{filename}.pt")
+        clinical_feat = torch.load(f"{self.locs.abs_loc('feature')}clinical/{self.dataset_paras.current_fold}/{filename[:12]}.pt")
         l = self.label_dict[label]
         del collector
         # pdb.set_trace()
-        return data, clinical_feat, adj_matrix, l
+        return data, clinical_feat, 1, l
     
     def processing(self,collector:WSICollector):
 
@@ -423,7 +423,7 @@ def create_slide_dataset(data_locs:Locations,
                         label_dict = dataset_paras.label_dict,
                         collector_paras=concept_paras,
                         ) 
-        elif dataset_paras.additional_feature == 'AdjMatrix':
+        elif dataset_paras.additional_feature == 'Clinical':
             logger.info(f"Dataset::Using pre-calculated features along with adjacency matrices for MIL.")
             return MILFeaturesAdjMatrixClinical(data_locs=data_locs,
                         data_list=data_list,
