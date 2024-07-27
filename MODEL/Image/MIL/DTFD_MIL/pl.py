@@ -31,7 +31,7 @@ import pdb
 #      pl protocol class
 ####################################################################################
 
-class pl_DTFDMIL(pl.LightningModule):
+class pl_DTFD_MIL(pl.LightningModule):
     def __init__(self, paras:DTFD_MILParas):
         super().__init__()
         self.automatic_optimization = False
