@@ -260,7 +260,7 @@ def get_args_mil():
     parser.add_argument(
         "--monitor-metric", default='auroc_val', type=str, help='Performance metric to monitor by pytorch lightning which decides saved checkpoint, e.g. loss_val, auroc_val')
     
-    parser.add_argument("--efficient-finetuning", type=str2bool, nargs='?', const=True, default=True, 
+    parser.add_argument("--efficient-finetuning", type=str2bool, nargs='?', const=True, default=False, 
                     help="Set True to enable finetuning mlp_head and first input projection layer (default: True)")
 
     parser.add_argument(

@@ -108,7 +108,7 @@ class TransformerMultimodal(BaseAggregator):
     
     def selected_layers_finetuning(self):
         for name, param in self.named_parameters():
-            if not any(layer in name for layer in ['mlp_head', 'input_projection']):
+            if not any(layer in name for layer in ['mlp_head', 'projection']):
                 param.requires_grad = False
     def print_trainable_parameters(self):
         for name, param in self.named_parameters():
@@ -158,6 +158,7 @@ class TransformerMultimodal(BaseAggregator):
             x = torch.cat((cls_tokens, x), dim=1)
 
         x = self.dropout(x)
+        # pdb.set_trace()
         x = self.transformer(x, register_hook=register_hook) # (#batch_size 1, #patches + 1 421, weight_dim 256)
         # pdb.set_trace()
         x = x.mean(dim=1) if self.pool == 'mean' else x[:, 0]
@@ -185,12 +186,15 @@ class TransformerMultimodal(BaseAggregator):
 
 
 if __name__ == "__main__":
+    rand_img_tensor = torch.load('/Users/awxlong/Desktop/my-studies/temp_data/CRC/Feature/resnet18/8472de58-9075-4534-b00b-3a87ba2158da.TCGA-AD-6963-01Z-00-DX1.7df2e133-5f24-4c0a-b7f5-5a65fe3420c9.svs.pt')#torch.rand(1, 1, 1024) 
+    rand_img_tensor = rand_img_tensor.unsqueeze(0)
     
     default_paras = TransformerMultimodalParas()
-    
+    default_paras.input_dim = rand_img_tensor.shape[2]
     
     model = TransformerMultimodal(default_paras)
-    rand_img_tensor = torch.rand(1, 1, 1024) 
+    rand_img_tensor = torch.load('/Users/awxlong/Desktop/my-studies/temp_data/CRC/Feature/resnet18/8472de58-9075-4534-b00b-3a87ba2158da.TCGA-AD-6963-01Z-00-DX1.7df2e133-5f24-4c0a-b7f5-5a65fe3420c9.svs.pt')#torch.rand(1, 1, 1024) 
+    rand_img_tensor = rand_img_tensor.unsqueeze(0)
     rand = torch.Tensor([0.5, 0.8, 0.9, 1, 0, 1, 1, 0])
     # binary = (rand >= 0.5).long()
     
