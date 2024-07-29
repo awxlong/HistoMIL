@@ -110,10 +110,12 @@ class Experiment:
         else:   
             raise ValueError(f"main data source {self.paras.main_data_source} not supported.(slide or omic)")
         # initial some paras for dataset from cohort paras
-        self.paras.dataset_para.label_dict = self.paras.cohort_para.label_dict
-        self.paras.cohort_para.category_nb = len(self.paras.cohort_para.label_dict.keys()) 
-        self.paras.dataset_para.class_nb = self.paras.cohort_para.category_nb 
-        
+        if self.paras.cohort_para.label_dict:
+            # CLASSIFICATION
+            self.paras.dataset_para.label_dict = self.paras.cohort_para.label_dict
+            self.paras.cohort_para.category_nb = len(self.paras.cohort_para.label_dict.keys()) 
+            self.paras.dataset_para.class_nb = self.paras.cohort_para.category_nb 
+            
 
     def split_train_test(self,df=None):
         """
@@ -190,8 +192,8 @@ class Experiment:
         self.need_train = need_train
         if main_data_source == "slide":
             #-------train need split data
-            label_idx = self.paras.cohort_para.targets[self.paras.cohort_para.targets_idx]
-            self.data_cohort.show_taskcohort_stat(label_idx=label_idx)
+            label_idx = self.paras.cohort_para.targets[self.paras.cohort_para.targets_idx] # coincidentally doesn't interfere with regression if i set targets-name to [g0_arrest, g0_arrest_score] because g0_arrest are the scores
+            self.data_cohort.show_taskcohort_stat(label_idx=label_idx) 
             self.split_train_test()  # updated to split into train, valid, test
         
             for kfold in range(last_cv, self.paras.trainer_para.k_fold):

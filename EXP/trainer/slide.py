@@ -71,7 +71,7 @@ class pl_slide_trainer(pl_base_trainer):
         produce dataset and dataloader for different training phase
         """
         slide_list,patch_list,_ = self.data_cohort.get_task_datalist(phase=train_phase)
-
+        # pdb.set_trace()
         # different slide methods need different training protocol 
         # data_list related with training methods,
         # (1)mil need slide list 

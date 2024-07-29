@@ -158,6 +158,7 @@ class Cohort:
         out:
             folders,filenames,label,patch_nb:: 4 lists for creating dataloader
         """
+        # pdb.set_trace()
         for name in concepts:
             df = df [df[name]>0]
         #df=self.cohort_df[[self.cohort_df[name]>0] for name in concepts]
@@ -165,8 +166,13 @@ class Cohort:
         folders = df['folder'].values.tolist()
         filenames = df["filename"].values.tolist()
         label = df[label_name].values.tolist()
+        # pdb.set_trace()
         patch_nb = df["patch_nb"].values.tolist()
-        label = [l[0] for l in label]
+        if len(label_name) == 1:
+            label = [l[0] for l in label]
+        elif len(label_name) > 1:
+            # pdb.set_trace()
+            label = [l[1] for l in label]
         slide_list = [[f,n,l] for f,n,l in zip(folders,filenames,label)]
         patch_list = [[f,n,i,l] for f,n,l,p_nb in zip(folders,filenames,label,patch_nb) for i in range(p_nb) ]
         logger.debug(f"Cohort::in data file list df:{df.keys()}, folders{len(folders)},patch nb = {len(patch_list)}")
@@ -338,6 +344,7 @@ class TaskCohort(Cohort):
         assert label_idx in self.labels_name
         df = self.table.df
         c_nb = df[concept_name+"_nb"].values.tolist()
+        # pdb.set_trace()
         label = df[label_idx].values.tolist()
         all_cat = []
         for l_type  in set(label):

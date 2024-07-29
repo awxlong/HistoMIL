@@ -112,6 +112,7 @@ class DataCohort:
         for i in range(len(cat_stat)):
             logger.info(f" Cohort::Category: {cat_stat[i][0]} include {len(cat_stat[i][1])} slides,")
             logger.info(f"               include {sum(cat_stat[i][1])}  {concept_name}, ")
+        
         return cat_stat
 
     def split_train_phase(self,
@@ -181,6 +182,7 @@ class DataCohort:
             patch_list: list for patch-level training
             patch_nb:   list for patch numbers 
         """
+        # pdb.set_trace()
         target_df = self.data[phase]
         slide_list,patch_list,patch_nb = self.task_cohort.get_task_datalist(dataframe=target_df)
         return slide_list,patch_list,patch_nb
@@ -208,17 +210,26 @@ class DataCohort:
         #construct paras for dataloader 
         dataloader_para = {"batch_size":dataset_para.batch_size}
         if dataset_para.is_weight_sampler:
+            # pdb.set_trace()
             #logger.info(f"Using weight sampler with {dataset.label_dict}")
-            if len(dataset.data[0]) == 3:
-                L = [dataset.label_dict[l] for [_,_,l] in dataset.data]
+            if len(dataset.data[0]) == 3: # (folder, filename, label)
+                if dataset_para.additional_feature == 'Regression':
+                    L = [l for [_,_,l] in dataset.data]
+                    label_np = np.array(L)
+                    logger.info(f"No weight sampler for regression setting")
+                else:
+                    L = [dataset.label_dict[l] for [_,_,l] in dataset.data]
+                    label_np = np.array(L)
+                    logger.info(f"Cohort:: For weight sampler, the label distribution is {np.unique(label_np,return_counts=True)}")
+                    sampler = get_weight_sampler(dataset,label_np)
+                    dataloader_para.update({"sampler":sampler})
             elif len(dataset.data[0]) == 4:
                 L = [dataset.label_dict[l] for [_,_,_,l] in dataset.data]
+                label_np = np.array(L)
             else:
                 raise ValueError("The dataset is not correct.")
-            label_np = np.array(L)
-            logger.info(f"Cohort:: For weight sampler, the label distribution is {np.unique(label_np,return_counts=True)}")
-            sampler = get_weight_sampler(dataset,label_np)
-            dataloader_para.update({"sampler":sampler})
+            
+            
         else:
             dataloader_para.update({"shuffle":dataset_para.is_shuffle})
         if dataset_para.num_workers >1:

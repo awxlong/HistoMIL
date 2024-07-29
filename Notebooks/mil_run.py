@@ -126,6 +126,7 @@ def run_mil(args):
     model_name = args.mil_algorithm  # options are "TransMIL", "ABMIL", "DSMIL" or "Transformer", 'AttentionMIL'
 
     model_para_settings = {"TransMIL":model_para_transmil,
+                           'TransMILRegression': model_para_transmil,
                            "DSMIL":model_para_dsmil,
                            'Transformer':DEFAULT_TRANSFORMER_PARAS,
                            'AttentionMIL': DEFAULT_Attention_MIL_PARAS,
@@ -178,7 +179,8 @@ def run_mil(args):
         gene2k_env.dataset_para.add_dataloader = {'collate_fn':custom_camil_collate}
     if args.mil_algorithm == 'TransMILMultimodal':
         gene2k_env.dataset_para.additional_feature = 'Clinical'
-        
+    if 'Regression' in args.mil_algorithm:
+        gene2k_env.dataset_para.additional_feature = 'Regression'
     #----------------> model
     gene2k_env.trainer_para.model_name = model_name
     gene2k_env.trainer_para.model_para = model_para_settings[model_name]
