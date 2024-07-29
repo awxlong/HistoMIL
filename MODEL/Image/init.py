@@ -52,7 +52,7 @@ def create_img_model(
         "GraphTransformer": "HistoMIL.MODEL.Image.MIL.GraphTransformer.pl",
         "TransMILMultimodal": "HistoMIL.MODEL.Image.MIL.TransMILMultimodal.pl",
         "DTFDTransMIL": "HistoMIL.MODEL.Image.MIL.DTFDTransMIL.pl",
-        "TransMILRegression": "HistoMIL.MODEL.Image.MIL.TransMIL.pl"
+        "TransMILRegression": "HistoMIL.MODEL.Image.MIL.TransMILRegression.pl"
     }
 
     if model_name not in model_classes:

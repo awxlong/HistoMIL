@@ -34,6 +34,7 @@ from args import get_args_mil
 ### Getting parameters for MIL model architectures/algorithms
 from HistoMIL.MODEL.Image.MIL.TransMIL.paras import TransMILParas
 from HistoMIL.MODEL.Image.MIL.TransMILMultimodal.paras import TransMILMultimodalParas
+from HistoMIL.MODEL.Image.MIL.TransMILRegression.paras import TransMILRegressionParas
 
 from HistoMIL.MODEL.Image.MIL.DSMIL.paras import DSMILParas
 from HistoMIL.MODEL.Image.MIL.Transformer.paras import  DEFAULT_TRANSFORMER_PARAS
@@ -82,6 +83,12 @@ def run_mil(args):
     DEFAULT_MULTIMODAL_TRANSMIL_PARAS.epoch = args.n_epochs
     DEFAULT_MULTIMODAL_TRANSMIL_PARAS.input_dim = MDL_TO_FEATURE_DIMS[args.precomputed]
 
+    # for TransMILRegression
+    DEFAULT_TRANSMIL_REGRESSION = TransMILRegressionParas()
+    DEFAULT_TRANSMIL_REGRESSION.epoch = args.n_epochs
+    DEFAULT_TRANSMIL_REGRESSION.input_dim = MDL_TO_FEATURE_DIMS[args.precomputed]
+
+
     # for dsmil
     model_para_dsmil = DSMILParas()
     model_para_dsmil.feature_dim = MDL_TO_FEATURE_DIMS[args.precomputed]
@@ -126,7 +133,7 @@ def run_mil(args):
     model_name = args.mil_algorithm  # options are "TransMIL", "ABMIL", "DSMIL" or "Transformer", 'AttentionMIL'
 
     model_para_settings = {"TransMIL":model_para_transmil,
-                           'TransMILRegression': model_para_transmil,
+                           'TransMILRegression': DEFAULT_TRANSMIL_REGRESSION,
                            "DSMIL":model_para_dsmil,
                            'Transformer':DEFAULT_TRANSFORMER_PARAS,
                            'AttentionMIL': DEFAULT_Attention_MIL_PARAS,

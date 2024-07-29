@@ -262,9 +262,10 @@ class MILFeaturesAdjMatrixClinicalRegression(Dataset):
         
         clinical_feat = torch.load(f"{self.locs.abs_loc('feature')}clinical/{self.dataset_paras.current_fold}/{filename[:12]}.pt")
         # l = self.label_dict[label]
+        label = torch.tensor(label, dtype=torch.float32)
         del collector
-        # pdb.set_trace()
-        return data, clinical_feat, 1, label
+        # pdb.set_trace() # can't put pdb.set_trace()
+        return data, clinical_feat, 1, label # avoid mps error with float64 values
     
     def processing(self,collector:WSICollector):
 
