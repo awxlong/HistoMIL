@@ -43,14 +43,22 @@ def create_img_model(
 
     model_classes = {
         "ABMIL": "HistoMIL.MODEL.Image.MIL.ABMIL.pl",
-        "TransMIL": "HistoMIL.MODEL.Image.MIL.TransMIL.pl",
+        
         "DSMIL": "HistoMIL.MODEL.Image.MIL.DSMIL.pl",
+        
         "Transformer": "HistoMIL.MODEL.Image.MIL.Transformer.pl",
         "TransformerMultimodal": "HistoMIL.MODEL.Image.MIL.TransformerMultimodal.pl",
+        "TransformerRegression": "HistoMIL.MODEL.Image.MIL.TransformerRegression.pl",
+
         "AttentionMIL": "HistoMIL.MODEL.Image.MIL.AttentionMIL.pl",
+        
         "CAMIL": "HistoMIL.MODEL.Image.MIL.CAMIL.pl",
+        
         "DTFD_MIL": "HistoMIL.MODEL.Image.MIL.DTFD_MIL.pl",
+        
         "GraphTransformer": "HistoMIL.MODEL.Image.MIL.GraphTransformer.pl",
+
+        "TransMIL": "HistoMIL.MODEL.Image.MIL.TransMIL.pl",
         "TransMILMultimodal": "HistoMIL.MODEL.Image.MIL.TransMILMultimodal.pl",
         "DTFDTransMIL": "HistoMIL.MODEL.Image.MIL.DTFDTransMIL.pl",
         "TransMILRegression": "HistoMIL.MODEL.Image.MIL.TransMILRegression.pl"

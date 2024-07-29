@@ -39,6 +39,7 @@ from HistoMIL.MODEL.Image.MIL.TransMILRegression.paras import TransMILRegression
 from HistoMIL.MODEL.Image.MIL.DSMIL.paras import DSMILParas
 from HistoMIL.MODEL.Image.MIL.Transformer.paras import  DEFAULT_TRANSFORMER_PARAS
 from HistoMIL.MODEL.Image.MIL.TransformerMultimodal.paras import  TransformerMultimodalParas
+from HistoMIL.MODEL.Image.MIL.TransformerRegression.paras import  TransformerRegressionParas
 
 from HistoMIL.MODEL.Image.MIL.AttentionMIL.paras import  DEFAULT_Attention_MIL_PARAS
 from HistoMIL.MODEL.Image.MIL.CAMIL.paras import  CAMILParas, custom_camil_collate
@@ -111,6 +112,11 @@ def run_mil(args):
     DEFAULT_MULTIMODAL_TRANSFORMER_PARAS = TransformerMultimodalParas()
     DEFAULT_MULTIMODAL_TRANSFORMER_PARAS.input_dim =  MDL_TO_FEATURE_DIMS[args.precomputed]
     DEFAULT_MULTIMODAL_TRANSFORMER_PARAS.epoch = args.n_epochs
+
+    # for Transformer regression 
+    DEFAULT_TRANSFORMER_REGRESSION_PARAS = TransformerRegressionParas()
+    DEFAULT_TRANSFORMER_REGRESSION_PARAS.input_dim =  MDL_TO_FEATURE_DIMS[args.precomputed]
+    DEFAULT_TRANSFORMER_REGRESSION_PARAS.epoch = args.n_epochs
     
     # AttentionMIL
     DEFAULT_Attention_MIL_PARAS.input_dim = MDL_TO_FEATURE_DIMS[args.precomputed]
@@ -145,12 +151,14 @@ def run_mil(args):
                            "DSMIL":model_para_dsmil,
                            'Transformer':DEFAULT_TRANSFORMER_PARAS,
                            'TransformerMultimodal': DEFAULT_MULTIMODAL_TRANSFORMER_PARAS,
+                           'TransformerRegression': DEFAULT_TRANSFORMER_REGRESSION_PARAS,
                            'AttentionMIL': DEFAULT_Attention_MIL_PARAS,
                            'CAMIL': DEFAULT_CAMIL_PARAS,
                            'DTFD_MIL': DEFAULT_DTFD_MIL_PARAS,
                            'GraphTransformer': DEFAULT_GRAPHTRANSFORMER_PARAS,
                            'TransMILMultimodal': DEFAULT_MULTIMODAL_TRANSMIL_PARAS,
-                           'DTFDTransMIL': DEFAULT_DTFDMIL_TRANSMIL_PARAS} 
+                           'DTFDTransMIL': DEFAULT_DTFDMIL_TRANSMIL_PARAS,
+                           } 
 
     #--------------------------> parameters
     
