@@ -38,6 +38,8 @@ from HistoMIL.MODEL.Image.MIL.TransMILRegression.paras import TransMILRegression
 
 from HistoMIL.MODEL.Image.MIL.DSMIL.paras import DSMILParas
 from HistoMIL.MODEL.Image.MIL.Transformer.paras import  DEFAULT_TRANSFORMER_PARAS
+from HistoMIL.MODEL.Image.MIL.TransformerMultimodal.paras import  TransformerMultimodalParas
+
 from HistoMIL.MODEL.Image.MIL.AttentionMIL.paras import  DEFAULT_Attention_MIL_PARAS
 from HistoMIL.MODEL.Image.MIL.CAMIL.paras import  CAMILParas, custom_camil_collate
 from HistoMIL.MODEL.Image.MIL.DTFD_MIL.paras import  DTFD_MILParas
@@ -104,6 +106,12 @@ def run_mil(args):
     DEFAULT_TRANSFORMER_PARAS.epoch = args.n_epochs
     DEFAULT_TRANSFORMER_PARAS.lr_scheduler_config = {'T_max':args.n_epochs, 
                                                     'eta_min':1e-6}
+    
+    # for TransformerMultimodal fusion of clinical features
+    DEFAULT_MULTIMODAL_TRANSFORMER_PARAS = TransformerMultimodalParas()
+    DEFAULT_MULTIMODAL_TRANSFORMER_PARAS.input_dim =  MDL_TO_FEATURE_DIMS[args.precomputed]
+    DEFAULT_MULTIMODAL_TRANSFORMER_PARAS.epoch = args.n_epochs
+    
     # AttentionMIL
     DEFAULT_Attention_MIL_PARAS.input_dim = MDL_TO_FEATURE_DIMS[args.precomputed]
     DEFAULT_Attention_MIL_PARAS.epoch = args.n_epochs
@@ -136,6 +144,7 @@ def run_mil(args):
                            'TransMILRegression': DEFAULT_TRANSMIL_REGRESSION,
                            "DSMIL":model_para_dsmil,
                            'Transformer':DEFAULT_TRANSFORMER_PARAS,
+                           'TransformerMultimodal': DEFAULT_MULTIMODAL_TRANSFORMER_PARAS,
                            'AttentionMIL': DEFAULT_Attention_MIL_PARAS,
                            'CAMIL': DEFAULT_CAMIL_PARAS,
                            'DTFD_MIL': DEFAULT_DTFD_MIL_PARAS,
@@ -184,7 +193,7 @@ def run_mil(args):
     if args.mil_algorithm == 'CAMIL' or args.mil_algorithm == 'GraphTransformer':
         gene2k_env.dataset_para.additional_feature = 'AdjMatrix'
         gene2k_env.dataset_para.add_dataloader = {'collate_fn':custom_camil_collate}
-    if args.mil_algorithm == 'TransMILMultimodal':
+    if 'Multimodal' in args.mil_algorithm:
         gene2k_env.dataset_para.additional_feature = 'Clinical'
     if 'Regression' in args.mil_algorithm:
         gene2k_env.dataset_para.additional_feature = 'Regression'

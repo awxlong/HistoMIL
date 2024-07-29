@@ -30,27 +30,7 @@ class TransMILRegressionParas:
     wd:float = 1e-2
     optimizer = 'AdamW'
     lr_scheduler = 'CosineAnnealingLR'
-    lr_scheduler_config:dict = {'T_max':epoch, 
+    lr_scheduler_config:dict = {'T_max':32, 
                                 'eta_min':1e-6} # assumes cosine annealing
     
 
-
-
-# @attr.s(auto_attribs=True)
-# class TransMILParas:
-#     """
-#     include all paras for create TransMIL model
-#     """
-#     #------> parameters for model
-#     encoder_name="pre-calculated"# or name of encoder",
-#     encoder_pretrained:bool = True # or False
-#     feature_size:int=512
-#     embed_size:int=None
-
-#     n_classes:int=2
-#     norm_layer=nn.LayerNorm
-    #class_nb:int=1
-
-    #------> parameters for feature encoder
-    #backbone:str="pre-calculated"
-    #pretrained:bool=True

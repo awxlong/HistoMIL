@@ -675,3 +675,141 @@ class NystromTransformerLayer(nn.Module):
         x = x + self.attn(self.norm(x))
 
         return x
+
+
+class FC_block(nn.Module):
+    '''
+    helper class to reduce dimensionality of H&E feature embedding
+    '''
+    def __init__(self, dim_in, dim_out, act_layer=nn.ReLU, dropout=True, p_dropout_fc=0.25):
+        super(FC_block, self).__init__()
+
+        self.fc = nn.Linear(dim_in, dim_out)
+        self.act = act_layer()
+        self.drop = nn.Dropout(p_dropout_fc) if dropout else nn.Identity()
+    
+    def forward(self, x):
+        x = self.fc(x)
+        x = self.act(x)
+        x = self.drop(x)
+        return x
+    
+
+class FeatureEncoding(nn.Module):
+    def __init__(self, idx_continuous=3, taxonomy_in=2, embedding_dim=64, depth=1, act_fct='relu', dropout=True, p_dropout=0.25):
+        super().__init__()
+        '''
+        args:
+        idx_continuous:int - if your feature vector has a mix of continuous and categorical (binary) features, specify the upper bound idx of continuous features, and the rest of the feature vector are categorical (binary) features
+        taxonomy_in:int - number of categories, e.g., 2 for binary
+
+        returns:
+        a joint continuous-categorical feature embedding for clinical features
+        
+        '''
+
+        self.idx_continuous = idx_continuous
+        act_fcts = {'relu': nn.ReLU(),
+        'elu' : nn.ELU(),
+        'tanh': nn.Tanh(),
+        'selu': nn.SELU(),
+        }
+        dropout_module = nn.AlphaDropout(p_dropout) if act_fct=='selu' else nn.Dropout(p_dropout)
+
+        self.categorical_embedding = nn.Embedding(taxonomy_in, embedding_dim)
+        self.continuous_embedding = nn.Linear(self.idx_continuous, embedding_dim)
+        fc_layers_categorical = []
+        fc_layers_continuous = []
+        for d in range(depth):
+            ### forward categorical
+            fc_layers_categorical.append(nn.Linear(embedding_dim//(2**d), embedding_dim//(2**(d+1))))
+            fc_layers_categorical.append(dropout_module if dropout else nn.Identity())
+            fc_layers_categorical.append(act_fcts[act_fct])
+            ### forward continuous
+            fc_layers_continuous.append(nn.Linear(embedding_dim//(2**d), embedding_dim//(2**(d+1))))
+            fc_layers_continuous.append(dropout_module if dropout else nn.Identity())
+            fc_layers_continuous.append(act_fcts[act_fct])
+            
+
+
+        self.fc_layers_categorical = nn.Sequential(*fc_layers_categorical)
+        self.fc_layers_continuous = nn.Sequential(*fc_layers_continuous)
+    def forward(self, x):
+        '''
+        x is a tensor consisting of a mix of continuous and categorical features.  
+        '''
+        if x.dim() == 1:
+            x = x.unsqueeze(0)  # Add batch dimension if input is 1D
+        
+        continuous_x, categorical_x = x[:, :self.idx_continuous], x[:, self.idx_continuous:] 
+        # pdb.set_trace()
+        categorical_x = categorical_x.long()
+        # categorical embeddings
+        categorical_x = self.categorical_embedding(categorical_x)
+        categorical_x = self.fc_layers_categorical(categorical_x) # (1, num_categorical, emb_dim//2)
+        # continuous embeddings
+        continuous_x = self.continuous_embedding(continuous_x)
+        continuous_x = self.fc_layers_continuous(continuous_x)
+
+        if continuous_x.dim() == 2:
+            continuous_x = continuous_x.unsqueeze(0) # (1, 1, emb_dim//2)
+
+
+        # concatenate continuous and categorical variables, i don't need to pass them 
+        # through a combined forward layer
+        x = torch.cat((continuous_x, categorical_x), dim=1) # (1, 1 + num_categorical, emb_dim//2)
+        # Mean pooling
+        x = torch.mean(x, dim=1, keepdim=True).squeeze(0) # (1, emb_dim//2)
+        return x
+
+class Attn_Modality_Gated(nn.Module):
+    # Adapted from https://github.com/mahmoodlab/PathomicFusion/blob/master/fusion.py and https://github.com/AIRMEC/HECTOR/blob/main/model.py
+    def __init__(self, gate1:bool=True, gate2:bool=True, dim1_og=512, dim2_og=64, use_bilinear=[True,True], scale=[2, 1], dropout_rate=0.25):
+        super(Attn_Modality_Gated, self).__init__()
+        '''
+        args:
+        dim1_og:int - dimension of the embedding for the H&E image
+        dim2_og:int - dimension of the embedding for the clinical features
+        
+        '''
+        # self.skip = skip
+        self.use_bilinear = use_bilinear
+        self.gate1 = gate1
+        self.gate2 = gate2
+
+        # can perform attention on latent vectors of lower dimension
+        dim1, dim2 = dim1_og//scale[0], dim2_og//scale[1]
+
+        # skip_dim = dim1+dim2+2 if skip else 0
+
+        self.linear_h1 = nn.Sequential(nn.Linear(dim1_og, dim1), nn.ReLU()) # e.g. (512, 512)
+        self.linear_z1 = nn.Bilinear(dim1_og, dim2_og, dim1) if use_bilinear[0] else nn.Sequential(nn.Linear(dim1_og+dim2_og, dim1)) # e.g. (512/scale[0], 32, 512/scale[0])
+        self.linear_o1 = nn.Sequential(nn.Linear(dim1, dim1), nn.ReLU(), nn.Dropout(p=dropout_rate))
+
+        self.linear_h2 = nn.Sequential(nn.Linear(dim2_og, dim2), nn.ReLU())
+        self.linear_z2 = nn.Bilinear(dim1_og, dim2_og, dim2) if use_bilinear[1] else nn.Sequential(nn.Linear(dim1_og+dim2_og, dim2))
+        self.linear_o2 = nn.Sequential(nn.Linear(dim2, dim2), nn.ReLU(), nn.Dropout(p=dropout_rate))
+
+        # self.post_fusion_dropout = nn.Dropout(p=dropout_rate)
+        # self.encoder1 = nn.Sequential(nn.Linear((dim1+1)*(dim2+1), mmhid), nn.ReLU(), nn.Dropout(p=dropout_rate))
+        # self.encoder2 = nn.Sequential(nn.Linear(mmhid+skip_dim, mmhid), nn.ReLU(), nn.Dropout(p=dropout_rate))
+        
+
+    def forward(self, vec1, vec2):
+        ### Gated Multimodal Units
+        if self.gate1:
+            h1 = self.linear_h1(vec1)
+            # pdb.set_trace()
+            z1 = self.linear_z1(vec1, vec2) if self.use_bilinear[0] else self.linear_z1(torch.cat((vec1, vec2), dim=1)) # else creates a vector combining both modalities
+            o1 = self.linear_o1(nn.Sigmoid()(z1)*h1)
+        else:
+            o1 = self.linear_o1(vec1)
+
+        if self.gate2:
+            h2 = self.linear_h2(vec2)
+            z2 = self.linear_z2(vec1, vec2) if self.use_bilinear[1] else self.linear_z2(torch.cat((vec1, vec2), dim=1))
+            o2 = self.linear_o2(nn.Sigmoid()(z2)*h2)
+        else:
+            o2 = self.linear_o2(vec2)
+
+        return o1, o2
