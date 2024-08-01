@@ -214,7 +214,7 @@ def run_mil(args):
 
     gene2k_env.trainer_para.ckpt_para = { #-----------> paras for pytorch_lightning.callbacks.ModelCheckpoint
                     "save_top_k":1,
-                    "mode":"max" if args.monitor_metric == 'auroc_val' else 'min',
+                    "mode":"max" if args.monitor_metric == 'auroc_val' or args.monitor_metric == 'f1_val' else 'min',
                     "monitor":args.monitor_metric,}
     
     
