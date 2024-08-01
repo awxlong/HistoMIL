@@ -302,7 +302,9 @@ class Experiment:
                 
                 # print('second approach') # load from checkpoint EXPLICITLY
                 best_cv_ckpt_path = f'{mdl_ckpt_root}{ckpt}.ckpt'
+                # torch.load(best_cv_ckpt_path)['hyper_parameters']['additional_feature']
                 self.exp_worker.pl_model = self.exp_worker.pl_model.load_from_checkpoint(best_cv_ckpt_path)
+                # pdb.set_trace()
                 self.exp_worker.test_from_checkpoint(model=self.exp_worker.pl_model)
                 # pdb.set_trace()
                 # self.exp_worker.data_pack['testset'].data

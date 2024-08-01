@@ -155,7 +155,7 @@ class pl_base_trainer:
     
     def test_from_checkpoint(self, model):
         test_loader = self.data_pack['testloader']
-        pdb.set_trace()
+        # pdb.set_trace()
         # out = self.trainer.test(dataloaders=test_loader, ckpt_path=ckpt_path,)
         out = self.trainer.test(model=model, dataloaders=test_loader)
         return out 
