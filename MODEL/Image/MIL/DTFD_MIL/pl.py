@@ -261,7 +261,8 @@ class pl_DTFD_MIL(pl.LightningModule):
 
     def on_test_epoch_start(self) -> None:
         # save test outputs in dataframe per test dataset
-        column_names = ['patient', 'ground_truth', 'predictions', 'logits', 'correct']
+        
+        column_names = ['patient', 'ground_truth', 'prediction', 'probs', 'correct']
         self.outputs = pd.DataFrame(columns=column_names)
 
     def test_step(self, batch, batch_idx, dataloader_idx=0):
@@ -309,24 +310,24 @@ class pl_DTFD_MIL(pl.LightningModule):
                 [
                  labels.item(),
                  preds.item(),
-                 gSlidePred.squeeze(), (labels == preds).int().item()]
+                 torch.sigmoid(gSlidePred.squeeze()).item(), (labels == preds).int().item()]
             ],
-            columns=[ 'ground_truth', 'prediction', 'logits', 'correct']
+            columns=[ 'ground_truth', 'prediction', 'probs', 'correct']
         )
         self.outputs = pd.concat([self.outputs, outputs], ignore_index=True)
 
     def on_test_epoch_end(self):
-        if self.global_step != 0:
-            cm = self.cm_test.compute()
+        # if self.global_step != 0:
+        cm = self.cm_test.compute()
 
-            # normalise the confusion matrix
-            norm = cm.sum(axis=1, keepdims=True)
-            normalized_cm = cm / norm
+        # normalise the confusion matrix
+        norm = cm.sum(axis=1, keepdims=True)
+        normalized_cm = cm / norm
 
-            # log to wandb
-            plt.clf()
-            cm = sns.heatmap(normalized_cm.cpu(), annot=cm.cpu(), cmap='rocket_r', vmin=0, vmax=1)
-            wandb.log({"confusion_matrix_test": wandb.Image(cm)})
+        # log to wandb
+        plt.clf()
+        cm = sns.heatmap(normalized_cm.cpu(), annot=cm.cpu(), cmap='rocket_r', vmin=0, vmax=1)
+        wandb.log({"confusion_matrix_test": wandb.Image(cm)})
 
         self.cm_test.reset()
 

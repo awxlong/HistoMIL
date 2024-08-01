@@ -228,19 +228,19 @@ class pl_Transformer(pl.LightningModule):
         )
         self.outputs = pd.concat([self.outputs, outputs], ignore_index=True)
         # pdb.set_trace()
-        
+
     def on_test_epoch_end(self):
-        if self.global_step != 0:
-            cm = self.cm_test.compute()
+        # if self.global_step != 0:
+        cm = self.cm_test.compute()
 
-            # normalise the confusion matrix
-            norm = cm.sum(axis=1, keepdims=True)
-            normalized_cm = cm / norm
+        # normalise the confusion matrix
+        norm = cm.sum(axis=1, keepdims=True)
+        normalized_cm = cm / norm
 
-            # log to wandb
-            plt.clf()
-            cm = sns.heatmap(normalized_cm.cpu(), annot=cm.cpu(), cmap='rocket_r', vmin=0, vmax=1)
-            wandb.log({"confusion_matrix_test": wandb.Image(cm)})
+        # log to wandb
+        plt.clf()
+        cm = sns.heatmap(normalized_cm.cpu(), annot=cm.cpu(), cmap='rocket_r', vmin=0, vmax=1)
+        wandb.log({"confusion_matrix_test": wandb.Image(cm)})
 
         self.cm_test.reset()
 
