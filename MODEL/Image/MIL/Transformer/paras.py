@@ -34,8 +34,8 @@ class TransformerParas:
     dropout:float = 0.1
     emb_dropout:float = 0.1
     pos_enc:nn.Module = None
-    pretrained_weights_dir:str = ''
-    pretrained_weights: str = attr.ib(default=None, validator=attr.validators.optional(attr.validators.in_(AVAILABLE_WEIGHTS)))
+    pretrained_weights_dir:str = '/home/xuelonan/secrier_lab/persistence/HistoMIL/MODEL/Image/MIL/Transformer/pretrained_weights/'
+    pretrained_weights: str = None # attr.ib(default=None, validator=attr.validators.optional(attr.validators.in_(AVAILABLE_WEIGHTS)))
     encoder_name:str = 'pre-calculated' # by default we'll be using the foundational models for feature extraction, so we avoid SSL
     task:str = 'binary'
     criterion:str = 'BCEWithLogitsLoss'
