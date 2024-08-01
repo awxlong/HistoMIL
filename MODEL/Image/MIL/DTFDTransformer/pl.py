@@ -19,8 +19,8 @@ from HistoMIL import logger
 # from HistoMIL.EXP.paras.optloss import OptLossParas
 # from HistoMIL.EXP.paras.trainer import PLTrainerParas
 
-from HistoMIL.MODEL.Image.MIL.DTFD_MIL.paras import DTFD_MILParas
-from HistoMIL.MODEL.Image.MIL.DTFD_MIL.model import DTFD_MIL
+from HistoMIL.MODEL.Image.MIL.DTFDTransformer.paras import DTFDTransformerParas
+from HistoMIL.MODEL.Image.MIL.DTFDTransformer.model import DTFDTransformer
 from HistoMIL.MODEL.Image.MIL.utils import  get_loss, get_optimizer, get_scheduler
 
 from pytorch_lightning.utilities import rank_zero_only # for saving a single model in a multi-gpu setting
@@ -31,12 +31,12 @@ import pdb
 #      pl protocol class
 ####################################################################################
 
-class pl_DTFD_MIL(pl.LightningModule):
-    def __init__(self, paras:DTFD_MILParas):
+class pl_DTFDTranformer(pl.LightningModule):
+    def __init__(self, paras:DTFDTransformerParas):
         super().__init__()
         self.automatic_optimization = False
         self.paras = paras
-        self.model = DTFD_MIL(paras)# 
+        self.model = DTFDTransformer(paras)# 
 
         self.criterion = get_loss(paras.criterion
                                  ) if paras.task == "binary" else get_loss(paras.criterion)
@@ -111,14 +111,12 @@ class pl_DTFD_MIL(pl.LightningModule):
         return slide_pseudo_feat, slide_sub_preds, slide_sub_labels, gSlidePred
 
     def configure_optimizers(self):
-        trainable_parameters = list(self.model.classifier.parameters()) + \
-                               list(self.model.attention.parameters()) + \
-                               list(self.model.dimReduction.parameters())
+        trainable_parameters = list(self.model.transformer.parameters())
 
-        optimizer0 = torch.optim.Adam(trainable_parameters, lr=self.paras.lr, weight_decay=self.paras.weight_decay)
+        optimizer0 = torch.optim.AdamW(trainable_parameters, lr=self.paras.lr, weight_decay=self.paras.weight_decay)
         optimizer1 = torch.optim.Adam(self.model.attCls.parameters(), lr=self.paras.lr, weight_decay=self.paras.weight_decay)
        
-        scheduler0 = torch.optim.lr_scheduler.MultiStepLR(optimizer0, [25], gamma=self.paras.lr_decay_ratio)
+        scheduler0 = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer0, T_max=10, eta_min=1e-6)
         scheduler1 = torch.optim.lr_scheduler.MultiStepLR(optimizer1, [25], gamma=self.paras.lr_decay_ratio)
         
         return [optimizer0, optimizer1], [scheduler0, scheduler1]
@@ -183,9 +181,7 @@ class pl_DTFD_MIL(pl.LightningModule):
         
 
     def validation_step(self, batch, batch_idx):
-        self.model.classifier.eval()
-        self.model.dimReduction.eval()
-        self.model.attention.eval()
+        self.model.transformer.eval()
         self.model.attCls.eval()
         # pdb.set_trace()
 
@@ -265,9 +261,7 @@ class pl_DTFD_MIL(pl.LightningModule):
         self.outputs = pd.DataFrame(columns=column_names)
 
     def test_step(self, batch, batch_idx, dataloader_idx=0):
-        self.model.classifier.eval()
-        self.model.dimReduction.eval()
-        self.model.attention.eval()
+        self.model.transformer.eval()
         self.model.attCls.eval()
         # pdb.set_trace()
         inputs, labels = batch  # 
@@ -279,7 +273,7 @@ class pl_DTFD_MIL(pl.LightningModule):
 
         
         
-        loss = self.criterion(gSlidePred, labels.float()).mean()
+        loss = self.criterion(gSlidePred, labels).mean()
 
         probs = torch.sigmoid(gSlidePred)
         preds = torch.round(probs)

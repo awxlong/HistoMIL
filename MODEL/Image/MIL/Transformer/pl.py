@@ -177,8 +177,9 @@ class pl_Transformer(pl.LightningModule):
 
     def on_test_epoch_start(self) -> None:
         # save test outputs in dataframe per test dataset
-        column_names = ['patient', 'ground_truth', 'predictions', 'logits', 'correct']
+        column_names = ['patient', 'ground_truth', 'prediction', 'probs', 'correct']
         self.outputs = pd.DataFrame(columns=column_names)
+
 
     def test_step(self, batch, batch_idx, dataloader_idx=0):
         x, y = batch  # x = features, coords, y = labels, tiles, patient
@@ -220,12 +221,14 @@ class pl_Transformer(pl.LightningModule):
                 [
                  y.item(),
                  preds.item(),
-                 logits.squeeze(), (y == preds).int().item()]
+                #  preds,
+                torch.sigmoid(logits.squeeze()).item(), (y == preds).int().item()]
             ],
-            columns=[ 'ground_truth', 'prediction', 'logits', 'correct']
+            columns=[ 'ground_truth', 'prediction', 'probs', 'correct']
         )
         self.outputs = pd.concat([self.outputs, outputs], ignore_index=True)
-
+        # pdb.set_trace()
+        
     def on_test_epoch_end(self):
         if self.global_step != 0:
             cm = self.cm_test.compute()

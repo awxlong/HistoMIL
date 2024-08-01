@@ -11,9 +11,11 @@ from HistoMIL.EXP.paras.env import EnvParas
 from HistoMIL.EXP.trainer.slide import pl_slide_trainer
 from HistoMIL.EXP.paras.trainer import get_pl_trainer_additional_paras
 
+from sklearn.metrics import f1_score, roc_auc_score
 
 import wandb
-
+import numpy as np
+import pandas as pd
 import pdb
 
     
@@ -247,7 +249,91 @@ class Experiment:
                 self.paras.trainer_para.additional_pl_paras = get_pl_trainer_additional_paras(self.paras.trainer_para.model_name)
                 wandb.finish()
        
+    def ensemble_test(self, ckpt_filenames, main_data_source:str = 'slide', ensemble:bool=True):
         
+        mdl_ckpt_root = f"{self.paras.exp_locs.abs_loc('saved_models')}"
+        
+        if main_data_source == "slide":
+            #-------train need split data
+            label_idx = self.paras.cohort_para.targets[self.paras.cohort_para.targets_idx] # coincidentally doesn't interfere with regression if i set targets-name to [g0_arrest, g0_arrest_score] because g0_arrest are the scores
+            self.data_cohort.show_taskcohort_stat(label_idx=label_idx) 
+            self.split_train_test()  # updated to split into train, valid, test
+            ensembled_probs = np.zeros((len(self.data_cohort.data['test'])))
+            for ckpt in ckpt_filenames:
+                
+                
+                #------> for slide 
+                
+                # pdb.set_trace()
+                # init train worker
+                # self.paras.trainer_para.additional_pl_paras.update(
+                #     {'resume_from_checkpoint': f'{mdl_ckpt_root}{ckpt}.ckpt'}
+                # )
+                self.exp_worker = pl_slide_trainer(
+                                        trainer_para =self.paras.trainer_para,
+                                        dataset_para=self.paras.dataset_para,
+                                        opt_para=self.paras.opt_para)
+                
+                self.exp_worker.get_env_info(machine=self.machine,user=self.user,
+                                            project=self.project,
+                                            entity=self.entity,
+                                            exp_name=self.exp_name)
+                self.exp_worker.set_cohort(self.data_cohort)
+                # pdb.set_trace()
+                if self.cohort_para.in_domain_split_seed:
+                    self.exp_worker.get_in_domain_datapack(self.machine,self.paras.collector_para)
+                else:
+                    raise NotImplementedError
+                    self.exp_worker.get_datapack(self.machine,self.paras.collector_para)
+
+                self.exp_worker.build_model()       # creates model from available implementations
+                
+                
+                self.exp_worker.build_inference_trainer(reinit=True)     # sets up trainer configurations such as wandb and learning rate
+                # pdb.set_trace()
+                # update paras
+                self.paras.dataset_para=self.exp_worker.dataset_para
+                self.paras.trainer_para=self.exp_worker.trainer_para
+                self.paras.opt_para=self.exp_worker.opt_para
+                
+                # mdl = self.exp_worker.pl_model.load_from_checkpoint(f'{mdl_ckpt_root}{ckpt}.ckpt'})
+                # print("first approach")
+                # self.exp_worker.test() # but what does self.pl_model is equated to? it's equated to a initialized pytorch lightning model from SCRATCH
+                
+                # print('second approach') # load from checkpoint EXPLICITLY
+                best_cv_ckpt_path = f'{mdl_ckpt_root}{ckpt}.ckpt'
+                self.exp_worker.pl_model = self.exp_worker.pl_model.load_from_checkpoint(best_cv_ckpt_path)
+                self.exp_worker.test_from_checkpoint(model=self.exp_worker.pl_model)
+                # pdb.set_trace()
+                # self.exp_worker.data_pack['testset'].data
+
+                cv_csv_loc = f"{self.paras.exp_locs.abs_loc('out_files')}{ckpt}.csv"
+                self.exp_worker.pl_model.outputs.to_csv(cv_csv_loc, index=False)
+                
+                ensembled_probs += self.exp_worker.pl_model.outputs['probs']
+                # 'out_files'
+                # pdb.set_trace()
+                # ## restart pytorch lightning's configuration so that it doesn't load from previous checkpoint
+                # self.paras.trainer_para.additional_pl_paras = get_pl_trainer_additional_paras(self.paras.trainer_para.model_name)
+                wandb.finish()
+            if ensemble:
+                ensembled_probs /= len(ckpt_filenames)
+                ensembled_preds = (ensembled_probs >= 0.5).astype(np.int8) 
+                ground_truth = self.exp_worker.pl_model.outputs['ground_truth'].astype(np.int8)
+                correct = (ensembled_preds == ground_truth).astype(np.int8)
+                # pdb.set_trace()
+                ensembled_auroc = roc_auc_score(ground_truth, ensembled_probs)
+                ensembled_f1 = f1_score(ground_truth, ensembled_preds)
+                # Create the DataFrame
+                ensembled_df = pd.DataFrame({
+                    'ensemble_probs': ensembled_probs.values,
+                    'ensemble_preds': ensembled_preds.values,
+                    'ground_truth': ground_truth.values,
+                    'correct': correct
+                })
+                ensemble_loc = f"{self.paras.exp_locs.abs_loc('out_files')}ensemble_res_{self.paras.trainer_para.model_name}_{self.paras.collector_para.feature.model_name}.csv"
+                ensembled_df.to_csv(f'{ensemble_loc}', index=False)
+                print(f'ensemble test F1: {ensembled_f1}; ensemble test AUROC {ensembled_auroc}')
     def run(self):
         if self.need_train:
             self.exp_worker.train()

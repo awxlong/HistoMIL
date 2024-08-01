@@ -11,6 +11,7 @@ from HistoMIL.EXP.paras.slides import CollectorParas
 from HistoMIL.EXP.paras.dataset import DatasetParas
 from HistoMIL.EXP.paras.optloss import OptLossParas
 from HistoMIL.EXP.paras.trainer import PLTrainerParas
+from pytorch_lightning.loggers import WandbLogger
 
 from HistoMIL.DATA.Cohort.data import DataCohort
 from HistoMIL.DATA.Database.dataset import create_slide_dataset
@@ -58,7 +59,6 @@ class pl_base_trainer:
         callbacks_list.append(lr_monitor)
         if self.trainer_para.with_logger=="wandb":
             # 4. Create wandb logger
-            from pytorch_lightning.loggers import WandbLogger
             os.environ["WANDB_API_KEY"]=self.user.wandb_api_key
 
             wandb_logger = WandbLogger(project=self.project,
@@ -92,7 +92,33 @@ class pl_base_trainer:
                                 max_epochs=self.opt_para.max_epochs,
                                 **trainer_additional_dict
                                 )
-        
+        # pdb.set_trace()
+    def build_inference_trainer(self, reinit=False):
+        trainer_additional_dict = self.trainer_para.additional_pl_paras
+        callbacks_list = []
+
+        # Initialize WandbLogger if required
+        if self.trainer_para.with_logger == "wandb":
+            os.environ["WANDB_API_KEY"] = self.user.wandb_api_key
+            wandb_logger = WandbLogger(
+                project=self.project,
+                entity=self.entity,
+                name=self.exp_name,
+                reinit=reinit
+            )
+            trainer_additional_dict.update({"logger": wandb_logger})
+
+
+        if len(callbacks_list) >= 1:
+            trainer_additional_dict.update({"callbacks": callbacks_list})
+
+        # Initialize the Trainer
+        self.trainer = pl.Trainer(
+            default_root_dir=self.machine.exp_locs.abs_loc("out_files"),
+            max_epochs=self.opt_para.max_epochs,
+            **trainer_additional_dict
+        )
+
 
     def train(self):
         logger.info("Trainer:: Start training....")
@@ -120,9 +146,18 @@ class pl_base_trainer:
         out = self.trainer.validate(dataloaders=validloader, ckpt_path=ckpt_path,)
         return out
     
-    def test(self, ckpt_path:str='best'):
+    def test(self):
         test_loader = self.data_pack['testloader']
-        out = self.trainer.test(dataloaders=test_loader, ckpt_path=ckpt_path,)
+        # pdb.set_trace()
+        # out = self.trainer.test(dataloaders=test_loader, ckpt_path=ckpt_path,)
+        out = self.trainer.test(model=self.pl_model, dataloaders=test_loader)
+        return out 
+    
+    def test_from_checkpoint(self, model):
+        test_loader = self.data_pack['testloader']
+        # pdb.set_trace()
+        # out = self.trainer.test(dataloaders=test_loader, ckpt_path=ckpt_path,)
+        out = self.trainer.test(model=model, dataloaders=test_loader)
         return out 
     
     ################################################################
