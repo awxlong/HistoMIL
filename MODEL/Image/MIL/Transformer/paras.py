@@ -62,5 +62,4 @@ class TransformerParas:
 
 
 
-DEFAULT_TRANSFORMER_PARAS = TransformerParas(input_dim=1024, task='binary', \
-                                             pretrained_weights='MSI_high_CRC_model.pth', encoder_name='pre-calculated')
+DEFAULT_TRANSFORMER_PARAS = TransformerParas()

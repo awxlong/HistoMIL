@@ -83,7 +83,7 @@ python3 HistoMIL/Notebooks/mil_inference.py --exp-name 'mil-inference-graphtrans
                                             --precomputed 'resnet50' \
                                             --mil-algorithm "GraphTransformer" \
                                             --label-dict "{0:0,1:1}" \
-                                            --num-workers 0 \ 
+                                            --num-workers 0 \
                                             --ckpt-filenames 'mil_graphtransformer_resnet50_42epochs_cv5_multisteplrcv=0_epoch=01-auroc_val=0.41' 'mil_graphtransformer_resnet50_42epochs_cv5_multisteplrcv=1_epoch=00-auroc_val=0.68' 'mil_graphtransformer_resnet50_42epochs_cv5_multisteplrcv=2_epoch=04-auroc_val=0.56' 'mil_graphtransformer_resnet50_42epochs_cv5_multisteplrcv=3_epoch=00-auroc_val=0.51' 'mil_graphtransformer_resnet50_42epochs_cv5_multisteplrcv=4_epoch=04-auroc_val=0.57'
 
 echo "Finished at: $(date)"
