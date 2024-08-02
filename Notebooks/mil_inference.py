@@ -47,6 +47,8 @@ from HistoMIL.MODEL.Image.MIL.DTFD_MIL.paras import  DTFD_MILParas
 from HistoMIL.MODEL.Image.MIL.GraphTransformer.paras import  GraphTransformerParas
 from HistoMIL.MODEL.Image.MIL.DTFDTransMIL.paras import  DTFDTransMILParas
 
+from HistoMIL.MODEL.Image.MIL.CLAM.paras import CLAMParas
+
 
 
 
@@ -77,17 +79,18 @@ def run_mil_inference(args):
     model_para_transmil = TransMILParas()
     model_para_transmil.input_dim = MDL_TO_FEATURE_DIMS[args.precomputed]
     model_para_transmil.n_classes=1
-    
-    # model_para_transmil.epoch = args.n_epochs
+    model_para_transmil.lr_scheduler_config = {'T_max':args.n_epochs, 
+                                                'eta_min':1e-6}
+    model_para_transmil.epoch = args.n_epochs
 
     # for multimodal TransMIL
     DEFAULT_MULTIMODAL_TRANSMIL_PARAS = TransMILMultimodalParas()
-    # DEFAULT_MULTIMODAL_TRANSMIL_PARAS.epoch = args.n_epochs
+    DEFAULT_MULTIMODAL_TRANSMIL_PARAS.epoch = args.n_epochs
     DEFAULT_MULTIMODAL_TRANSMIL_PARAS.input_dim = MDL_TO_FEATURE_DIMS[args.precomputed]
 
     # for TransMILRegression
     DEFAULT_TRANSMIL_REGRESSION = TransMILRegressionParas()
-    # DEFAULT_TRANSMIL_REGRESSION.epoch = args.n_epochs
+    DEFAULT_TRANSMIL_REGRESSION.epoch = args.n_epochs
     DEFAULT_TRANSMIL_REGRESSION.input_dim = MDL_TO_FEATURE_DIMS[args.precomputed]
 
 
@@ -100,42 +103,52 @@ def run_mil_inference(args):
 
     # for Transformer
     DEFAULT_TRANSFORMER_PARAS.input_dim =  MDL_TO_FEATURE_DIMS[args.precomputed]
+    # DEFAULT_TRANSFORMER_PARAS.pretrained_weights_dir = args.pretrained_weights_dir
+    # DEFAULT_TRANSFORMER_PARAS.pretrained_weights = args.pretrained_weights_name    # default is MSI_high_CRC_model.pth 
+    DEFAULT_TRANSFORMER_PARAS.selective_finetuning = args.efficient_finetuning
+    DEFAULT_TRANSFORMER_PARAS.epoch = args.n_epochs
+    DEFAULT_TRANSFORMER_PARAS.lr_scheduler_config = {'T_max':args.n_epochs, 
+                                                    'eta_min':1e-6}
     
     # for TransformerMultimodal fusion of clinical features
     DEFAULT_MULTIMODAL_TRANSFORMER_PARAS = TransformerMultimodalParas()
     DEFAULT_MULTIMODAL_TRANSFORMER_PARAS.input_dim =  MDL_TO_FEATURE_DIMS[args.precomputed]
-    # DEFAULT_MULTIMODAL_TRANSFORMER_PARAS.epoch = args.n_epochs
+    DEFAULT_MULTIMODAL_TRANSFORMER_PARAS.epoch = args.n_epochs
 
     # for Transformer regression 
     DEFAULT_TRANSFORMER_REGRESSION_PARAS = TransformerRegressionParas()
     DEFAULT_TRANSFORMER_REGRESSION_PARAS.input_dim =  MDL_TO_FEATURE_DIMS[args.precomputed]
-    # DEFAULT_TRANSFORMER_REGRESSION_PARAS.epoch = args.n_epochs
+    DEFAULT_TRANSFORMER_REGRESSION_PARAS.epoch = args.n_epochs
     
     # AttentionMIL
     DEFAULT_Attention_MIL_PARAS.input_dim = MDL_TO_FEATURE_DIMS[args.precomputed]
-    # DEFAULT_Attention_MIL_PARAS.epoch = args.n_epochs
+    DEFAULT_Attention_MIL_PARAS.epoch = args.n_epochs
 
     # CAMIL
     DEFAULT_CAMIL_PARAS = CAMILParas()
     DEFAULT_CAMIL_PARAS.input_shape = MDL_TO_FEATURE_DIMS[args.precomputed]
-    # DEFAULT_CAMIL_PARAS.epoch = args.n_epochs
+    DEFAULT_CAMIL_PARAS.epoch = args.n_epochs
 
     # DTFD-MIL
     DEFAULT_DTFD_MIL_PARAS = DTFD_MILParas()
     DEFAULT_DTFD_MIL_PARAS.input_dim = MDL_TO_FEATURE_DIMS[args.precomputed]
-    # DEFAULT_DTFD_MIL_PARAS.epoch = args.n_epochs
+    DEFAULT_DTFD_MIL_PARAS.epoch = args.n_epochs
     # DEFAULT_DTFD_MIL_PARAS.feature_extractor_name = args.precomputed
 
     # Graph Transformer
     DEFAULT_GRAPHTRANSFORMER_PARAS = GraphTransformerParas()
     DEFAULT_GRAPHTRANSFORMER_PARAS.n_features = MDL_TO_FEATURE_DIMS[args.precomputed]
-    # DEFAULT_GRAPHTRANSFORMER_PARAS.epoch = args.n_epochs
+    DEFAULT_GRAPHTRANSFORMER_PARAS.epoch = args.n_epochs
     
     # DTFD-MIL-TransMIL
     DEFAULT_DTFDMIL_TRANSMIL_PARAS = DTFDTransMILParas()
     DEFAULT_DTFDMIL_TRANSMIL_PARAS.input_dim = MDL_TO_FEATURE_DIMS[args.precomputed]
-    # DEFAULT_DTFDMIL_TRANSMIL_PARAS.epoch = args.n_epochs
+    DEFAULT_DTFDMIL_TRANSMIL_PARAS.epoch = args.n_epochs
 
+    # CLAM
+    DEFAULT_CLAM_PARAS = CLAMParas()
+    DEFAULT_CLAM_PARAS.input_dim = MDL_TO_FEATURE_DIMS[args.precomputed]
+    DEFAULT_CLAM_PARAS.epoch = args.n_epochs
 
     model_name = args.mil_algorithm  # options are "TransMIL", "ABMIL", "DSMIL" or "Transformer", 'AttentionMIL'
 
@@ -151,7 +164,8 @@ def run_mil_inference(args):
                            'GraphTransformer': DEFAULT_GRAPHTRANSFORMER_PARAS,
                            'TransMILMultimodal': DEFAULT_MULTIMODAL_TRANSMIL_PARAS,
                            'DTFDTransMIL': DEFAULT_DTFDMIL_TRANSMIL_PARAS,
-                           } 
+                           'CLAM': DEFAULT_CLAM_PARAS
+    }
 
     #--------------------------> parameters
     

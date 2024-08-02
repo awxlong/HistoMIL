@@ -393,8 +393,8 @@ def get_args_mil_inference():
     parser.add_argument(
         "--task-name", type=str, help="Name describing task, e.g., g0-arrest")
     ### Dataset arguments
-    # parser.add_argument(
-    #     "--cohort-file-dir", type=str, help="Directory to file describing the slides' directories and associated labels")
+    parser.add_argument(
+        "--n-epochs", default=None)
     parser.add_argument(
         "--pid-name", type=str, default='PatientID', help="Column name of patient ID, e.g. PatientID")
     parser.add_argument(
@@ -436,12 +436,10 @@ def get_args_mil_inference():
     parser.add_argument(
         "--k-fold", default=5, type=int, help='Number of folds for cross-validation, e.g. 3 for 3-fold cross-validation. Default is 0, no cross-validation')
         
-    # parser.add_argument(
-    #     "--id", type=str, default='0001', help="Unique ID of the user")
-    # parser.add_argument(
-    #     "--username", default='draco',type=str, help="Unique name of the experimenter")
-    # parser.add_argument(
-    #     "--api-dir",type=str, help="Directory where API.env for storing API keys is saved")
+    parser.add_argument(
+        "--pretrained-weights-dir", default=None)
+    parser.add_argument(
+        "--pretrained-weights-name", default=None)
     
     args = parser.parse_args()
 
