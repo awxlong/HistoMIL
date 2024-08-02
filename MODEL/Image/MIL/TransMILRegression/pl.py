@@ -210,7 +210,7 @@ class pl_TransMILRegression(pl.LightningModule):
 
     def on_test_epoch_start(self) -> None:
         # save test outputs in dataframe per test dataset
-        column_names = ['patient', 'ground_truth', 'predictions', 'logits', 'correct']
+        column_names = ['patient', 'binary_ground_truth', 'continuous_ground_truth', 'prediction', 'binary_predictions', 'binary_correct']
         self.outputs = pd.DataFrame(columns=column_names)
 
     def test_step(self, batch, batch_idx, dataloader_idx=0):
@@ -245,24 +245,24 @@ class pl_TransMILRegression(pl.LightningModule):
         self.log("specificity_test", self.specificity_test, prog_bar=False, on_step=False, on_epoch=True)
 
         outputs = pd.DataFrame(
-            data=[[y.item(), binary_preds.item(), logits.squeeze().item(), (binary_targets == binary_preds).int().item()]],
-            columns=['ground_truth', 'prediction', 'logits', 'correct']
+            data=[[binary_targets.item(), y.item(), logits.squeeze().item(), binary_preds.item(), (binary_targets == binary_preds).int().item()]],
+            columns=['binary_ground_truth', 'continuous_ground_truth', 'prediction', 'binary_predictions', 'binary_correct']
         )
         self.outputs = pd.concat([self.outputs, outputs], ignore_index=True)
 
     def on_test_epoch_end(self):
-        if self.global_step != 0:
-            cm = self.cm_test.compute()
+        # if self.global_step != 0:
+        cm = self.cm_test.compute()
 
-            # normalise the confusion matrix
-            norm = cm.sum(axis=1, keepdims=True)
-            normalized_cm = cm / norm
+        # normalise the confusion matrix
+        norm = cm.sum(axis=1, keepdims=True)
+        normalized_cm = cm / norm
 
-            # log to wandb
-            plt.clf()
-            cm = sns.heatmap(normalized_cm.cpu(), annot=cm.cpu(), cmap='rocket_r', vmin=0, vmax=1)
-            wandb.log({"confusion_matrix_test": wandb.Image(cm)})
-
+        # log to wandb
+        plt.clf()
+        cm = sns.heatmap(normalized_cm.cpu(), annot=cm.cpu(), cmap='rocket_r', vmin=0, vmax=1)
+        wandb.log({"confusion_matrix_test": wandb.Image(cm)})
+        # pdb.set_trace()
         self.cm_test.reset()
 
     def lr_scheduler_step(self, scheduler, optimizer_idx, metric):

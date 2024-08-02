@@ -195,7 +195,7 @@ class pl_TransMILMultimodal(pl.LightningModule):
 
     def on_test_epoch_start(self) -> None:
         # save test outputs in dataframe per test dataset
-        column_names = ['patient', 'ground_truth', 'predictions', 'logits', 'correct']
+        column_names = ['patient', 'ground_truth', 'prediction', 'probs', 'correct']
         self.outputs = pd.DataFrame(columns=column_names)
 
     def test_step(self, batch, batch_idx, dataloader_idx=0):
@@ -238,57 +238,29 @@ class pl_TransMILMultimodal(pl.LightningModule):
                 [
                  y.item(),
                  preds.item(),
-                 logits.squeeze(), (y == preds).int().item()]
+                #  preds,
+                torch.sigmoid(logits.squeeze()).item(), (y == preds).int().item()]
             ],
-            columns=[ 'ground_truth', 'prediction', 'logits', 'correct']
+            columns=[ 'ground_truth', 'prediction', 'probs', 'correct']
         )
         self.outputs = pd.concat([self.outputs, outputs], ignore_index=True)
+        # pdb.set_trace()
 
     def on_test_epoch_end(self):
-        if self.global_step != 0:
-            cm = self.cm_test.compute()
+        # if self.global_step != 0:
+        cm = self.cm_test.compute()
 
-            # normalise the confusion matrix
-            norm = cm.sum(axis=1, keepdims=True)
-            normalized_cm = cm / norm
+        # normalise the confusion matrix
+        norm = cm.sum(axis=1, keepdims=True)
+        normalized_cm = cm / norm
 
-            # log to wandb
-            plt.clf()
-            cm = sns.heatmap(normalized_cm.cpu(), annot=cm.cpu(), cmap='rocket_r', vmin=0, vmax=1)
-            wandb.log({"confusion_matrix_test": wandb.Image(cm)})
-
+        # log to wandb
+        plt.clf()
+        cm = sns.heatmap(normalized_cm.cpu(), annot=cm.cpu(), cmap='rocket_r', vmin=0, vmax=1)
+        wandb.log({"confusion_matrix_test": wandb.Image(cm)})
+        # pdb.set_trace()
         self.cm_test.reset()
 
     def lr_scheduler_step(self, scheduler, optimizer_idx, metric):
         scheduler.step()
-# class pl_TransMIL(pl_MIL):
-#     #---->init
-#     def __init__(self, 
-#                 data_paras:DatasetParas,# dataset para
-#                 opt_paras:OptLossParas,# optimizer para
-#                 trainer_paras:PLTrainerParas,# trainer para
-#                 model_para:TransMILParas,# model para
-#                 ):
-#         super().__init__(data_paras,
-#                                     opt_paras,
-#                                     trainer_paras,
-#                                     model_para)
-#         """
-#         model:: model instance of tran_mil
-#         loss:: name of different loss function
-#         optimizer:: 
-#         """
-#         logger.info("TransMIL pl protocol init done.")
-#         pass
-
-#     def infer_step(self, batch, batch_idx):
-#         """
-#         designed for inference and get heatmap of a slide
-#         """
-#         data, label = batch
-#         #print(data.shape)
-#         results_dict = self.model(data)
-#         att = results_dict["att"]
-#         results_dict["att"] = att.detach().cpu().numpy()
-
-#         return results_dict
+        

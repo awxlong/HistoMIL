@@ -11,7 +11,7 @@ from HistoMIL.EXP.paras.env import EnvParas
 from HistoMIL.EXP.trainer.slide import pl_slide_trainer
 from HistoMIL.EXP.paras.trainer import get_pl_trainer_additional_paras
 
-from sklearn.metrics import f1_score, roc_auc_score
+from sklearn.metrics import f1_score, roc_auc_score, r2_score
 
 import wandb
 import numpy as np
@@ -299,7 +299,8 @@ class Experiment:
                 # mdl = self.exp_worker.pl_model.load_from_checkpoint(f'{mdl_ckpt_root}{ckpt}.ckpt'})
                 # print("first approach")
                 # self.exp_worker.test() # but what does self.pl_model is equated to? it's equated to a initialized pytorch lightning model from SCRATCH
-                
+                # for clinical
+                self.paras.dataset_para.current_fold = 'test'
                 # print('second approach') # load from checkpoint EXPLICITLY
                 best_cv_ckpt_path = f'{mdl_ckpt_root}{ckpt}.ckpt'
                 # torch.load(best_cv_ckpt_path)['hyper_parameters']['additional_feature']
@@ -311,8 +312,8 @@ class Experiment:
 
                 cv_csv_loc = f"{self.paras.exp_locs.abs_loc('out_files')}{ckpt}.csv"
                 self.exp_worker.pl_model.outputs.to_csv(cv_csv_loc, index=False)
-                
-                ensembled_probs += self.exp_worker.pl_model.outputs['probs']
+                # pdb.set_trace()
+                ensembled_probs += self.exp_worker.pl_model.outputs['probs'] if not ('Regression' in self.paras.trainer_para.model_name) else self.exp_worker.pl_model.outputs['prediction']
                 # 'out_files'
                 # pdb.set_trace()
                 # ## restart pytorch lightning's configuration so that it doesn't load from previous checkpoint
@@ -320,22 +321,43 @@ class Experiment:
                 wandb.finish()
             if ensemble:
                 ensembled_probs /= len(ckpt_filenames)
-                ensembled_preds = (ensembled_probs >= 0.5).astype(np.int8) 
-                ground_truth = self.exp_worker.pl_model.outputs['ground_truth'].astype(np.int8)
-                correct = (ensembled_preds == ground_truth).astype(np.int8)
-                # pdb.set_trace()
-                ensembled_auroc = roc_auc_score(ground_truth, ensembled_probs)
-                ensembled_f1 = f1_score(ground_truth, ensembled_preds)
-                # Create the DataFrame
-                ensembled_df = pd.DataFrame({
-                    'ensemble_probs': ensembled_probs.values,
-                    'ensemble_preds': ensembled_preds.values,
-                    'ground_truth': ground_truth.values,
-                    'correct': correct
-                })
-                ensemble_loc = f"{self.paras.exp_locs.abs_loc('out_files')}ensemble_res_{self.paras.trainer_para.model_name}_{self.paras.collector_para.feature.model_name}.csv"
-                ensembled_df.to_csv(f'{ensemble_loc}', index=False)
-                print(f'ensemble test F1: {ensembled_f1}; ensemble test AUROC {ensembled_auroc}')
+                if 'Regression' in self.paras.trainer_para.model_name:
+                    ensembled_binary_preds = (ensembled_probs <= self.exp_worker.pl_model.paras.threshold).astype(np.int8) # self.exp_worker.pl_model.binarize(ensembled_probs).astype(np.int8) 
+                    binary_ground_truth = self.exp_worker.pl_model.outputs['binary_ground_truth'].astype(np.int8)
+                    ground_truth = self.exp_worker.pl_model.outputs['continuous_ground_truth'].astype(np.float16)
+                    correct = (ensembled_binary_preds == binary_ground_truth).astype(np.int8)
+                    # pdb.set_trace()
+                    ensembled_pcc = r2_score(ground_truth, ensembled_probs)
+                    ensembled_f1 = f1_score(binary_ground_truth, ensembled_binary_preds)
+                    ensembled_df = pd.DataFrame({
+                        'ensemble_continuous_preds': ensembled_probs.values,
+                        'continuous_ground_truth': ground_truth.values,
+                        'ensemble_binary_preds': ensembled_binary_preds.values,
+                        'binary_ground_truth': binary_ground_truth.values,
+                        'binary_correct': correct
+                    })
+                    ensemble_loc = f"{self.paras.exp_locs.abs_loc('out_files')}ensemble_res_{self.paras.trainer_para.model_name}_{self.paras.collector_para.feature.model_name}.csv"
+                    ensembled_df.to_csv(f'{ensemble_loc}', index=False)
+                    print(f'ensemble test F1: {ensembled_f1}; ensemble test PCC {ensembled_pcc}')
+                    # pdb.set_trace()
+                else:
+                    
+                    ensembled_preds = (ensembled_probs >= 0.5).astype(np.int8) 
+                    ground_truth = self.exp_worker.pl_model.outputs['ground_truth'].astype(np.int8)
+                    correct = (ensembled_preds == ground_truth).astype(np.int8)
+                    # pdb.set_trace()
+                    ensembled_auroc = roc_auc_score(ground_truth, ensembled_probs)
+                    ensembled_f1 = f1_score(ground_truth, ensembled_preds)
+                    # Create the DataFrame
+                    ensembled_df = pd.DataFrame({
+                        'ensemble_probs': ensembled_probs.values,
+                        'ensemble_preds': ensembled_preds.values,
+                        'ground_truth': ground_truth.values,
+                        'correct': correct
+                    })
+                    ensemble_loc = f"{self.paras.exp_locs.abs_loc('out_files')}ensemble_res_{self.paras.trainer_para.model_name}_{self.paras.collector_para.feature.model_name}.csv"
+                    ensembled_df.to_csv(f'{ensemble_loc}', index=False)
+                    print(f'ensemble test F1: {ensembled_f1}; ensemble test AUROC {ensembled_auroc}')
     def run(self):
         if self.need_train:
             self.exp_worker.train()
