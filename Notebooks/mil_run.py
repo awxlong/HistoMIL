@@ -148,7 +148,7 @@ def run_mil(args):
     # CLAM
     DEFAULT_CLAM_PARAS = CLAMParas()
     DEFAULT_CLAM_PARAS.input_dim = MDL_TO_FEATURE_DIMS[args.precomputed]
-    DEFAULT_CAMIL_PARAS.epoch = args.n_epochs
+    DEFAULT_CLAM_PARAS.epoch = args.n_epochs
 
     model_name = args.mil_algorithm  # options are "TransMIL", "ABMIL", "DSMIL" or "Transformer", 'AttentionMIL'
 
@@ -164,7 +164,7 @@ def run_mil(args):
                            'GraphTransformer': DEFAULT_GRAPHTRANSFORMER_PARAS,
                            'TransMILMultimodal': DEFAULT_MULTIMODAL_TRANSMIL_PARAS,
                            'DTFDTransMIL': DEFAULT_DTFDMIL_TRANSMIL_PARAS,
-                           'CLAM': DEFAULT_CAMIL_PARAS
+                           'CLAM': DEFAULT_CLAM_PARAS
                            } 
 
     #--------------------------> parameters
