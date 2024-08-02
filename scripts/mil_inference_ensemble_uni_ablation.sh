@@ -31,6 +31,6 @@ python3 HistoMIL/Notebooks/mil_inference.py --exp-name 'mil-inference-transmil-r
                                             --split-ratio 0.9 0.1 --step-size 224 \
                                             --precomputed 'uni' \
                                             --mil-algorithm "TransMILRegression" \
-                                            --ckpt-filenames 'mil_transmil_uni_regression_32epochs_cv5_rerun_f1_monitorcv=0_epoch=22-auroc_val=0.38' 'mil_transmil_uni_regression_32epochs_cv5_rerun_f1_monitorcv=1_epoch=13-auroc_val=0.24' 'mil_transmil_uni_regression_32epochs_cv5_rerun_f1_monitorcv=2_epoch=21-auroc_val=0.34' 'mil_transmil_uni_regression_32epochs_cv5_rerun_f1_monitorcv=3_epoch=10-auroc_val=0.29' 'mil_transmil_uni_multimodal_32epochs_cv5cv=4_epoch=16-auroc_val=0.76'
+                                            --ckpt-filenames 'mil_transmil_uni_regression_32epochs_cv5_rerun_f1_monitorcv=0_epoch=22-auroc_val=0.38' 'mil_transmil_uni_regression_32epochs_cv5_rerun_f1_monitorcv=1_epoch=13-auroc_val=0.24' 'mil_transmil_uni_regression_32epochs_cv5_rerun_f1_monitorcv=2_epoch=21-auroc_val=0.34' 'mil_transmil_uni_regression_32epochs_cv5_rerun_f1_monitorcv=3_epoch=27-auroc_val=0.30' 'mil_transmil_uni_regression_32epochs_cv5_rerun_f1_monitorcv=4_epoch=02-auroc_val=0.39'
 
 echo "Finished at: $(date)"
