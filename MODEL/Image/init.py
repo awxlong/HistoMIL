@@ -61,7 +61,9 @@ def create_img_model(
         "TransMIL": "HistoMIL.MODEL.Image.MIL.TransMIL.pl",
         "TransMILMultimodal": "HistoMIL.MODEL.Image.MIL.TransMILMultimodal.pl",
         "DTFDTransMIL": "HistoMIL.MODEL.Image.MIL.DTFDTransMIL.pl",
-        "TransMILRegression": "HistoMIL.MODEL.Image.MIL.TransMILRegression.pl"
+        "TransMILRegression": "HistoMIL.MODEL.Image.MIL.TransMILRegression.pl",
+
+        "CLAM" : "HistoMIL.MODEL.Image.MIL.CLAM.pl"
     }
 
     if model_name not in model_classes:
