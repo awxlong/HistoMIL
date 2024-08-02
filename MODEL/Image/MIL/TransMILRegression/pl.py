@@ -127,7 +127,7 @@ class pl_TransMILRegression(pl.LightningModule):
         else:
             return [optimizer]
     def binarize(self, x):
-        return (x <= 0).float()
+        return (x <= self.paras.threshold).float()
     
     def training_step(self, batch, batch_idx):
         # pdb.set_trace()

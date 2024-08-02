@@ -21,6 +21,8 @@ class TransMILRegressionParas:
     norm_layer=nn.LayerNorm
     pos_enc = 'PPEG'
 
+    ## Binary configurations
+    threshold = 0
     ### OPTIMIZER CONFIGURATIONS
     task:str = 'regression'
     criterion:str = 'MSELoss'
