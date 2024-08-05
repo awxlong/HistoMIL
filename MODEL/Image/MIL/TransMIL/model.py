@@ -1,6 +1,4 @@
 """
-Implementation of abmil with/without gradient accumulation
-
 most code copy from 
 https://github.com/szc19990412/TransMIL
 """

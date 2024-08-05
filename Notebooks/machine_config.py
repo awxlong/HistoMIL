@@ -30,6 +30,7 @@ def setup_config(args):
                                         "patch":"Patch/",
                                         "patch_img":"Patch_Image/",
                                         "feature":"Feature/",
+                                        "heatmap":"Heatmap/"
                                         },
                               is_build = True)
         
@@ -37,7 +38,7 @@ def setup_config(args):
         exp_locs = Locations(root=exp_dir,
                              sub_dirs={
                                         "src":"HistoMIL/",
-                                        "idx":"Files/",
+                                        "idx":"Files/", # originally "idx": "Data/"
                                         "saved_models":"SavedModels/",
                                         "out_files":"OutFiles/",
                                         "temp":"Temp/",

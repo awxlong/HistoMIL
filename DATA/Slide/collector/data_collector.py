@@ -33,6 +33,7 @@ DEFAULT_CONCEPT_DICT = {"slide":WholeSlideImage, # comment out slide if you don'
                         "patch":Patches,
                         "feature":Features,
                   }
+                  
 
 # default possible concepts for a cohort
 default_concept_keys = list(DEFAULT_CONCEPT_DICT.keys())
