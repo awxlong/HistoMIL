@@ -171,7 +171,8 @@ class DataCohort:
                      "test":df_test,"idxs":idx_lists}
         
         # pdb.set_trace()
-
+    # get external dataset:
+    # self.data = {'train' your train split, 'val: your valid split', 'test' externally loaded test split}
     def get_task_datalist(self,phase:str="train"):
         """
         from a cohort select slides that have concept in concepts list, then build lists

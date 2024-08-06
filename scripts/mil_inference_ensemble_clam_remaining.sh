@@ -44,7 +44,7 @@ python3 HistoMIL/Notebooks/mil_inference.py --exp-name 'mil-inference-clam-prov-
                                             --precomputed 'prov-gigapath' \
                                             --mil-algorithm "CLAM" \
                                             --label-dict "{0:0,1:1}" \
-                                            --ckpt-filenames 'mil_clam_gigapath_42epochs_cv5cv=0_epoch=00-auroc_val=0.77' 'mil_clam_gigapath_42epochs_cv5cv=1_epoch=04-auroc_val=0.80' 'mil_clam_gigapath_42epochs_cv5cv=2_epoch=02-auroc_val=0.79' 'mil_clam_gigapath_42epochs_cv5cv=3_epoch=27-auroc_val=0.77' 'mil_transmil_gigapath_32epochs_cv5cv=4_epoch=12-auroc_val=0.71'
+                                            --ckpt-filenames 'mil_clam_gigapath_42epochs_cv5cv=0_epoch=00-auroc_val=0.77' 'mil_clam_gigapath_42epochs_cv5cv=1_epoch=04-auroc_val=0.80' 'mil_clam_gigapath_42epochs_cv5cv=2_epoch=02-auroc_val=0.79' 'mil_clam_gigapath_42epochs_cv5cv=3_epoch=27-auroc_val=0.77' 'mil_clam_gigapath_42epochs_cv5cv=4_epoch=08-auroc_val=0.71'
 
 
 

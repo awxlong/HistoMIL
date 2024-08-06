@@ -91,6 +91,7 @@ def run_mil(args):
     # for TransMILRegression
     DEFAULT_TRANSMIL_REGRESSION = TransMILRegressionParas()
     DEFAULT_TRANSMIL_REGRESSION.epoch = args.n_epochs
+    ### DEFAULT_TRANSMIL_REGRESSION.theshold = args.threshold
     DEFAULT_TRANSMIL_REGRESSION.input_dim = MDL_TO_FEATURE_DIMS[args.precomputed]
 
 

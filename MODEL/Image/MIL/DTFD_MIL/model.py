@@ -163,7 +163,7 @@ class DTFD_MIL(BaseAggregator):
         slide_pseudo_feat = torch.cat(slide_pseudo_feat, dim=0)
         slide_sub_preds = torch.cat(slide_sub_preds, dim=0) ### numGroup x fs
         slide_sub_labels = torch.cat(slide_sub_labels, dim=0) ### numGroup
-
+        
         gSlidePred = self.attCls(slide_pseudo_feat)
         return slide_pseudo_feat, slide_sub_preds, slide_sub_labels, gSlidePred
 
