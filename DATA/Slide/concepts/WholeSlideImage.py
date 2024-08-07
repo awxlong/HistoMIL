@@ -21,6 +21,7 @@ import numpy as np
 import openslide
 # import pdb
 # import h5py
+import pdb
 import math
 # from wsi_core.wsi_utils import savePatchIter_bag_hdf5, initialize_hdf5_bag, coord_generator, save_hdf5, sample_indices, screen_coords, isBlackPatch, isWhitePatch, to_percentiles
 # import itertools
@@ -295,6 +296,7 @@ class WholeSlideImageHeatmap(object):
         count = 0
         for idx in range(len(coords)):
             # MAIN COMPUTATIONAL BOTTLENECK
+            # pdb.set_trace()
             score = scores[idx]
             coord = coords[idx]
             if score >= threshold:
