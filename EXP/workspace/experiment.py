@@ -438,38 +438,23 @@ class Experiment:
                     
                     if A.dim() == 3:
                         A = A.mean(-1) # aggregate attention vectors
-                    Y_hat = Y_hat.item()
-                    A = A.view(-1, 1).cpu().numpy() 
-                    probs, ids = torch.topk(Y_prob, 1)
-                    probs = probs[-1].cpu().numpy()
-                    ids = ids[-1].cpu().numpy()
-                    Y_hats, Y_probs, A = ids, probs, A
+                    # Y_hat = Y_hat.item()
+                    # probs, ids = torch.topk(Y_prob, 1)
+                    # probs = probs[-1].cpu().numpy()
+                    # ids = ids[-1].cpu().numpy()
+                    Y_hats, Y_probs, A =  Y_hat.item(), Y_prob.item(),  A.view(-1, 1).cpu().numpy() 
                     ensemble_attn_scores.append(A)
                     ensemble_probs.append(Y_probs)
+                averaged_attn_scores = np.mean(ensemble_attn_scores, axis=0)
+                averaged_probs = np.mean(ensemble_probs, axis=0)
                 if 'Regression' in self.paras.trainer_para.model_name:
                     label = round(label, 2)
                     Y_hats = np.round(logits.numpy()[0], 2)
-                pdb.set_trace()
-                ### sampling patches for close examination
+                # pdb.set_trace()
+                    
+                ### heatmap and patch args
                 patch_size = self.paras.collector_para.patch.patch_size
                 patch_level = 0
-                samples = [{'name': 'topk_high_attention', 'sample': True, 'seed': 42, 'k': 15, 'mode': 'topk'}, {'name': 'reverse_topk_high_attention', 'sample': True, 'seed': 42, 'k': 15, 'mode': 'reverse_topk'}]
-
-                
-                for sample in samples:
-                    if sample['sample']:
-                        tag = "label_{}_pred_{:.2f}".format(label, Y_hats[0]) if 'Regression' in self.paras.trainer_para.model_name else "label_{}_pred_{}".format(label, Y_hats[0])
-                        sample_save_dir =  os.path.join(heatmap_task_root, 'sampled_patches', str(tag), sample['name'])
-                        os.makedirs(sample_save_dir, exist_ok=True)
-                        print('sampling {}'.format(sample['name']))
-                        sample_results = sample_rois(scores=A, coords=wsi_coords, k=sample['k'], mode=sample['mode'], seed=sample['seed'], 
-                            score_start=sample.get('score_start', 0), score_end=sample.get('score_end', 1))
-                        for idx, (s_coord, s_score) in enumerate(zip(sample_results['sampled_coords'], sample_results['sampled_scores'])):
-                            print('coord: {} score: {:.3f}'.format(s_coord, s_score))
-                            patch = wsi_object.wsi.read_region(tuple(s_coord), patch_level, patch_size).convert('RGB')
-                            patch.save(os.path.join(sample_save_dir, '{}_{}_x_{}_y_{}_a_{:.3f}.png'.format(idx, patient_id, s_coord[0], s_coord[1], s_score)))
-                ### heatmap args
-                
                 wsi_ref_downsample = wsi_object.level_downsamples[0]
                 patch_custom_downsample = 1
                 vis_patch_size = tuple((np.array(patch_size) * np.array(wsi_ref_downsample) * patch_custom_downsample ).astype(int))
@@ -480,13 +465,16 @@ class Experiment:
                 heatmap_vis_args = {'convert_to_percentiles': True, 'blur': True, 'custom_downsample': 1}
                 use_ref_scores = True
                 blank_canvas = False
-                alpha = 0.24
+                alpha = 0.36
                 vis_level = 1
                 binarize = False
                 binary_thresh = -1
+                cmap = 'jet'
                 save_ext = 'jpg'
-                ### generating heatmap
+                tag = "label_{}_pred_{:.2f}".format(label, Y_hats) if 'Regression' in self.paras.trainer_para.model_name else "label_{}_pred_{}".format(label, Y_hats)
+                tag = f"ensemble_{tag}" if ensemble else tag 
                 if ensemble:
+                    A = averaged_attn_scores
                     heatmap_save_name = 'ensemble_{}_{}_o_{}_roi_{}_blur_{}_refs_{}_bc_{}_alpha_{}_visl_{}_bi_{}_{}.{}'.format(patient_id, tag, overlap, int(use_roi),
                                                                                     int(heatmap_vis_args['blur']), 
                                                                                     int(use_ref_scores), int(blank_canvas), 
@@ -498,12 +486,31 @@ class Experiment:
                                                                                     int(use_ref_scores), int(blank_canvas), 
                                                                                     float(alpha), int(vis_level), 
                                                                                     int(binarize), float(binary_thresh), save_ext)
+                ### sampling patches for close examination
+                
+                samples = [{'name': 'topk_high_attention', 'sample': True, 'seed': 42, 'k': 15, 'mode': 'topk'}, {'name': 'reverse_topk_high_attention', 'sample': True, 'seed': 42, 'k': 15, 'mode': 'reverse_topk'}]
+
+                
+                for sample in samples:
+                    if sample['sample']:
+                        
+                        sample_save_dir =  os.path.join(heatmap_task_root, 'sampled_patches', str(tag), sample['name'])
+                        os.makedirs(sample_save_dir, exist_ok=True)
+                        print('sampling {}'.format(sample['name']))
+                        sample_results = sample_rois(scores=A, coords=wsi_coords, k=sample['k'], mode=sample['mode'], seed=sample['seed'], 
+                            score_start=sample.get('score_start', 0), score_end=sample.get('score_end', 1))
+                        for idx, (s_coord, s_score) in enumerate(zip(sample_results['sampled_coords'], sample_results['sampled_scores'])):
+                            print('coord: {} score: {:.3f}'.format(s_coord, s_score))
+                            patch = wsi_object.wsi.read_region(tuple(s_coord), patch_level, patch_size).convert('RGB')
+                            patch.save(os.path.join(sample_save_dir, '{}_{}_x_{}_y_{}_a_{:.3f}.png'.format(idx, patient_id, s_coord[0], s_coord[1], s_score)))
+                
+                ### generating heatmap
                 if os.path.isfile(os.path.join(heatmap_task_root, heatmap_save_name)):
                     print("Heatmap already computed")
                     pass
                 else:
                     heatmap = wsi_object.visHeatmap(scores=A, coords=wsi_coords, vis_level=vis_level,  
-                                cmap='jet', alpha=alpha, **heatmap_vis_args, 
+                                cmap=cmap, alpha=alpha, **heatmap_vis_args, 
                                 binarize=binarize, blank_canvas=blank_canvas,
                                 thresh=binary_thresh,  patch_size = vis_patch_size,
                                 overlap=overlap, top_left=top_left, bot_right = bot_right)
