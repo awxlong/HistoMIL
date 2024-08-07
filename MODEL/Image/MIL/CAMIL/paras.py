@@ -5,7 +5,14 @@ pre-defined parameters for CAMIL model
 import attr 
 import torch
 #---->
-
+def get_available_device():
+    if torch.cuda.is_available():
+        return "cuda"
+    elif torch.backends.mps.is_available():
+        return "mps"
+    else:
+        return "cpu"
+    
 @attr.s(auto_attribs=True)
 class CAMILParas:
     """
@@ -20,7 +27,7 @@ class CAMILParas:
     ### OPTIMIZER CONFIGURATIONS
     task:str = 'binary'
     criterion:str = 'BCEWithLogitsLoss'
-
+    device:str = get_available_device()
     epoch:int = 30
     lr:float = 0.0002 # 2e-5 # same as https://github.com/olgarithmics/ICLR_CAMIL/blob/ddd8e2e3973d234310f47c6a528ebbb2eaf369a0/args.py#L3
     wd:float = 1e-5

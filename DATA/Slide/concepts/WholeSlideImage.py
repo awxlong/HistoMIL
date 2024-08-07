@@ -297,8 +297,8 @@ class WholeSlideImageHeatmap(object):
         for idx in range(len(coords)):
             # MAIN COMPUTATIONAL BOTTLENECK
             # pdb.set_trace()
-            print('len of coords:', len(coords))
-            print('shape of scores:', scores.shape)
+            # print('len of coords:', len(coords))
+            # print('shape of scores:', scores.shape)
             score = scores[idx]
             coord = coords[idx]
             if score >= threshold:

@@ -411,7 +411,7 @@ class Experiment:
             
             for idx, batch in enumerate(testloader):
                 ### get paths for wsi .svs file, segmented tissue and patch coords of segmented tissue  
-                patient_id, folder, filename, label = testdataset.iloc[0][['PatientID', 'folder', 'filename', self.paras.cohort_para.task_name]]
+                patient_id, folder, filename, label = testdataset.iloc[idx][['PatientID', 'folder', 'filename', self.paras.cohort_para.task_name]]
                 
                 wsi_path = f"{self.paras.data_locs.abs_loc('slide')}{folder}/{filename}"
                 wsi_tissue_path = f"{self.paras.data_locs.abs_loc('tissue')}{folder}.{filename}.pkl"
@@ -438,6 +438,10 @@ class Experiment:
                     
                     if A.dim() == 3:
                         A = A.mean(-1) # aggregate attention vectors
+                    if A.shape[-1] > len(wsi_coords):
+                        print('# of patches:', len(wsi_coords))
+                        print('# of attn scores exceeded:', A.shape)
+                        
                     # Y_hat = Y_hat.item()
                     # probs, ids = torch.topk(Y_prob, 1)
                     # probs = probs[-1].cpu().numpy()
@@ -490,7 +494,7 @@ class Experiment:
                 
                 samples = [{'name': 'topk_high_attention', 'sample': True, 'seed': 42, 'k': 15, 'mode': 'topk'}, {'name': 'reverse_topk_high_attention', 'sample': True, 'seed': 42, 'k': 15, 'mode': 'reverse_topk'}]
 
-                
+
                 for sample in samples:
                     if sample['sample']:
                         

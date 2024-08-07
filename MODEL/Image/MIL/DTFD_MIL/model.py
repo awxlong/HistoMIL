@@ -127,7 +127,7 @@ class DTFD_MIL(BaseAggregator):
         
         ### model components
         self.classifier = Classifier_1fc(paras.mDim, paras.num_cls, paras.droprate)# .to(paras.device)
-        self.attention = Attention_Gated(paras.mDim).to(paras.device)# .to(paras.device)
+        self.attention = Attention_Gated(paras.mDim)# .to(paras.device)# .to(paras.device)
         self.dimReduction = DimReduction(paras.input_dim, paras.mDim, numLayer_Res=paras.numLayer_Res)# .to(paras.device)
         self.attCls = Attention_with_Classifier(L=paras.mDim, num_cls=paras.num_cls, droprate=paras.droprate_2)# .to(paras.device)
         # self.attCls = self.attCls.to(paras.device)

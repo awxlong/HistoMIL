@@ -10,6 +10,13 @@ import torch.optim.lr_scheduler as lr_scheduler
 
 #---->
 import pdb
+def get_available_device():
+    if torch.cuda.is_available():
+        return "cuda"
+    elif torch.backends.mps.is_available():
+        return "mps"
+    else:
+        return "cpu"
 
 @attr.s(auto_attribs=True)
 class CLAMParas:
@@ -20,7 +27,7 @@ class CLAMParas:
     encoder_name="pre-calculated"# or name of encoder",
     encoder_pretrained:bool = True # or False
     
-    
+    device = get_available_device()
     input_dim:int = 1024           # by default we'll be using uni's feature vectors which are of size 1024
     encoder_name:str = 'pre-calculated' # by default we'll be using the foundational models for feature extraction, so we avoid SSL
     task:str = 'binary'
