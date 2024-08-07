@@ -26,6 +26,8 @@ import math
 # import itertools
 # from wsi_core.util_classes import isInContourV1, isInContourV2, isInContourV3_Easy, isInContourV3_Hard, Contour_Checking_fn
 # from utils.file_utils import load_pkl, save_pkl
+from scipy.stats import rankdata
+
 
 from pathlib import Path
 
@@ -391,5 +393,65 @@ class WholeSlideImageHeatmap(object):
             img = img.resize((int(w*resizeFactor), int(h*resizeFactor)))
        
         return img
+    
 
+#### UTILS for SAMPLING PATCHES FOR A PREDICTION. CODE COPIED FROM https://github.com/mahmoodlab/CLAM/blob/master/create_heatmaps.py
 
+def to_percentiles(scores):
+    
+    scores = rankdata(scores, 'average')/len(scores) * 100   
+    return scores
+
+def top_k(scores, k, invert=False):
+    if invert:
+        top_k_ids=scores.argsort()[:k]
+    else:
+        top_k_ids=scores.argsort()[::-1][:k]
+    return top_k_ids
+
+def screen_coords(scores, coords, top_left, bot_right):
+    bot_right = np.array(bot_right)
+    top_left = np.array(top_left)
+    mask = np.logical_and(np.all(coords >= top_left, axis=1), np.all(coords <= bot_right, axis=1))
+    scores = scores[mask]
+    coords = coords[mask]
+    return scores, coords
+
+def sample_indices(scores, k, start=0.48, end=0.52, convert_to_percentile=False, seed=1):
+    np.random.seed(seed)
+    if convert_to_percentile:
+        end_value = np.quantile(scores, end)
+        start_value = np.quantile(scores, start)
+    else:
+        end_value = end
+        start_value = start
+    score_window = np.logical_and(scores >= start_value, scores <= end_value)
+    indices = np.where(score_window)[0]
+    if len(indices) < 1:
+        return -1 
+    else:
+        return np.random.choice(indices, min(k, len(indices)), replace=False)
+
+def sample_rois(scores, coords, k=5, mode='range_sample', seed=1, score_start=0.45, score_end=0.55, top_left=None, bot_right=None):
+
+    if len(scores.shape) == 2:
+        scores = scores.flatten()
+
+    scores = to_percentiles(scores)
+    if top_left is not None and bot_right is not None:
+        scores, coords = screen_coords(scores, coords, top_left, bot_right)
+
+    if mode == 'range_sample':
+        sampled_ids = sample_indices(scores, start=score_start, end=score_end, k=k, convert_to_percentile=False, seed=seed)
+    elif mode == 'topk':
+        sampled_ids = top_k(scores, k, invert=False)
+    elif mode == 'reverse_topk':
+        sampled_ids = top_k(scores, k, invert=True)
+    else:
+        raise NotImplementedError
+    # pdb.set_trace()
+    coords = coords[:][sampled_ids]
+    scores = scores[sampled_ids]
+
+    asset = {'sampled_coords': coords, 'sampled_scores': scores}
+    return asset

@@ -135,6 +135,43 @@ class Transformer(BaseAggregator):
         x = x.mean(dim=1) if self.pool == 'mean' else x[:, 0]
         # pdb.set_trace()
         return self.mlp_head(self.norm(x))
+    
+    def infer(self, x, coords=None, register_hook=False):
+        
+        b, _, _ = x.shape
+        #--------> feature encoder
+        # pdb.set_trace()
+        x = self.encoder(x)
+
+        # Project input if necessary
+        x = self.input_projection(x)
+        
+        # x = self.projection(x)
+        
+        if self.pos_enc:
+            x = x + self.pos_enc(coords)
+
+        if self.pool == 'cls':
+            cls_tokens = repeat(self.cls_token, '1 1 d -> b 1 d', b=b)
+            x = torch.cat((cls_tokens, x), dim=1)
+
+        x = self.dropout(x)
+        x = self.transformer(x, register_hook=register_hook) # (#batch_size 1, #patches + 1 421, weight_dim 256)
+        A_raw = x
+        # pdb.set_trace()
+
+        x = x.mean(dim=1) if self.pool == 'mean' else x[:, 0]
+        # pdb.set_trace()
+        logits = self.mlp_head(self.norm(x))
+        
+        if self.transformer_paras.task == 'binary': 
+            Y_prob = torch.sigmoid(logits)
+            Y_hat = torch.round(Y_prob)
+        else:
+            Y_hat = torch.topk(logits, 1, dim = 1)[1] 
+            Y_prob = F.softmax(logits, dim = 1)
+            
+        return logits, Y_prob, Y_hat, A_raw
 
 
 if __name__ == "__main__":
@@ -153,7 +190,7 @@ if __name__ == "__main__":
     
     model = Transformer(default_paras)
     rand_tensor = torch.rand((1, 420, 1024))
-    y = model(rand_tensor)
+    y = model.infer(rand_tensor)
 
     pdb.set_trace()
     

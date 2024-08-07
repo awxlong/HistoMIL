@@ -434,12 +434,18 @@ def get_args_mil_inference():
         "--ckpt-filenames", nargs='+', default=None, type=str, help='List of best model checkpoint filenames (exclude .ckpt extension) of model checkpoints saved after training finished, e.g. attentionMIL_uni_32epoch_reruncv=3_epoch=23-auroc_val=0.65')
     
     parser.add_argument(
+        "--ckpt-filename", default=None)
+    
+    parser.add_argument(
         "--k-fold", default=5, type=int, help='Number of folds for cross-validation, e.g. 3 for 3-fold cross-validation. Default is 0, no cross-validation')
         
     parser.add_argument(
         "--pretrained-weights-dir", default=None)
     parser.add_argument(
         "--pretrained-weights-name", default=None)
+    
+    parser.add_argument(
+        "--ensemble", action="store_true", help="Use this flag if you prefer ensemble predictions")
     
     args = parser.parse_args()
 

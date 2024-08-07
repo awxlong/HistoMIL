@@ -397,6 +397,30 @@ class CAMIL(nn.Module):
         # attn_output = k_alpha * bag
         # out = self.class_fc(attn_output)
         return out, alpha, k_alpha
+    
+    def infer(self, inputs):
+        bag, adjacency_matrix = inputs
+
+        xo, A_raw = self.encoder([bag, adjacency_matrix]) # alpha is A_raw
+
+        k_alpha = self.attcls(xo)
+        
+        # pdb.set_trace()
+
+        attn_output = torch.mul(k_alpha, xo)
+
+        logits = self.class_fc(attn_output)
+        
+        if self.paras.task == 'binary': 
+            Y_prob = torch.sigmoid(logits)
+            Y_hat = torch.round(Y_prob)
+        else:
+            Y_hat = torch.topk(logits, 1, dim = 1)[1] 
+            Y_prob = F.softmax(logits, dim = 1)
+
+        A_raw = A_raw.unsqueeze(0) # [B=1, N of patches] add batch dimension
+        # pdb.set_trace()
+        return logits, Y_prob, Y_hat, A_raw
 
 if __name__ == "__main__":
     
@@ -406,7 +430,7 @@ if __name__ == "__main__":
         uni_adj_matrix = torch.load('/Users/awxlong/Desktop/my-studies/temp_data/CRC/Feature/uni_adj_matrix/temp_sparse_matrix.pt')
 
         model = CAMIL(paras=default_paras).to('cpu')
-        y = model([rand_tensor, uni_adj_matrix])
+        y = model.infer([rand_tensor, uni_adj_matrix])
     pdb.set_trace()
     
 

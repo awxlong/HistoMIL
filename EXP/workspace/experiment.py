@@ -10,13 +10,19 @@ from HistoMIL.DATA.Slide.collector.data_collector import read_wsi_collector
 from HistoMIL.EXP.paras.env import EnvParas
 from HistoMIL.EXP.trainer.slide import pl_slide_trainer
 from HistoMIL.EXP.paras.trainer import get_pl_trainer_additional_paras
+from HistoMIL.DATA.Slide.concepts.WholeSlideImage import WholeSlideImageHeatmap, to_percentiles, top_k, screen_coords, sample_indices, sample_rois
 
 from sklearn.metrics import f1_score, roc_auc_score, r2_score
 
 import wandb
 import numpy as np
 import pandas as pd
+import torch
+import h5py
+import pickle
+import os
 import pdb
+
 
     
 class Experiment:
@@ -358,6 +364,154 @@ class Experiment:
                     ensemble_loc = f"{self.paras.exp_locs.abs_loc('out_files')}ensemble_res_{self.paras.trainer_para.model_name}_{self.paras.collector_para.feature.model_name}.csv"
                     ensembled_df.to_csv(f'{ensemble_loc}', index=False)
                     print(f'ensemble test F1: {ensembled_f1}; ensemble test AUROC {ensembled_auroc}')
+
+
+
+    def ensemble_heatmap(self, ckpt_filenames, main_data_source:str = 'slide', ensemble:bool=True):
+        
+        mdl_ckpt_root = f"{self.paras.exp_locs.abs_loc('saved_models')}"
+        heatmap_task_root = f"{self.paras.data_locs.root}Heatmap/{self.paras.cohort_para.task_name}/{self.paras.collector_para.feature.model_name}/{self.paras.trainer_para.model_name}/"
+        os.makedirs(heatmap_task_root, exist_ok=True)
+        if main_data_source == "slide":
+            #-------train need split data
+            label_idx = self.paras.cohort_para.targets[self.paras.cohort_para.targets_idx] # coincidentally doesn't interfere with regression if i set targets-name to [g0_arrest, g0_arrest_score] because g0_arrest are the scores
+            self.data_cohort.show_taskcohort_stat(label_idx=label_idx) 
+            self.split_train_test()  # updated to split into train, valid, test
+            ensembled_probs = np.zeros((len(self.data_cohort.data['test'])))
+            
+                
+            self.exp_worker = pl_slide_trainer(
+                                    trainer_para =self.paras.trainer_para,
+                                    dataset_para=self.paras.dataset_para,
+                                    opt_para=self.paras.opt_para)
+            
+            self.exp_worker.get_env_info(machine=self.machine,user=self.user,
+                                        project=self.project,
+                                        entity=self.entity,
+                                        exp_name=self.exp_name)
+            self.exp_worker.set_cohort(self.data_cohort)
+            # pdb.set_trace()
+            if self.cohort_para.in_domain_split_seed:
+                self.exp_worker.get_in_domain_datapack(self.machine,self.paras.collector_para)
+            else:
+                raise NotImplementedError
+                
+            self.exp_worker.build_model()       # creates model from available implementations
+            self.paras.trainer_para.with_logger = None # disable wandb for heatmap generation
+            self.exp_worker.build_inference_trainer(reinit=True)     # sets up trainer configurations such as wandb and learning rate
+            # pdb.set_trace()
+            # update paras
+            self.paras.dataset_para=self.exp_worker.dataset_para
+            self.paras.trainer_para=self.exp_worker.trainer_para
+            self.paras.opt_para=self.exp_worker.opt_para
+            
+            self.paras.dataset_para.current_fold = 'test'
+            testloader = self.exp_worker.data_pack['testloader']
+            testdataset = self.data_cohort.data['test']
+            
+            for idx, batch in enumerate(testloader):
+                ### get paths for wsi .svs file, segmented tissue and patch coords of segmented tissue  
+                patient_id, folder, filename, label = testdataset.iloc[0][['PatientID', 'folder', 'filename', self.paras.cohort_para.task_name]]
+                
+                wsi_path = f"{self.paras.data_locs.abs_loc('slide')}{folder}/{filename}"
+                wsi_tissue_path = f"{self.paras.data_locs.abs_loc('tissue')}{folder}.{filename}.pkl"
+                wsi_coords_path = f"{self.paras.data_locs.abs_loc('patch')}{self.paras.collector_para.patch.step_size}_{self.paras.collector_para.patch.step_size}/{folder}.{filename}.h5"
+                # pdb.set_trace()
+                ### read svs file, along with tissue and patch
+                wsi_object = WholeSlideImageHeatmap(path=wsi_path)
+                with open(wsi_tissue_path, 'rb') as f:
+                    wsi_tissue = pickle.load(f)
+                wsi_coords = h5py.File(wsi_coords_path)
+                wsi_coords = wsi_coords['coords']
+                wsi_object.contours_tissue = wsi_tissue['tissue']
+                wsi_object.holes_tissue = wsi_tissue['holes']
+
+                ### compute and process attention scores
+                ensemble_attn_scores = []
+                ensemble_probs = []
+                for ckpt in ckpt_filenames:
+                    best_cv_ckpt_path = f'{mdl_ckpt_root}{ckpt}.ckpt'
+                
+                    self.exp_worker.pl_model = self.exp_worker.pl_model.load_from_checkpoint(best_cv_ckpt_path)
+
+                    logits, Y_prob, Y_hat, A = self.exp_worker.pl_model.infer_step(batch)
+                    
+                    if A.dim() == 3:
+                        A = A.mean(-1) # aggregate attention vectors
+                    Y_hat = Y_hat.item()
+                    A = A.view(-1, 1).cpu().numpy() 
+                    probs, ids = torch.topk(Y_prob, 1)
+                    probs = probs[-1].cpu().numpy()
+                    ids = ids[-1].cpu().numpy()
+                    Y_hats, Y_probs, A = ids, probs, A
+                    ensemble_attn_scores.append(A)
+                    ensemble_probs.append(Y_probs)
+                if 'Regression' in self.paras.trainer_para.model_name:
+                    label = round(label, 2)
+                    Y_hats = np.round(logits.numpy()[0], 2)
+                pdb.set_trace()
+                ### sampling patches for close examination
+                patch_size = self.paras.collector_para.patch.patch_size
+                patch_level = 0
+                samples = [{'name': 'topk_high_attention', 'sample': True, 'seed': 42, 'k': 15, 'mode': 'topk'}, {'name': 'reverse_topk_high_attention', 'sample': True, 'seed': 42, 'k': 15, 'mode': 'reverse_topk'}]
+
+                
+                for sample in samples:
+                    if sample['sample']:
+                        tag = "label_{}_pred_{:.2f}".format(label, Y_hats[0]) if 'Regression' in self.paras.trainer_para.model_name else "label_{}_pred_{}".format(label, Y_hats[0])
+                        sample_save_dir =  os.path.join(heatmap_task_root, 'sampled_patches', str(tag), sample['name'])
+                        os.makedirs(sample_save_dir, exist_ok=True)
+                        print('sampling {}'.format(sample['name']))
+                        sample_results = sample_rois(scores=A, coords=wsi_coords, k=sample['k'], mode=sample['mode'], seed=sample['seed'], 
+                            score_start=sample.get('score_start', 0), score_end=sample.get('score_end', 1))
+                        for idx, (s_coord, s_score) in enumerate(zip(sample_results['sampled_coords'], sample_results['sampled_scores'])):
+                            print('coord: {} score: {:.3f}'.format(s_coord, s_score))
+                            patch = wsi_object.wsi.read_region(tuple(s_coord), patch_level, patch_size).convert('RGB')
+                            patch.save(os.path.join(sample_save_dir, '{}_{}_x_{}_y_{}_a_{:.3f}.png'.format(idx, patient_id, s_coord[0], s_coord[1], s_score)))
+                ### heatmap args
+                
+                wsi_ref_downsample = wsi_object.level_downsamples[0]
+                patch_custom_downsample = 1
+                vis_patch_size = tuple((np.array(patch_size) * np.array(wsi_ref_downsample) * patch_custom_downsample ).astype(int))
+                overlap = 0
+                top_left = None
+                bot_right = None
+                use_roi = False
+                heatmap_vis_args = {'convert_to_percentiles': True, 'blur': True, 'custom_downsample': 1}
+                use_ref_scores = True
+                blank_canvas = False
+                alpha = 0.24
+                vis_level = 1
+                binarize = False
+                binary_thresh = -1
+                save_ext = 'jpg'
+                ### generating heatmap
+                if ensemble:
+                    heatmap_save_name = 'ensemble_{}_{}_o_{}_roi_{}_blur_{}_refs_{}_bc_{}_alpha_{}_visl_{}_bi_{}_{}.{}'.format(patient_id, tag, overlap, int(use_roi),
+                                                                                    int(heatmap_vis_args['blur']), 
+                                                                                    int(use_ref_scores), int(blank_canvas), 
+                                                                                    float(alpha), int(vis_level), 
+                                                                                    int(binarize), float(binary_thresh), save_ext)
+                else:
+                    heatmap_save_name = '{}_{}_o_{}_roi_{}_blur_{}_refs_{}_bc_{}_alpha_{}_visl_{}_bi_{}_{}.{}'.format(patient_id, tag, overlap, int(use_roi),
+                                                                                    int(heatmap_vis_args['blur']), 
+                                                                                    int(use_ref_scores), int(blank_canvas), 
+                                                                                    float(alpha), int(vis_level), 
+                                                                                    int(binarize), float(binary_thresh), save_ext)
+                if os.path.isfile(os.path.join(heatmap_task_root, heatmap_save_name)):
+                    print("Heatmap already computed")
+                    pass
+                else:
+                    heatmap = wsi_object.visHeatmap(scores=A, coords=wsi_coords, vis_level=vis_level,  
+                                cmap='jet', alpha=alpha, **heatmap_vis_args, 
+                                binarize=binarize, blank_canvas=blank_canvas,
+                                thresh=binary_thresh,  patch_size = vis_patch_size,
+                                overlap=overlap, top_left=top_left, bot_right = bot_right)
+                    
+                    heatmap.save(os.path.join(heatmap_task_root, heatmap_save_name), quality=100)
+
+            
+                    
     def run(self):
         if self.need_train:
             self.exp_worker.train()

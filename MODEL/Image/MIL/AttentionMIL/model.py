@@ -108,6 +108,57 @@ class AttentionMIL(BaseAggregator):
 
         return torch.softmax(masked_attention, dim=1)
     
+    def infer_masked_attention_scores(self, embeddings, tiles):
+        """Calculates attention scores for all bags.
+        Returns:
+            A tensor containingtorch.concat([torch.rand(64, 256), torch.rand(64, 23)], -1)
+             *  The attention score of instance i of bag j if i < len[j]
+             *  0 otherwise
+        """
+        bs, bag_size = embeddings.shape[0], embeddings.shape[1]
+        attention_scores = self.attention(embeddings)
+
+        # a tensor containing a row [0, ..., bag_size-1] for each batch instance
+        idx = (torch.arange(bag_size).repeat(bs, 1).to(attention_scores.device))
+
+        # False for every instance of bag i with index(instance) >= lens[i]
+        attention_mask = (idx < tiles).unsqueeze(-1)
+        
+        min_value = torch.finfo(attention_scores.dtype).min
+        masked_attention = torch.where(
+            attention_mask, attention_scores,
+            torch.full_like(attention_scores, min_value)
+        )
+        
+
+        return torch.softmax(masked_attention, dim=1), attention_scores
+    
+    def infer(self, bags, coords=None, tiles=None, **kwargs):
+        assert bags.ndim == 3
+        if tiles is not None:
+            assert bags.shape[0] == tiles.shape[0]
+        else:
+            tiles = torch.tensor([bags.shape[1]],
+                                 device=bags.device).unsqueeze(0)
+
+        embeddings = self.encoder(bags)
+
+        # mask out entries if tiles < num_tiles
+        masked_attention_scores, A_raw = self.infer_masked_attention_scores(
+            embeddings, tiles
+        )
+        weighted_embedding_sums = (masked_attention_scores * embeddings).sum(-2)
+        # pdb.set_trace()
+        A_raw = A_raw.squeeze(-1)
+        logits = self.head(weighted_embedding_sums)
+        if self.attention_mil_paras.task == 'binary': 
+            Y_prob = torch.sigmoid(logits)
+            Y_hat = torch.round(Y_prob)
+        else:
+            Y_hat = torch.topk(logits, 1, dim = 1)[1] 
+            Y_prob = F.softmax(logits, dim = 1)
+        return logits, Y_prob, Y_hat, A_raw 
+    
 
 def test_attentionmil():
     attentionmil = AttentionMIL(num_classes=2, input_dim=1024)
@@ -126,13 +177,13 @@ if __name__ == "__main__":
                                     num_classes=1)
     # default_paras.pretrained_weights_dir = '/Users/awxlong/Desktop/my-studies/hpc_exps/HistoMIL/MODEL/Image/MIL/Transformer/pretrained_weights/'
     # default_paras.selective_finetuning = False
-    rand_tensor = torch.rand(1, 1, 1024) 
+    rand_tensor = torch.rand(1, 421, 1024) 
     model = AttentionMIL(default_paras)
 
     # pdb.set_trace()
 
-    
-    # pdb.set_trace()
+    y = model.infer(rand_tensor)
+    pdb.set_trace()
     # Load the modified state dictionary into your model
     # model.load_state_dict(new_state_dict)
     # pdb.set_trace()

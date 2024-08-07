@@ -334,3 +334,14 @@ class pl_DTFD_MIL(pl.LightningModule):
     def lr_scheduler_step(self, scheduler, optimizer_idx, metric):
         scheduler.step()
 
+    def infer_step(self, batch):
+        self.model.classifier.eval()
+        self.model.dimReduction.eval()
+        self.model.attention.eval()
+        self.model.attCls.eval()
+
+        with torch.no_grad():
+            # x, y = batch  # x = features, coords, y = labels, tiles, patient
+            logits, Y_prob, Y_hat, A_raw = self.model.infer(batch)
+        return logits, Y_prob, Y_hat, A_raw
+

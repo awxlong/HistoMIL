@@ -96,6 +96,7 @@ args:
 class CLAM(nn.Module):
     def __init__(self, paras:CLAMParas):
         super().__init__()
+        self.paras = paras
         self.embed_dim = paras.input_dim
         self.gate = paras.gate
         self.size_arg = paras.size_arg
@@ -205,6 +206,58 @@ class CLAM(nn.Module):
             results_dict.update({'features': M})
         return logits, Y_prob, Y_hat, A_raw, results_dict
     
+    def infer(self, h, label=None, instance_eval=False, return_features=False, attention_only=False):
+        if h.dim() == 3:
+            h = h.squeeze(0) # get rid of single batch dimension
+
+        A, h = self.attention_net(h)  # NxK        
+        A = torch.transpose(A, 1, 0)  # KxN
+        if attention_only:
+            return A
+        A_raw = A
+        A = F.softmax(A, dim=1)  # softmax over N
+
+        if instance_eval:
+            total_inst_loss = 0.0
+            all_preds = []
+            all_targets = []
+            inst_labels = F.one_hot(label, num_classes=self.n_classes).squeeze() #binarize label
+            for i in range(len(self.instance_classifiers)):
+                inst_label = inst_labels[i].item()
+                classifier = self.instance_classifiers[i]
+                if inst_label == 1: #in-the-class:
+                    instance_loss, preds, targets = self.inst_eval(A, h, classifier)
+                    all_preds.extend(preds.cpu().numpy())
+                    all_targets.extend(targets.cpu().numpy())
+                else: #out-of-the-class
+                    if self.subtyping:
+                        instance_loss, preds, targets = self.inst_eval_out(A, h, classifier)
+                        all_preds.extend(preds.cpu().numpy())
+                        all_targets.extend(targets.cpu().numpy())
+                    else:
+                        continue
+                total_inst_loss += instance_loss
+
+            if self.subtyping:
+                total_inst_loss /= len(self.instance_classifiers)
+                
+        M = torch.mm(A, h) 
+        logits = self.classifiers(M)
+        if self.paras.task == 'binary': 
+            Y_prob = torch.sigmoid(logits)
+            Y_hat = torch.round(Y_prob)
+        else:
+            Y_hat = torch.topk(logits, 1, dim = 1)[1] 
+            Y_prob = F.softmax(logits, dim = 1)
+            
+        if instance_eval:
+            results_dict = {'instance_loss': total_inst_loss, 'inst_labels': np.array(all_targets), 
+            'inst_preds': np.array(all_preds)}
+        else:
+            results_dict = {}
+        if return_features:
+            results_dict.update({'features': M})
+        return logits, Y_prob, Y_hat, A_raw
 
 if __name__ == "__main__":
     

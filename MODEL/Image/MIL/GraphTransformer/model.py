@@ -113,7 +113,7 @@ def dense_mincut_pool(
 class GraphTransformer(nn.Module):
     def __init__(self, paras:GraphTransformerParas):
         super().__init__()
-
+        self.paras = paras
         self.embed_dim = 64
         self.num_layers = 3
         self.node_cluster_num = 100
@@ -197,19 +197,58 @@ class GraphTransformer(nn.Module):
                 torch.save(cam, path.join('graphcam', 'cam_{}.pt'.format(index_)))
 
         return out, mc1, o1 # labels, loss
+    
+    def infer(self,node_feat,adj,graphcam_flag=False):
+        
+        X = node_feat # (1, #of nodes, #of features)
+        mask = torch.ones((1, X.shape[1]), device=X.device) # (1, #of nodes)
+     
+        X = mask.unsqueeze(2) * X
+        # pdb.set_trace()
+        X = self.conv1(X, adj, mask)
+        # pdb.set_trace()
+        s = self.pool1(X)
+        A_raw = s
+        if graphcam_flag:
+            s_matrix = torch.argmax(s[0], dim=1)
+            # from os import path
+            # os.makedirs('graphcam', exist_ok=True)
+            # torch.save(s_matrix, path.join('graphcam', 's_matrix.pt'))
+            # torch.save(s[0], path.join('graphcam', 's_matrix_ori.pt'))
+            
+            # if path.exists(path.join('graphcam', 'att_1.pt')):
+            #     os.remove(path.join('graphcam', 'att_1.pt'))
+            #     os.remove(path.join('graphcam', 'att_2.pt'))
+            #     os.remove(path.join('graphcam', 'att_3.pt'))
+    
+        X, adj, mc1, o1 = dense_mincut_pool(X, adj, s, mask)
+        b, _, _ = X.shape
+        cls_token = self.cls_token.repeat(b, 1, 1)
+        X = torch.cat([cls_token, X], dim=1)
+
+        logits = self.transformer(X) # unnormalized, thus use BCEwithLogits
+
+        if self.paras.task == 'binary': 
+            Y_prob = torch.sigmoid(logits)
+            Y_hat = torch.round(Y_prob)
+        else:
+            Y_hat = torch.topk(logits, 1, dim = 1)[1] 
+            Y_prob = F.softmax(logits, dim = 1)
+        
+        return logits, Y_prob, Y_hat, A_raw 
 
 
 if __name__ == "__main__":
     
     default_paras = GraphTransformerParas(n_features=1024)
-    
+    default_paras
     device = 'cpu'
-    model = GraphTransformer(default_paras)# .to('mps')
-    rand_tensor = torch.rand((1, 29015, 1024))# .to('mps')
+    model = GraphTransformer(default_paras).to(device)
+    rand_tensor = torch.rand((1, 29015, 1024)).to(device)
     uni_adj_matrix = torch.load('/Users/awxlong/Desktop/my-studies/temp_data/CRC/Feature/uni_adj_matrix/temp_sparse_matrix.pt')# .to('mps')
     # uni_adj_matrix = uni_adj_matrix.to_dense()# .to('mps')
     # pdb.set_trace()
-    output = model(rand_tensor, uni_adj_matrix)
+    output = model.infer(rand_tensor, uni_adj_matrix)
     pdb.set_trace()
     # Load the modified state dictionary into your model
     # model.load_state_dict(new_state_dict)

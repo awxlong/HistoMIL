@@ -244,3 +244,11 @@ class pl_GraphTransformer(pl.LightningModule):
 
     def lr_scheduler_step(self, scheduler, optimizer_idx, metric):
         scheduler.step()
+
+    def infer_step(self, batch):
+        self.eval()  # Set the model to evaluation mode
+        with torch.no_grad():
+            x, adj_matrix, y = batch  # x = features, coords, y = labels, tiles, patient
+            logits, Y_prob, Y_hat, A_raw = self.model.infer(x, adj_matrix[0])
+        return logits, Y_prob, Y_hat, A_raw
+

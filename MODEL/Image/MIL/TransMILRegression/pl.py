@@ -267,3 +267,10 @@ class pl_TransMILRegression(pl.LightningModule):
 
     def lr_scheduler_step(self, scheduler, optimizer_idx, metric):
         scheduler.step()
+    
+    def infer_step(self, batch):
+        self.eval()  # Set the model to evaluation mode
+        with torch.no_grad():
+            x, _, _, y = batch  # x = features, coords, y = labels, tiles, patient
+            logits, Y_prob, Y_hat, A_raw = self.model.infer(x)
+        return logits, Y_prob, Y_hat, A_raw

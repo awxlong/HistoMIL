@@ -279,7 +279,7 @@ class TransMILMultimodal(BaseAggregator):
         # h = self.post_compression_layer_he(h)
 
         # Fusion, default kronecker delta fusion
-        m = self.forward_fusion(h, clinical_embedding)
+        m = self.forward_fusion(h, clinical_embedding) # m is of size (512 // self.paras.scale[0]) * (self.paras.embed_size//2) # e.g. 256 * 32 for kron
         
         # Post-compression of multimodal embedding.
         m = self.post_compression_layer(m)

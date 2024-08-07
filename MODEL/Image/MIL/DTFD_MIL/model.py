@@ -166,18 +166,61 @@ class DTFD_MIL(BaseAggregator):
         
         gSlidePred = self.attCls(slide_pseudo_feat)
         return slide_pseudo_feat, slide_sub_preds, slide_sub_labels, gSlidePred
+    
+    def infer(self, x):
+        inputs, labels = x
+
+        # inputs = inputs.to(self.paras.device)
+        # labels = labels.to(self.paras.device)
+        # inputs= self.encoder(x) #[B, n, 1024]
+
+        slide_sub_preds=[]
+        # slide_sub_labels=[]
+        slide_pseudo_feat=[]
+        attention_scores = []
+        inputs_pseudo_bags=torch.chunk(inputs.squeeze(0), self.paras.numGroup,dim=0)
+        # inputs_pseudo_bags = [chunk.to(self.paras.device) for chunk in inputs_pseudo_bags]
+        # pdb.set_trace()
+        for subFeat_tensor in inputs_pseudo_bags:
+
+            # slide_sub_labels.append(labels)
+
+            tmidFeat = self.dimReduction(subFeat_tensor)
+            tAA = self.attention(tmidFeat).squeeze(0)
+            tattFeats = torch.einsum('ns,n->ns', tmidFeat, tAA)  ### n x fs
+            tattFeat_tensor = torch.sum(tattFeats, dim=0).unsqueeze(0)  ## 1 x fs
+            tPredict = self.classifier(tattFeat_tensor)  ### 1 x 2
+            slide_sub_preds.append(tPredict)
+            slide_pseudo_feat.append(tattFeat_tensor)
+            attention_scores.append(tAA)
+        slide_pseudo_feat = torch.cat(slide_pseudo_feat, dim=0)
+        slide_sub_preds = torch.cat(slide_sub_preds, dim=0) ### numGroup x fs
+        A_raw = torch.cat(attention_scores, dim=0)
+        A_raw = A_raw.unsqueeze(0) # [B=1, N] add batch dimension
+        # slide_sub_labels = torch.cat(slide_sub_labels, dim=0) ### numGroup 
+        logits = self.attCls(slide_pseudo_feat)
+        if self.paras.task == 'binary': 
+            Y_prob = torch.sigmoid(logits)
+            Y_hat = torch.round(Y_prob)
+        else:
+            Y_hat = torch.topk(logits, 1, dim = 1)[1] 
+            Y_prob = F.softmax(logits, dim = 1)
+            
+        # pdb.set_trace()
+        return logits, Y_prob, Y_hat, A_raw
 
 if __name__ == "__main__":
     
     default_paras = DTFD_MILParas()
-    default_paras.input_dim = 2048
-    rand_tensor = torch.rand(1, 42, default_paras.input_dim).to('mps')
+    default_paras.input_dim = 1024
+    rand_tensor = torch.rand(1, 558, default_paras.input_dim).to('mps')
     model = DTFD_MIL(default_paras)
+    model.to('mps')
     label = torch.tensor(1).unsqueeze(0).to('mps')
     criterion = torch.nn.BCEWithLogitsLoss()
     
     # rand_tensor
-    slide_pseudo_feat, slide_sub_preds, slide_sub_labels, gSlidePred = model([rand_tensor, label])
+    slide_pseudo_feat, slide_sub_preds, slide_sub_labels, gSlidePred = model.infer(rand_tensor)
     criterion(slide_sub_preds, slide_sub_labels)
     pdb.set_trace()
     
