@@ -439,8 +439,12 @@ class Experiment:
                     if A.dim() == 3:
                         A = A.mean(-1) # aggregate attention vectors
                     if A.shape[-1] > len(wsi_coords):
+                        
                         print('# of patches:', len(wsi_coords))
                         print('# of attn scores exceeded:', A.shape)
+                        # pdb.set_trace()
+                        A = A[:, :len(wsi_coords)]
+
                         
                     # Y_hat = Y_hat.item()
                     # probs, ids = torch.topk(Y_prob, 1)
