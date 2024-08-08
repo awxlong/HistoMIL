@@ -377,7 +377,7 @@ class Experiment:
             label_idx = self.paras.cohort_para.targets[self.paras.cohort_para.targets_idx] # coincidentally doesn't interfere with regression if i set targets-name to [g0_arrest, g0_arrest_score] because g0_arrest are the scores
             self.data_cohort.show_taskcohort_stat(label_idx=label_idx) 
             self.split_train_test()  # updated to split into train, valid, test
-            ensembled_probs = np.zeros((len(self.data_cohort.data['test'])))
+            # ensembled_probs = np.zeros((len(self.data_cohort.data['test'])))
             
                 
             self.exp_worker = pl_slide_trainer(
@@ -474,12 +474,12 @@ class Experiment:
                 use_ref_scores = True
                 blank_canvas = False
                 alpha = 0.36
-                vis_level = 1
+                vis_level = 2
                 binarize = False
                 binary_thresh = -1
                 cmap = 'jet'
                 save_ext = 'jpg'
-                tag = "label_{}_pred_{:.2f}".format(label, Y_hats) if 'Regression' in self.paras.trainer_para.model_name else "label_{}_pred_{}".format(label, Y_hats)
+                tag = "{}_label_{}_pred_{:.2f}".format(patient_id, label, Y_hats) if 'Regression' in self.paras.trainer_para.model_name else "{}_label_{}_pred_{}".format(patient_id, label, Y_hats)
                 tag = f"ensemble_{tag}" if ensemble else tag 
                 if ensemble:
                     A = averaged_attn_scores
