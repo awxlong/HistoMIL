@@ -479,7 +479,7 @@ class Experiment:
                 binary_thresh = -1
                 cmap = 'jet'
                 save_ext = 'jpg'
-                tag = "{}_label_{}_pred_{:.2f}".format(patient_id, label, Y_hats) if 'Regression' in self.paras.trainer_para.model_name else "{}_label_{}_pred_{}".format(patient_id, label, Y_hats)
+                tag = "label_{}_pred_{:.2f}".format(label, Y_hats) if 'Regression' in self.paras.trainer_para.model_name else "label_{}_pred_{}".format(label, Y_hats)
                 tag = f"ensemble_{tag}" if ensemble else tag 
                 if ensemble:
                     A = averaged_attn_scores
