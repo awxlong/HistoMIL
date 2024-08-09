@@ -423,13 +423,13 @@ class CAMIL(nn.Module):
         return logits, Y_prob, Y_hat, A_raw
 
 if __name__ == "__main__":
-    
-    with torch.amp.autocast(device_type='cpu'):
+    device = 'cpu'
+    with torch.amp.autocast(device_type='cuda'):
         default_paras = CAMILParas()
-        rand_tensor = torch.rand(1, 29015, 1024, dtype=torch.bfloat16).to('cpu') 
+        rand_tensor = torch.rand(1, 29015, 1024, dtype=torch.bfloat16).to(device) 
         uni_adj_matrix = torch.load('/Users/awxlong/Desktop/my-studies/temp_data/CRC/Feature/uni_adj_matrix/temp_sparse_matrix.pt')
 
-        model = CAMIL(paras=default_paras).to('cpu')
+        model = CAMIL(paras=default_paras).to(device)
         y = model.infer([rand_tensor, uni_adj_matrix])
     pdb.set_trace()
     

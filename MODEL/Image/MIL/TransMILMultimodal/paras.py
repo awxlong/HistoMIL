@@ -22,7 +22,7 @@ class TransMILMultimodalParas:
     pos_enc = 'PPEG'
 
     ### clinical features parameters
-    idx_continuous = 3
+    idx_continuous = 27
     taxonomy_in = 2
 
     ### Multimodal configurations
