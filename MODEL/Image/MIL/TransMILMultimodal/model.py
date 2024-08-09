@@ -505,7 +505,8 @@ if __name__ == "__main__":
     grads = model.integrated_gradients(rand_img_tensor, rand)
     # Convert integrated gradients to numpy for plotting
     integrated_grads_np = grads.cpu().detach().numpy()
-    pdb.set_trace()
+    integrated_grads_np = integrated_grads_np[0]
+    # pdb.set_trace()
     # Plotting
     plt.bar(range(len(integrated_grads_np)), integrated_grads_np)
     plt.xlabel('Clinical Feature Index')
