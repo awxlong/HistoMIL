@@ -406,10 +406,10 @@ class Experiment:
             self.paras.opt_para=self.exp_worker.opt_para
             
             self.paras.dataset_para.current_fold = 'test'
-            testloader = self.exp_worker.data_pack['testloader']
+            # testloader = self.exp_worker.data_pack['testloader']
             testdataset = self.data_cohort.data['test']
             
-            for idx, batch in enumerate(testloader):
+            for idx, batch in enumerate(self.exp_worker.data_pack['testloader']):
                 ### get paths for wsi .svs file, segmented tissue and patch coords of segmented tissue  
                 patient_id, folder, filename, label = testdataset.iloc[idx][['PatientID', 'folder', 'filename', self.paras.cohort_para.task_name]]
                 
