@@ -284,10 +284,11 @@ class pl_CAMIL(pl.LightningModule):
 
     def infer_step(self, batch):
         self.eval()  # Set the model to evaluation mode
+        self.model = self.model.half()
         with torch.no_grad():
             x, adj_matrix, y = batch  # x = features, coords, y = labels, tiles, patient
             # with torch.amp.autocast(device_type=self.paras.device):
-            with torch.cuda.amp.autocast(): # manually add this because .ckpt doesn't have device field
+            with torch.amp.autocast(device_type='cuda'): # manually add this because .ckpt doesn't have device field
                 logits, Y_prob, Y_hat, A_raw = self.model.infer([x, adj_matrix[0]])
         return logits, Y_prob, Y_hat, A_raw
 
