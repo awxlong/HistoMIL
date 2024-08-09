@@ -398,7 +398,7 @@ class Experiment:
                 
             self.exp_worker.build_model()       # creates model from available implementations
             self.paras.trainer_para.with_logger = None # disable wandb for heatmap generation
-            self.exp_worker.build_inference_trainer(reinit=True)     # sets up trainer configurations such as wandb and learning rate
+            self.exp_worker.build_inference_trainer(reinit=False)     # sets up trainer configurations such as wandb and learning rate
             # pdb.set_trace()
             # update paras
             self.paras.dataset_para=self.exp_worker.dataset_para
@@ -406,10 +406,10 @@ class Experiment:
             self.paras.opt_para=self.exp_worker.opt_para
             
             self.paras.dataset_para.current_fold = 'test'
-            # testloader = self.exp_worker.data_pack['testloader']
+            testloader = self.exp_worker.data_pack['testloader']
             testdataset = self.data_cohort.data['test']
             
-            for idx, batch in enumerate(self.exp_worker.data_pack['testloader']):
+            for idx, batch in enumerate(testloader):
                 ### get paths for wsi .svs file, segmented tissue and patch coords of segmented tissue  
                 patient_id, folder, filename, label = testdataset.iloc[idx][['PatientID', 'folder', 'filename', self.paras.cohort_para.task_name]]
                 
@@ -433,7 +433,7 @@ class Experiment:
                     best_cv_ckpt_path = f'{mdl_ckpt_root}{ckpt}.ckpt'
                 
                     self.exp_worker.pl_model = self.exp_worker.pl_model.load_from_checkpoint(best_cv_ckpt_path)
-
+                    # pdb.set_trace()
                     logits, Y_prob, Y_hat, A = self.exp_worker.pl_model.infer_step(batch)
                     
                     if A.dim() == 3:
