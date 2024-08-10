@@ -429,12 +429,18 @@ class Experiment:
                 ### compute and process attention scores
                 ensemble_attn_scores = []
                 ensemble_probs = []
+                ensemble_clinical_grads = []
                 for ckpt in ckpt_filenames:
                     best_cv_ckpt_path = f'{mdl_ckpt_root}{ckpt}.ckpt'
                 
                     self.exp_worker.pl_model = self.exp_worker.pl_model.load_from_checkpoint(best_cv_ckpt_path)
                     # pdb.set_trace()
-                    logits, Y_prob, Y_hat, A = self.exp_worker.pl_model.infer_step(batch)
+                    if 'Multimodal' in self.paras.trainer_para.model_name:
+                        logits, Y_prob, Y_hat, A, clinical_gradients = self.exp_worker.pl_model.infer_step(batch)
+                        clinical_gradients = clinical_gradients.detach().cpu().numpy()
+                        ensemble_clinical_grads.append(clinical_gradients)
+                    else:
+                        logits, Y_prob, Y_hat, A = self.exp_worker.pl_model.infer_step(batch)
                     
                     if A.dim() == 3:
                         A = A.mean(-1) # aggregate attention vectors
@@ -450,9 +456,10 @@ class Experiment:
                     # probs, ids = torch.topk(Y_prob, 1)
                     # probs = probs[-1].cpu().numpy()
                     # ids = ids[-1].cpu().numpy()
-                    Y_hats, Y_probs, A =  Y_hat.item(), Y_prob.item(),  A.view(-1, 1).cpu().numpy() 
+                    Y_hats, Y_probs, A =  Y_hat.item(), Y_prob.item(),  A.view(-1, 1).cpu().detach().numpy() 
                     ensemble_attn_scores.append(A)
                     ensemble_probs.append(Y_probs)
+                    
                 averaged_attn_scores = np.mean(ensemble_attn_scores, axis=0)
                 averaged_probs = np.mean(ensemble_probs, axis=0)
                 if 'Regression' in self.paras.trainer_para.model_name:
@@ -483,6 +490,12 @@ class Experiment:
                 tag = "label_{}_pred_{:.2f}".format(label, Y_hats.item()) if 'Regression' in self.paras.trainer_para.model_name else "label_{}_pred_{}".format(label, Y_hats)
                 tag = f"ensemble_{tag}" if ensemble else tag 
                 if ensemble:
+                    if 'Multimodal' in self.paras.trainer_para.model_name: 
+                        avg_grad_save_name = f"{patient_id}_{tag}_clinical.npy"
+                        avg_clinical_grads = np.mean(ensemble_clinical_grads, axis = 0) # average across ensemble models
+                        np.save(os.path.join(heatmap_task_root, avg_grad_save_name), avg_clinical_grads)
+                        print("clinical features saved at as ", avg_grad_save_name)
+
                     A = averaged_attn_scores
                     heatmap_save_name = 'ensemble_{}_{}_o_{}_roi_{}_blur_{}_refs_{}_bc_{}_alpha_{}_visl_{}_bi_{}_{}.{}'.format(patient_id, tag, overlap, int(use_roi),
                                                                                     int(heatmap_vis_args['blur']), 

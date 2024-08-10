@@ -352,8 +352,8 @@ class TransMILMultimodal(BaseAggregator):
         # Compute output
         output = self.forward(x, clinical_features)
         # Compute gradients
-        gradients = torch.autograd.grad(outputs=output, inputs=[x, clinical_features], 
-                                         grad_outputs=torch.ones_like(output))
+        gradients = torch.autograd.grad(outputs=output, inputs=[x, clinical_features],
+                                        grad_outputs=torch.ones_like(output))
         return gradients
     
     def integrated_gradients(self, x, clinical_features, target=None, steps=50):
@@ -468,7 +468,7 @@ class TransMILMultimodal(BaseAggregator):
             Y_prob = F.softmax(logits, dim = 1)
             
         clinical_integrated_gradients = self.integrated_gradients(x, clinical_features)
-        return logits, Y_prob, Y_hat, (A_raw, clinical_integrated_gradients)
+        return logits, Y_prob, Y_hat, A_raw, clinical_integrated_gradients
     # def relprop(self, R):
     #     """
     #     Layer-wise Relevance Propagation for the multimodal model.
