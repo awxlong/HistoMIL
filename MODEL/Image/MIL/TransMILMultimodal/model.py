@@ -219,7 +219,7 @@ class TransMILMultimodal(BaseAggregator):
         ### H&E encoding
         self.pos_layer = PPEG(dim=512)
         self.pos_enc = paras.pos_enc
-        self.encoder = FeatureNet(model_name = paras.encoder_name)
+        self.encoder = nn.Identity() #FeatureNet(model_name = paras.encoder_name)
         print(f'Using {self.pos_enc} positional encoding')
         self._fc1 = nn.Sequential(nn.Linear(paras.input_dim, 512), nn.ReLU())
         self.cls_token = nn.Parameter(torch.randn(1, 1, 512))

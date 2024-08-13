@@ -368,7 +368,14 @@ class Experiment:
 
 
     def ensemble_heatmap(self, ckpt_filenames, main_data_source:str = 'slide', ensemble:bool=True):
-        
+        """
+        Generate heatmaps from ensemble model predictions.
+
+        Parameters:
+        - ckpt_filenames: List of checkpoint filenames.
+        - main_data_source: Source of data, default is 'slide'.
+        - ensemble: Flag to indicate if ensemble predictions should be used.
+        """
         mdl_ckpt_root = f"{self.paras.exp_locs.abs_loc('saved_models')}"
         heatmap_task_root = f"{self.paras.data_locs.root}Heatmap/{self.paras.cohort_para.task_name}/{self.paras.collector_para.feature.model_name}/{self.paras.trainer_para.model_name}/"
         os.makedirs(heatmap_task_root, exist_ok=True)
