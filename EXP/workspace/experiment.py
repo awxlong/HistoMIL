@@ -404,6 +404,7 @@ class Experiment:
                 raise NotImplementedError
                 
             self.exp_worker.build_model()       # creates model from available implementations
+            # pdb.set_trace()
             self.paras.trainer_para.with_logger = None # disable wandb for heatmap generation
             self.exp_worker.build_inference_trainer(reinit=False)     # sets up trainer configurations such as wandb and learning rate
             # pdb.set_trace()
@@ -439,8 +440,9 @@ class Experiment:
                 ensemble_clinical_grads = []
                 for ckpt in ckpt_filenames:
                     best_cv_ckpt_path = f'{mdl_ckpt_root}{ckpt}.ckpt'
-                
+                    
                     self.exp_worker.pl_model = self.exp_worker.pl_model.load_from_checkpoint(best_cv_ckpt_path)
+                    # why is transmilmultimodal stuck here for >60 times?
                     # pdb.set_trace()
                     if 'Multimodal' in self.paras.trainer_para.model_name:
                         logits, Y_prob, Y_hat, A, clinical_gradients = self.exp_worker.pl_model.infer_step(batch)

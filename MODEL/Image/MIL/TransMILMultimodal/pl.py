@@ -14,10 +14,7 @@ import wandb
 from matplotlib import pyplot as plt
 #---->
 from HistoMIL import logger
-# from HistoMIL.MODEL.Image.PL_protocol.MIL import pl_MIL
-# from HistoMIL.EXP.paras.dataset import DatasetParas
-# from HistoMIL.EXP.paras.optloss import OptLossParas
-# from HistoMIL.EXP.paras.trainer import PLTrainerParas
+
 
 from HistoMIL.MODEL.Image.MIL.TransMILMultimodal.paras import TransMILMultimodalParas
 from HistoMIL.MODEL.Image.MIL.TransMILMultimodal.model import TransMILMultimodal

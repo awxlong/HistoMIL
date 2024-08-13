@@ -219,7 +219,7 @@ class TransMILMultimodal(BaseAggregator):
         ### H&E encoding
         self.pos_layer = PPEG(dim=512)
         self.pos_enc = paras.pos_enc
-        self.encoder = nn.Identity() #FeatureNet(model_name = paras.encoder_name)
+        self.encoder = FeatureNet(model_name = paras.encoder_name)
         print(f'Using {self.pos_enc} positional encoding')
         self._fc1 = nn.Sequential(nn.Linear(paras.input_dim, 512), nn.ReLU())
         self.cls_token = nn.Parameter(torch.randn(1, 1, 512))
@@ -469,51 +469,35 @@ class TransMILMultimodal(BaseAggregator):
             
         clinical_integrated_gradients = self.integrated_gradients(x, clinical_features)
         return logits, Y_prob, Y_hat, A_raw, clinical_integrated_gradients
-    # def relprop(self, R):
-    #     """
-    #     Layer-wise Relevance Propagation for the multimodal model.
-    #     """
-    #     # Backpropagate through the classifier
-    #     R = self.classifer.relprop(R)
-    #     R = self.post_compression_layer.relprop(R)
-        
-    #     # Backpropagate through the fusion
-    #     h, clinical_embedding = self.attn_modalities.relprop(R)
-    #     R_h = self.forward_fusion.relprop(h)
-    #     R_clinical = self.forward_fusion.relprop(clinical_embedding)
-        
-    #     # Backpropagate through the clinical encoding
-    #     R_clinical = self.clinical_encoding.relprop(R_clinical)
-        
-    #     return R_clinical
+    
     
 
-if __name__ == "__main__":
+# if __name__ == "__main__":
     
-    default_paras = TransMILMultimodalParas()
-    # rand_tensor = torch.rand(1, 1, 1024)
-    rand_img_tensor = torch.rand(1, 421, 1024) 
-    rand = torch.Tensor([0.5, 0.8, 0.9, 1, 0, 1, 1, 0])
-    rand = torch.rand((1, 27))
-    # binary = (rand >= 0.5).long()
-    model = TransMILMultimodal(default_paras)
-    encoder = FeatureEncoding(idx_continuous=27)
-    attn_modality = Attn_Modality_Gated()
-    y = encoder(rand)
-    # y = attn_modality(rand_img_tensor, y)
-    temp = model(rand_img_tensor, rand)
-    grads = model.integrated_gradients(rand_img_tensor, rand)
-    # Convert integrated gradients to numpy for plotting
-    integrated_grads_np = grads.cpu().detach().numpy()
-    integrated_grads_np = integrated_grads_np[0]
-    # pdb.set_trace()
-    # Plotting
-    plt.bar(range(len(integrated_grads_np)), integrated_grads_np)
-    plt.xlabel('Clinical Feature Index')
-    plt.ylabel('Integrated Gradient Value')
-    plt.title('Feature Importance via Integrated Gradients')
-    plt.show()
-    pdb.set_trace()
+#     default_paras = TransMILMultimodalParas()
+#     # rand_tensor = torch.rand(1, 1, 1024)
+#     rand_img_tensor = torch.rand(1, 421, 1024) 
+#     rand = torch.Tensor([0.5, 0.8, 0.9, 1, 0, 1, 1, 0])
+#     rand = torch.rand((1, 27))
+#     # binary = (rand >= 0.5).long()
+#     model = TransMILMultimodal(default_paras)
+#     encoder = FeatureEncoding(idx_continuous=27)
+#     attn_modality = Attn_Modality_Gated()
+#     y = encoder(rand)
+#     # y = attn_modality(rand_img_tensor, y)
+#     temp = model(rand_img_tensor, rand)
+#     grads = model.integrated_gradients(rand_img_tensor, rand)
+#     # Convert integrated gradients to numpy for plotting
+#     integrated_grads_np = grads.cpu().detach().numpy()
+#     integrated_grads_np = integrated_grads_np[0]
+#     # pdb.set_trace()
+#     # Plotting
+#     plt.bar(range(len(integrated_grads_np)), integrated_grads_np)
+#     plt.xlabel('Clinical Feature Index')
+#     plt.ylabel('Integrated Gradient Value')
+#     plt.title('Feature Importance via Integrated Gradients')
+#     plt.show()
+#     pdb.set_trace()
 
     
     

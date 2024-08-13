@@ -6,7 +6,7 @@ from HistoMIL.EXP.paras.trainer import PLTrainerParas
 from HistoMIL.EXP.paras.dataset import DatasetParas
 from HistoMIL.EXP.paras.optloss import OptLossParas
 
-from HistoMIL.MODEL.Image.MIL.init import aviliable_mil_models
+# from HistoMIL.MODEL.Image.MIL.init import aviliable_mil_models
 # from HistoMIL.MODEL.Image.PL_protocol.MIL import pl_MIL
 
 
