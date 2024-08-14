@@ -266,4 +266,5 @@ class pl_TransMILMultimodal(pl.LightningModule):
         # with torch.no_grad():
         x, clinical_feats, _, y = batch   # x = features, coords, y = labels, tiles, patient
         logits, Y_prob, Y_hat, A_raw, clinical_gradients = self.model.infer(x, clinical_feats)
+        # pdb.set_trace()
         return logits, Y_prob, Y_hat, A_raw, clinical_gradients

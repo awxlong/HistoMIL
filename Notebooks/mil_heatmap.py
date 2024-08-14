@@ -261,8 +261,10 @@ def run_mil_heatmap(args):
     exp.paras.trainer_para.k_fold = args.k_fold 
     print(exp.paras.trainer_para)
 
-    exp.ensemble_heatmap(ckpt_filenames=args.ckpt_filenames, ensemble=args.ensemble)
+    # if 'Multimodal' in args.mil_algorithm:
+    #     exp.ensemble_integrated_gradients(ckpt_filenames=args.ckpt_filenames, ensemble=args.ensemble)
 
+    exp.ensemble_heatmap(ckpt_filenames=args.ckpt_filenames, ensemble=args.ensemble)
 
 if __name__ == '__main__':
     args = get_args_mil_inference()

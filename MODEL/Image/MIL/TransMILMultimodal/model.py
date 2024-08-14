@@ -352,11 +352,12 @@ class TransMILMultimodal(BaseAggregator):
         # Compute output
         output = self.forward(x, clinical_features)
         # Compute gradients
-        gradients = torch.autograd.grad(outputs=output, inputs=[x, clinical_features],
-                                        grad_outputs=torch.ones_like(output))
+        # pdb.set_trace()
+        gradients = torch.autograd.grad(outputs=output, inputs=[x, clinical_features],grad_outputs=torch.ones_like(output))
+        # gradients = torch.autograd.grad(outputs=output, inputs=[clinical_features], grad_outputs=torch.ones_like(output),retain_graph=True)
         return gradients
     
-    def integrated_gradients(self, x, clinical_features, target=None, steps=50):
+    def integrated_gradients(self, x, clinical_features, target=None, steps=10):
         # self.eval()
         # Create a baseline if not specified
         if self.baseline is None:
@@ -365,24 +366,14 @@ class TransMILMultimodal(BaseAggregator):
         # Calculate the scaled inputs
         alphas = torch.linspace(0, 1, steps).view(-1, 1)  # Shape: [steps, 1]
         interpolated = self.baseline + alphas * (clinical_features - self.baseline)
-        # Interpolate for continuous features
-        # continuous_interpolated = self.baseline[:self.paras.idx_continuous] + alphas * (clinical_features[:self.paras.idx_continuous] - self.baseline[:self.paras.idx_continuous])
         
-        # # For binary features, use rounding to ensure they remain binary
-        # binary_interpolated = (clinical_features[self.paras.idx_continuous:] > 0.5).float() * alphas + (self.baseline[self.paras.idx_continuous:] > 0.5).float() * (1 - alphas)
-        # binary_interpolated = (binary_interpolated > 0.5).float()  # Ensure binary values
-
-        # Combine interpolated features
-        # interpolated = torch.cat((continuous_interpolated, binary_interpolated), dim=1)
-        # pdb.set_trace()
-        # interpolated = self.baseline + alphas * (clinical_features - self.baseline)
-
         # Compute gradients along the path
         # img_gradients = []
         gradients = []
         for alpha in interpolated:
             # pdb.set_trace()
             grad = self.compute_gradients(x, alpha)
+            # gradients.append(grad[1])  # Get clinical feature gradients
             gradients.append(grad[1])  # Get clinical feature gradients
 
         gradients = torch.stack(gradients)
@@ -438,8 +429,6 @@ class TransMILMultimodal(BaseAggregator):
         h = self.layer2(h)  #[B, N, 512]
         A_raw = h
         
-
-        
         h = self.norm(h)[:, 0] # [B, 512]
 
         
@@ -468,6 +457,7 @@ class TransMILMultimodal(BaseAggregator):
             Y_prob = F.softmax(logits, dim = 1)
             
         clinical_integrated_gradients = self.integrated_gradients(x, clinical_features)
+        # pdb.set_trace()
         return logits, Y_prob, Y_hat, A_raw, clinical_integrated_gradients
     
     

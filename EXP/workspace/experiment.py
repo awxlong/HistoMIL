@@ -548,7 +548,104 @@ class Experiment:
                     
                     heatmap.save(os.path.join(heatmap_task_root, heatmap_save_name), quality=100)
 
+    def ensemble_integrated_gradients(self, ckpt_filenames, main_data_source:str = 'slide', ensemble:bool=True):
+        
+        mdl_ckpt_root = f"{self.paras.exp_locs.abs_loc('saved_models')}"
+        heatmap_task_root = f"{self.paras.data_locs.root}Heatmap/{self.paras.cohort_para.task_name}/{self.paras.collector_para.feature.model_name}/{self.paras.trainer_para.model_name}/"
+        os.makedirs(heatmap_task_root, exist_ok=True)
+        if main_data_source == "slide":
+            #-------train need split data
+            label_idx = self.paras.cohort_para.targets[self.paras.cohort_para.targets_idx] # coincidentally doesn't interfere with regression if i set targets-name to [g0_arrest, g0_arrest_score] because g0_arrest are the scores
+            self.data_cohort.show_taskcohort_stat(label_idx=label_idx) 
+            self.split_train_test()  # updated to split into train, valid, test
+            # ensembled_probs = np.zeros((len(self.data_cohort.data['test'])))
             
+                
+            self.exp_worker = pl_slide_trainer(
+                                    trainer_para =self.paras.trainer_para,
+                                    dataset_para=self.paras.dataset_para,
+                                    opt_para=self.paras.opt_para)
+            
+            self.exp_worker.get_env_info(machine=self.machine,user=self.user,
+                                        project=self.project,
+                                        entity=self.entity,
+                                        exp_name=self.exp_name)
+            self.exp_worker.set_cohort(self.data_cohort)
+            # pdb.set_trace()
+            if self.cohort_para.in_domain_split_seed:
+                self.exp_worker.get_in_domain_datapack(self.machine,self.paras.collector_para)
+            else:
+                raise NotImplementedError
+                
+            self.exp_worker.build_model()       # creates model from available implementations
+            # pdb.set_trace()
+            self.paras.trainer_para.with_logger = None # disable wandb for heatmap generation
+            self.exp_worker.build_inference_trainer(reinit=False)     # sets up trainer configurations such as wandb and learning rate
+            # pdb.set_trace()
+            # update paras
+            self.paras.dataset_para=self.exp_worker.dataset_para
+            self.paras.trainer_para=self.exp_worker.trainer_para
+            self.paras.opt_para=self.exp_worker.opt_para
+            
+            self.paras.dataset_para.current_fold = 'test'
+            testloader = self.exp_worker.data_pack['testloader']
+            testdataset = self.data_cohort.data['test']
+            
+            for idx, batch in enumerate(testloader):
+                ### get paths for wsi .svs file, segmented tissue and patch coords of segmented tissue  
+                patient_id, folder, filename, label = testdataset.iloc[idx][['PatientID', 'folder', 'filename', self.paras.cohort_para.task_name]]
+                
+                
+                ### compute and process attention scores
+                ensemble_attn_scores = []
+                ensemble_probs = []
+                ensemble_clinical_grads = []
+                for ckpt in ckpt_filenames:
+                    best_cv_ckpt_path = f'{mdl_ckpt_root}{ckpt}.ckpt'
+                    
+                    self.exp_worker.pl_model = self.exp_worker.pl_model.load_from_checkpoint(best_cv_ckpt_path)
+                    # why is transmilmultimodal stuck here for >60 times?
+                    # pdb.set_trace()
+                    if 'Multimodal' in self.paras.trainer_para.model_name:
+                        logits, Y_prob, Y_hat, A, clinical_gradients = self.exp_worker.pl_model.infer_step(batch)
+                        # pdb.set_trace()
+                        clinical_gradients = clinical_gradients.detach().cpu().numpy()
+                        ensemble_clinical_grads.append(clinical_gradients)
+                    else:
+                        logits, Y_prob, Y_hat, A = self.exp_worker.pl_model.infer_step(batch)
+                    
+                    if A.dim() == 3:
+                        A = A.mean(-1) # aggregate attention vectors
+
+
+                        
+                    # Y_hat = Y_hat.item()
+                    # probs, ids = torch.topk(Y_prob, 1)
+                    # probs = probs[-1].cpu().numpy()
+                    # ids = ids[-1].cpu().numpy()
+                    Y_hats, Y_probs, A =  Y_hat.item(), Y_prob.item(),  A.view(-1, 1).cpu().detach().numpy() 
+                    ensemble_attn_scores.append(A)
+                    ensemble_probs.append(Y_probs)
+                    
+                averaged_attn_scores = np.mean(ensemble_attn_scores, axis=0)
+                averaged_probs = np.mean(ensemble_probs, axis=0)
+                if 'Regression' in self.paras.trainer_para.model_name:
+                    label = round(label, 2)
+                    Y_hats = np.round(logits.numpy()[0], 2)
+                # pdb.set_trace()
+                    
+                
+                # pdb.set_trace()
+                tag = "label_{}_pred_{:.2f}".format(label, Y_hats.item()) if 'Regression' in self.paras.trainer_para.model_name else "label_{}_pred_{}".format(label, Y_hats)
+                tag = f"ensemble_{tag}" if ensemble else tag 
+                if ensemble:
+                    if 'Multimodal' in self.paras.trainer_para.model_name: 
+                        avg_grad_save_name = f"{patient_id}_{tag}_clinical.npy"
+                        avg_clinical_grads = np.mean(ensemble_clinical_grads, axis = 0) # average across ensemble models
+                        np.save(os.path.join(heatmap_task_root, avg_grad_save_name), avg_clinical_grads)
+                        print("clinical features saved at as ", avg_grad_save_name)
+
+                   
                     
     def run(self):
         if self.need_train:
