@@ -24,6 +24,13 @@ import os
 import pdb
 
 
+def get_available_device():
+    if torch.cuda.is_available():
+        return "cuda"
+    elif torch.backends.mps.is_available():
+        return "mps"
+    else:
+        return "cpu"
     
 class Experiment:
     def __init__(self,env_paras:EnvParas) -> None:
@@ -444,12 +451,12 @@ class Experiment:
                     self.exp_worker.pl_model = self.exp_worker.pl_model.load_from_checkpoint(best_cv_ckpt_path)
                     # why is transmilmultimodal stuck here for >60 times?
                     # pdb.set_trace()
-                    if 'Multimodal' in self.paras.trainer_para.model_name:
-                        logits, Y_prob, Y_hat, A, clinical_gradients = self.exp_worker.pl_model.infer_step(batch)
-                        clinical_gradients = clinical_gradients.detach().cpu().numpy()
-                        ensemble_clinical_grads.append(clinical_gradients)
-                    else:
-                        logits, Y_prob, Y_hat, A = self.exp_worker.pl_model.infer_step(batch)
+                    # if 'Multimodal' in self.paras.trainer_para.model_name:
+                    #     logits, Y_prob, Y_hat, A, clinical_gradients = self.exp_worker.pl_model.infer_step(batch)
+                    #     clinical_gradients = clinical_gradients.detach().cpu().numpy()
+                    #     ensemble_clinical_grads.append(clinical_gradients)
+                    # else:
+                    logits, Y_prob, Y_hat, A = self.exp_worker.pl_model.infer_step(batch)
                     
                     if A.dim() == 3:
                         A = A.mean(-1) # aggregate attention vectors
@@ -499,11 +506,11 @@ class Experiment:
                 tag = "label_{}_pred_{:.2f}".format(label, Y_hats.item()) if 'Regression' in self.paras.trainer_para.model_name else "label_{}_pred_{}".format(label, Y_hats)
                 tag = f"ensemble_{tag}" if ensemble else tag 
                 if ensemble:
-                    if 'Multimodal' in self.paras.trainer_para.model_name: 
-                        avg_grad_save_name = f"{patient_id}_{tag}_clinical.npy"
-                        avg_clinical_grads = np.mean(ensemble_clinical_grads, axis = 0) # average across ensemble models
-                        np.save(os.path.join(heatmap_task_root, avg_grad_save_name), avg_clinical_grads)
-                        print("clinical features saved at as ", avg_grad_save_name)
+                    # if 'Multimodal' in self.paras.trainer_para.model_name: 
+                    #     avg_grad_save_name = f"{patient_id}_{tag}_clinical.npy"
+                    #     avg_clinical_grads = np.mean(ensemble_clinical_grads, axis = 0) # average across ensemble models
+                    #     np.save(os.path.join(heatmap_task_root, avg_grad_save_name), avg_clinical_grads)
+                    #     print("clinical features saved at as ", avg_grad_save_name)
 
                     A = averaged_attn_scores
                     heatmap_save_name = 'ensemble_{}_{}_o_{}_roi_{}_blur_{}_refs_{}_bc_{}_alpha_{}_visl_{}_bi_{}_{}.{}'.format(patient_id, tag, overlap, int(use_roi),
@@ -549,7 +556,7 @@ class Experiment:
                     heatmap.save(os.path.join(heatmap_task_root, heatmap_save_name), quality=100)
 
     def ensemble_integrated_gradients(self, ckpt_filenames, main_data_source:str = 'slide', ensemble:bool=True):
-        
+        device = get_available_device()
         mdl_ckpt_root = f"{self.paras.exp_locs.abs_loc('saved_models')}"
         heatmap_task_root = f"{self.paras.data_locs.root}Heatmap/{self.paras.cohort_para.task_name}/{self.paras.collector_para.feature.model_name}/{self.paras.trainer_para.model_name}/"
         os.makedirs(heatmap_task_root, exist_ok=True)
@@ -607,12 +614,17 @@ class Experiment:
                     # why is transmilmultimodal stuck here for >60 times?
                     # pdb.set_trace()
                     if 'Multimodal' in self.paras.trainer_para.model_name:
-                        logits, Y_prob, Y_hat, A, clinical_gradients = self.exp_worker.pl_model.infer_step(batch)
+                        x, clinical_feats, _, y = batch 
+                        x = x.to(device)
+                        clinical_feats = clinical_feats.to(device)
+                        self.exp_worker.pl_model.model = self.exp_worker.pl_model.model.to(device)
+
+                        logits, Y_prob, Y_hat, A, clinical_gradients = self.exp_worker.pl_model.model.infer(x, clinical_feats)
                         # pdb.set_trace()
                         clinical_gradients = clinical_gradients.detach().cpu().numpy()
                         ensemble_clinical_grads.append(clinical_gradients)
-                    else:
-                        logits, Y_prob, Y_hat, A = self.exp_worker.pl_model.infer_step(batch)
+                    # else:
+                    #     logits, Y_prob, Y_hat, A = self.exp_worker.pl_model.infer_step(batch)
                     
                     if A.dim() == 3:
                         A = A.mean(-1) # aggregate attention vectors

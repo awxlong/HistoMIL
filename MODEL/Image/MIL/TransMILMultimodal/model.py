@@ -354,10 +354,10 @@ class TransMILMultimodal(BaseAggregator):
         # Compute gradients
         # pdb.set_trace()
         # gradients = torch.autograd.grad(outputs=output, inputs=[x, clinical_features],grad_outputs=torch.ones_like(output))
-        gradients = torch.autograd.grad(outputs=output, inputs=[clinical_features], grad_outputs=torch.ones_like(output),retain_graph=True)
+        gradients = torch.autograd.grad(outputs=output, inputs=[clinical_features], grad_outputs=torch.ones_like(output))
         return gradients
     
-    def integrated_gradients(self, x, clinical_features, target=None, steps=10):
+    def integrated_gradients(self, x, clinical_features, target=None, steps=50):
         self.eval()
         # Create a baseline if not specified
         if self.baseline is None:
@@ -365,6 +365,8 @@ class TransMILMultimodal(BaseAggregator):
 
         # Calculate the scaled inputs
         alphas = torch.linspace(0, 1, steps).view(-1, 1)  # Shape: [steps, 1]
+        alphas = alphas.to(self.baseline.device)
+        # pdb.set_trace()
         interpolated = self.baseline + alphas * (clinical_features - self.baseline)
         
         # Compute gradients along the path
