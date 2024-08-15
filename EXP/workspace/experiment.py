@@ -626,7 +626,7 @@ class Experiment:
                     Y_hats, Y_probs, A =  Y_hat.item(), Y_prob.item(),  A.view(-1, 1).cpu().detach().numpy() 
                     ensemble_attn_scores.append(A)
                     ensemble_probs.append(Y_probs)
-                    
+                # pdb.set_trace()
                 averaged_attn_scores = np.mean(ensemble_attn_scores, axis=0)
                 averaged_probs = np.mean(ensemble_probs, axis=0)
                 if 'Regression' in self.paras.trainer_para.model_name:

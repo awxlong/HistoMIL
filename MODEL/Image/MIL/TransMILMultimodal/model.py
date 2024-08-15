@@ -353,12 +353,12 @@ class TransMILMultimodal(BaseAggregator):
         output = self.forward(x, clinical_features)
         # Compute gradients
         # pdb.set_trace()
-        gradients = torch.autograd.grad(outputs=output, inputs=[x, clinical_features],grad_outputs=torch.ones_like(output))
-        # gradients = torch.autograd.grad(outputs=output, inputs=[clinical_features], grad_outputs=torch.ones_like(output),retain_graph=True)
+        # gradients = torch.autograd.grad(outputs=output, inputs=[x, clinical_features],grad_outputs=torch.ones_like(output))
+        gradients = torch.autograd.grad(outputs=output, inputs=[clinical_features], grad_outputs=torch.ones_like(output),retain_graph=True)
         return gradients
     
     def integrated_gradients(self, x, clinical_features, target=None, steps=10):
-        # self.eval()
+        self.eval()
         # Create a baseline if not specified
         if self.baseline is None:
             self.baseline = torch.zeros_like(clinical_features)
@@ -373,8 +373,8 @@ class TransMILMultimodal(BaseAggregator):
         for alpha in interpolated:
             # pdb.set_trace()
             grad = self.compute_gradients(x, alpha)
+            gradients.append(grad[0])  # Get clinical feature gradients
             # gradients.append(grad[1])  # Get clinical feature gradients
-            gradients.append(grad[1])  # Get clinical feature gradients
 
         gradients = torch.stack(gradients)
 
@@ -455,8 +455,8 @@ class TransMILMultimodal(BaseAggregator):
         else:
             Y_hat = torch.topk(logits, 1, dim = 1)[1] 
             Y_prob = F.softmax(logits, dim = 1)
-            
-        clinical_integrated_gradients = self.integrated_gradients(x, clinical_features)
+        # pdb.set_trace()
+        clinical_integrated_gradients = self.integrated_gradients(x, clinical_features) # main comp. bottleneck
         # pdb.set_trace()
         return logits, Y_prob, Y_hat, A_raw, clinical_integrated_gradients
     
