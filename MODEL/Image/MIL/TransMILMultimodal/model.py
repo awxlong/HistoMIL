@@ -383,7 +383,8 @@ class TransMILMultimodal(BaseAggregator):
         # Average the gradients and scale by the input
         avg_gradients = gradients.mean(dim=0)
         integrated_grads = (clinical_features - self.baseline) * avg_gradients
-
+        # Clear the CUDA memory cache
+        torch.cuda.empty_cache()
         return integrated_grads
     
     def infer(self, x, clinical_features, coords=None):
