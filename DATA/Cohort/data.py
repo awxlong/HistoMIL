@@ -129,6 +129,17 @@ class DataCohort:
                                     random_state=self.cohort_para.in_domain_split_seed,
                                     # stratify=target_df[label_name]) # avoid test data leakage
         )
+        if K_fold is None:
+            logger.warning("Cohort::Using only train-test splits")
+            
+            # train_data,val_data = train_test_split(train_val_data, 
+            #                             test_size=test_size,
+            #                             # train data can be randomly split
+            # )
+            
+            self.data = {"all_df":target_df,"train":train_val_data}
+            self.data.update({"test":test_data})
+            # test_data.to_csv()
         if K_fold == 0:
             logger.warning("Cohort::Using ratio split.")
             

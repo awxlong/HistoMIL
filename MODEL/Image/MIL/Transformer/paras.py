@@ -40,7 +40,7 @@ class TransformerParas:
     task:str = 'binary'
     criterion:str = 'BCEWithLogitsLoss'
     pos_weight = torch.ones(1)
-    epoch:int = 4
+    epoch:int = 8
     lr:float = 2.0e-5 # same as https://github.com/peng-lab/HistoBistro/blob/main/config.yaml
     wd:float = 2.0e-05
     optimizer = 'AdamW'

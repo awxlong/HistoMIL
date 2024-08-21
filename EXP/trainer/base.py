@@ -342,3 +342,73 @@ class pl_base_trainer:
             "testset":testset,
             "testloader":testloader,
         }
+
+    def get_out_of_domain_datapack(self,
+                    machine:Machine,
+                    collector_para:CollectorParas,):
+        """
+        create self.datapack which includes an out-of-domain trainset, validset, testset,
+        trainloader, validloader, testloader
+        in:
+            machine:Machine: machine object for data path
+            collector_para:CollectorParas: paras for data collector
+
+        """
+        is_shuffle = self.dataset_para.is_shuffle
+        is_weight_sampler = self.dataset_para.is_weight_sampler
+        #---> for train phase
+        
+        trainset,trainloader = self.in_domain_dataloader_init_fn_(train_phase="train",
+                                            machine=machine,
+                                            collector_para=collector_para)
+
+        # pdb.set_trace()
+        #---> for validation phase
+        if not self.dataset_para.force_balance_val:
+            self.dataset_para.is_shuffle=False # not shuffle for validation
+            self.dataset_para.is_weight_sampler=False
+        
+        # validset,validloader = self.in_domain_dataloader_init_fn_(train_phase="valid",
+        #                                     machine=machine,
+        #                                     collector_para=collector_para)
+        testset,testloader = self.in_domain_dataloader_init_fn_(train_phase="test",
+                                            machine=machine,
+                                            collector_para=collector_para)
+        # pdb.set_trace()
+        #---> setup dataset meta
+        self.dataset_para.data_len = trainset.__len__()
+        
+        if self.dataset_para.label_dict:
+            # use weight sampler in case of class imbalance
+            _,dict_L = trainset.get_balanced_weight(device="cpu")
+            self.dataset_para.category_ratio = dict_L
+            #----> change back for next run
+            self.dataset_para.is_shuffle=is_shuffle # not shuffle for validation
+            self.dataset_para.is_weight_sampler=is_weight_sampler
+            
+            #----> change label_dict to fit the model and loss
+            # get original label dict
+            trainset,trainloader = self.change_label_dict(trainset, trainloader)
+            validset,validloader = self.change_label_dict(validset, validloader)
+            testset,testloader = self.change_label_dict(testset, testloader)
+        elif self.dataset_para.additional_feature == 'regression':
+            # In regression AVOID the use of weight sampler and label dict
+            self.dataset_para.is_shuffle=is_shuffle # not shuffle for validation
+            self.dataset_para.is_weight_sampler=False
+            #
+            # trainset,trainloader = self.change_label_dict(trainset, trainloader)
+            # validset,validloader = self.change_label_dict(validset, validloader)
+            # testset,testloader = self.change_label_dict(testset, testloader)
+            
+            
+        
+        #----> save to self
+        # pdb.set_trace()
+        self.data_pack = {
+            "trainset":trainset,
+            "trainloader":trainloader,
+            # "validset": validset,
+            # "validloader": validloader,
+            "testset":testset,
+            "testloader":testloader,
+        }

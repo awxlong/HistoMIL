@@ -42,7 +42,7 @@ class GraphTransformerParas:
     optimizer = 'Adam'
     lr_scheduler = 'MultiStepLR'
     lr_scheduler_config:dict = {'milestones':[20], 
-                                'gamma':0.1} # assumes cosine annealing
+                                'gamma':0.1} 
     
 DEFAULT_GRAPHTRANSFORMER_PARAS = GraphTransformerParas()
     
