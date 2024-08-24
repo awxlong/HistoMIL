@@ -172,7 +172,7 @@ class Features_extractor:
             for i, x in enumerate(self.dataloader, 0):
                 if i%100==0: logger.info(f"{i}/{len(self.dataloader)}")
                 x = x.to(self.device)
-                pdb.set_trace()
+                # pdb.set_trace()
                 f = self.model(x)
                 f = f.view(f.shape[0],-1).detach().cpu() # B x N where N=CxWxH
                 # pdb.set_trace()
