@@ -33,7 +33,7 @@ We implement the following MIL algorithms:
 13. [CLAM](https://github.com/mahmoodlab/CLAM)
 14. A hybrid DTFD-MIL-TransMIL, where attention over pseudo-bags is replaced with TransMIL's Nystrom attention 
 
-There are additional jupyter notebooks concerning data analysis and plotting of results for cross-validation, testing with ensemblem, visualization of heatmaps and multimodal clinical feature importance. 
+There are additional jupyter notebooks in Notebooks/Data_Analysis/ concerning data analysis and plotting of results for cross-validation, testing with ensemblem, visualization of heatmaps and multimodal clinical feature importance. Notebooks are named based on the steps laid out in the above pipeline. 
 
 
 ## Installing HistoMIL
