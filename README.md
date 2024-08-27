@@ -1,11 +1,21 @@
 # HistoMIL
 ![HistoMIL](https://github.com/secrierlab/HistoMIL/blob/main/logo.png)
 
-### Author: Shi Pan, UCL Genetics Institute
+### Original Author: Shi Pan, UCL Genetics Institute
 
-HistoMIL is a Python package for handling histopathology whole-slide images using multiple instance learning (MIL) techniques. With HistoMIL, you can create MIL datasets, train and evaluate MIL models, and make MIL predictions on new slide images.
+HistoMIL is a Python package for handling histopathology whole-slide images using multiple instance learning (MIL) techniques. With HistoMIL, you can create MIL datasets, train, cross-validate, evaluate MIL models, make MIL predictions on new slide images and perform interpretability analysis.
 
-## Getting Started
+HistoMIL is written in Pytorch Lightning, which provides the following benefits:
+- mixed precision training
+- gradient accumulation over patches
+- model checkpointing for resuming crashed experiments
+
+We implement the following MIL algorithms:
+1. 
+
+
+
+## Installing HistoMIL
 
 To use HistoMIL, you first need to create a conda environment with the required dependencies.
 
