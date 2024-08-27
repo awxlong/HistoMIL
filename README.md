@@ -3,7 +3,9 @@
 
 ### Original Author: Shi Pan, UCL Genetics Institute
 
-HistoMIL is a Python package for handling histopathology whole-slide images using multiple instance learning (MIL) techniques. With HistoMIL, you can create MIL datasets, train, cross-validate, evaluate MIL models, make MIL predictions on new slide images and perform interpretability analysis.
+HistoMIL is a Python package for handling histopathology whole-slide images using multiple instance learning (MIL) techniques. With HistoMIL, you can create MIL datasets, train, cross-validate, evaluate MIL models, make MIL predictions on new slide images and perform interpretability analysis:
+
+![Pipeline](https://github.com/awxlong/HistoMIL/blob/jupyter/figs/pipeline.png)
 
 HistoMIL is written in Pytorch Lightning, which provides the following benefits:
 - mixed precision training
@@ -11,7 +13,20 @@ HistoMIL is written in Pytorch Lightning, which provides the following benefits:
 - model checkpointing for resuming crashed experiments
 
 We implement the following MIL algorithms:
-1. 
+1. [TransMIL](https://github.com/szc19990412/TransMIL)
+2. TransMILRegression
+3. TransMILMultimodal 
+4. ABMIL 
+5. DSMIL
+6. Transformer 
+7. TransformerRegression 
+8. TransformerMultimodal
+9. AttentionMIL
+10. CAMIL
+11. DTFD_MIL
+12. GraphTransformer
+13. CLAM
+14. A hybrid DTFD-MIL-TransMIL, where attention over pseudo-bags is replaced with TransMIL's Nystrom attention 
 
 
 

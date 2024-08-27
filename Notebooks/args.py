@@ -220,8 +220,6 @@ def get_args_mil():
     parser.add_argument(
         "--task-name", type=str, help="Name describing task, e.g., g0-arrest")
     ### Dataset arguments
-    # parser.add_argument(
-    #     "--cohort-file-dir", type=str, help="Directory to file describing the slides' directories and associated labels")
     parser.add_argument(
         "--pid-name", type=str, default='PatientID', help="Column name of patient ID, e.g. PatientID")
     parser.add_argument(
@@ -247,7 +245,7 @@ def get_args_mil():
     parser.add_argument(
         "--num-workers", type=int, default=4, help='number of workers to specify in pytorch dataloader')
     parser.add_argument(
-        "--mil-algorithm", type=str, help='Name of the MIL algorithm/model that is used, e.g., TransMIL, DSMIL, ABMIL, Transformer')
+        "--mil-algorithm", type=str, help='Name of the MIL algorithm/model that is used, options are TransMIL, TransMILRegression, TransMILMultimodal, ABMIL, DSMIL, Transformer, TransformerRegression, TransformerMultimodal, AttentionMIL, CAMIL, DTFD_MIL, GraphTransformer, CLAM, DTFD-MIL-TransMIL')
     parser.add_argument(
         "--pretrained-weights-dir", default=None, type=str, help='Directory where the pretrained-weights are stored for the MIL model')
     parser.add_argument(
