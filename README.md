@@ -7,6 +7,10 @@ HistoMIL is a Python package for handling histopathology whole-slide images usin
 
 ![Pipeline](https://github.com/awxlong/HistoMIL/blob/jupyter/figs/pipeline.png)
 
+The scripts submitted to the Sun Grid Engine scheduler executing each of the above steps in the pipeline can be found at:  https://github.com/awxlong/scripts_g0_arrest
+
+### Implementation details:
+
 HistoMIL is written in Pytorch Lightning, which provides the following benefits:
 - mixed precision training
 - gradient accumulation over patches
@@ -14,20 +18,19 @@ HistoMIL is written in Pytorch Lightning, which provides the following benefits:
 
 We implement the following MIL algorithms:
 1. [TransMIL](https://github.com/szc19990412/TransMIL)
-2. TransMILRegression
-3. TransMILMultimodal 
-4. ABMIL 
-5. DSMIL
-6. Transformer 
+2. TransMILRegression: TransMIL outputting regression scores instead of classification probabilities
+3. TransMILMultimodal: TransMIL with multimodal fusion of clinical features
+4. [ABMIL](https://github.com/axanderssonuu/ABMIL-ACC) 
+5. [DSMIL](https://github.com/binli123/dsmil-wsi)
+6. [Transformer](https://github.com/peng-lab/HistoBistro) 
 7. TransformerRegression 
 8. TransformerMultimodal
-9. AttentionMIL
-10. CAMIL
-11. DTFD_MIL
-12. GraphTransformer
-13. CLAM
+9. [AttentionMIL](https://github.com/AMLab-Amsterdam/AttentionDeepMIL)
+10. [CAMIL](https://github.com/olgarithmics/ICLR_CAMIL)
+11. [DTFD_MIL](https://github.com/hrzhang1123/DTFD-MIL)
+12. [GraphTransformer](https://github.com/vkola-lab/tmi2022)
+13. [CLAM](https://github.com/mahmoodlab/CLAM)
 14. A hybrid DTFD-MIL-TransMIL, where attention over pseudo-bags is replaced with TransMIL's Nystrom attention 
-
 
 
 ## Installing HistoMIL
