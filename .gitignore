@@ -143,6 +143,7 @@ dmypy.json
 cmds.txt
 
 # jupyter notebooks
+Notebooks/Data_Analysis/debug_tiff.ipynb
 # dependencies.ipynb
 # visualize.ipynb
 # split_csv_for_array.ipynb

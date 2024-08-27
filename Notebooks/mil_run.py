@@ -25,10 +25,7 @@ import os
 import pdb
 import sys
 sys.path.append(os.getcwd())
-
 import pickle
-from dotenv import load_dotenv
-import wandb
 
 from args import get_args_mil
 
@@ -50,7 +47,7 @@ from HistoMIL.MODEL.Image.MIL.CLAM.paras import CLAMParas
 from HistoMIL.EXP.paras.env import EnvParas
 from HistoMIL.EXP.workspace.experiment import Experiment
 from HistoMIL.EXP.paras.trainer import get_pl_trainer_additional_paras
-#------IMPORTS
+#------
 
 ### Feature encoders
 MDL_TO_FEATURE_DIMS = {

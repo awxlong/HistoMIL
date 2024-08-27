@@ -7,7 +7,7 @@ HistoMIL is a Python package for handling histopathology whole-slide images usin
 
 ![Pipeline](https://github.com/awxlong/HistoMIL/blob/jupyter/figs/pipeline.png)
 
-The scripts submitted to the Sun Grid Engine scheduler executing each of the above steps in the pipeline can be found at:  https://github.com/awxlong/scripts_g0_arrest
+A sample of scripts submitted to the Sun Grid Engine scheduler executing each of the above steps in the pipeline using HistoMIL can be found at:  https://github.com/awxlong/scripts_g0_arrest. 
 
 ### Implementation details:
 
@@ -15,6 +15,7 @@ HistoMIL is written in Pytorch Lightning, which provides the following benefits:
 - mixed precision training
 - gradient accumulation over patches
 - model checkpointing for resuming crashed experiments
+- logging of metrics with WandB. 
 
 We implement the following MIL algorithms:
 1. [TransMIL](https://github.com/szc19990412/TransMIL)
@@ -37,10 +38,10 @@ We implement the following MIL algorithms:
 
 To use HistoMIL, you first need to create a conda environment with the required dependencies.
 
-### create env with pre-defined file
+### Create env with pre-defined file
 You can do this by importing the env.yml file provided in this repository:
 
-### linux user pre-requisites
+### Linux user pre-requisites
 1. Create conda env
 ```bash
 conda create -n HistoMIL python=3.9
@@ -51,7 +52,7 @@ This will create a new environment named histomil, which you can activate with:
 conda activate HistoMIL
 ```
 
-### windows user pre-requisites
+### Windows user pre-requisites
 
 Windows (10+)
 1. Download OpenSlide binaries from this page. Extract the folder and add bin and lib subdirectories to Windows system path. If you are using a conda environment you can also copy bin and lib subdirectories to [Anaconda Installation Path]/envs/YOUR ENV/Library/.
@@ -83,7 +84,7 @@ MacPorts
 port install openjpeg openslide
 ```
 
-### create env manually 
+### Create env manually 
 
 Then install openslide and pytorch-gpu with following scripts.
 
@@ -102,7 +103,7 @@ This will install all the packages listed in requirements.txt, including HistoMI
 
 ## Usage
 
-All of the examples for using HistoMIL are included in the Notebooks folder. You can open and run these Jupyter notebooks to see how to use HistoMIL for different histopathology tasks.
+All of the examples for using HistoMIL are included in the Notebooks/Tutorial/ directory. You can open and run these Jupyter notebooks to see how to use HistoMIL for different histopathology tasks.
 
 ## Contributing
 
