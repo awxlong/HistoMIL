@@ -22,7 +22,7 @@ class PLTrainerParas(object):
     label_format:str = "int"  # or "one_hot" for classification or "float" regression or "box" or "mask" for detection.segmentation
 
     shuffle_data:bool = True
-    k_fold:int = 4 # None for no k-fold
+    k_fold:int = 5 # None for no k-fold
     #------> parameters for pl trainer
     out_loc:str = None
     with_logger:str = "wandb"
@@ -33,11 +33,47 @@ class PLTrainerParas(object):
     ckpt_para = { #-----------> paras for pytorch_lightning.callbacks.ModelCheckpoint
                     "save_top_k":1,
                     "mode":"max",
-                   "monitor":"auroc",}
+                    "monitor":"auroc",}
 
     additional_pl_paras={
                 #---------> paras for pytorch lightning trainner
-                #"accumulate_grad_batches":8, # mil need accumulated grad
+                "accumulate_grad_batches":8, # mil need accumulated grad
                 "accelerator":"auto",#accelerator='gpu', devices=1,
+                'enable_progress_bar': True, 
+                'enable_model_summary': True,
+            }
+    
+def get_pl_trainer_additional_paras(mil_algorithm):
+    if mil_algorithm == 'DTFD_MIL' or mil_algorithm == 'DTFDTransMIL':
+        return {
+                #---------> paras for pytorch lightning trainner
+                "accelerator":"auto", 
+                # 'enable_progress_bar': True, 
+                # 'enable_model_summary': True,
+                
+            }
+    elif mil_algorithm == 'GraphTransformer':
+        return {
+                #---------> paras for pytorch lightning trainner
+                "accumulate_grad_batches":8, # mil need accumulated grad
+                "accelerator":"auto",        #accelerator='gpu', devices=1,
+                # 'precision': 16,             # torch.matmul unavailable for sparse tensors in mixed precision regime
+                'enable_progress_bar': True, 
+                'enable_model_summary': True,
+                # 'gradient_clip_val': 0.5,
+                # 'plugins': [DDPStrategy(find_unused_parameters=False)],
+                # 'strategy':'ddp',
+            }
+    else:
+        return {
+                #---------> paras for pytorch lightning trainner
+                "accumulate_grad_batches":8, # mil need accumulated grad
+                "accelerator":"auto",        #accelerator='gpu', devices=1,
+                'precision': 16,             # Use mixed precision
+                'enable_progress_bar': True, 
+                'enable_model_summary': True,
+                # 'gradient_clip_val': 0.5,
+                # 'plugins': [DDPStrategy(find_unused_parameters=False)],
+                # 'strategy':'ddp',
             }
     

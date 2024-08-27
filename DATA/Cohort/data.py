@@ -14,6 +14,9 @@ from HistoMIL.EXP.paras.cohort import CohortParas
 from HistoMIL.DATA.Database.utils import get_weight_sampler
 from HistoMIL.EXP.paras.dataset import DatasetParas
 
+from sklearn.model_selection import train_test_split   
+
+import pdb
 
 class DataCohort:
     def __init__(self,
@@ -109,39 +112,78 @@ class DataCohort:
         for i in range(len(cat_stat)):
             logger.info(f" Cohort::Category: {cat_stat[i][0]} include {len(cat_stat[i][1])} slides,")
             logger.info(f"               include {sum(cat_stat[i][1])}  {concept_name}, ")
+        
         return cat_stat
 
     def split_train_phase(self,
-                        ratio:list=[0.8,0.2],#in dataset_para
+                        ratio:list=[0.9,0.1],#in dataset_para
                         label_name:str="HRD",    #select one category name
-                        K_fold:int=None,target_df=None):
+                        K_fold:int=5,target_df=None):
         # target_df can be customized 
         target_df = self.task_cohort.table.df if target_df is None else target_df
         test_size = 1-ratio[0]
+        
+            # pdb.set_trace()
+        train_val_data,test_data = train_test_split(target_df, 
+                                    test_size=test_size,
+                                    random_state=self.cohort_para.in_domain_split_seed,
+                                    # stratify=target_df[label_name]) # avoid test data leakage
+        )
         if K_fold is None:
-            logger.warning("Cohort::Using ratio split.")
-            from sklearn.model_selection import train_test_split   
-            train_data,test_data = train_test_split(target_df, 
-                                        test_size=test_size,
-                                        stratify=target_df[label_name])
-            self.data = {"all_df":target_df,"train":train_data}
+            logger.warning("Cohort::Using only train-test splits")
+            
+            # train_data,val_data = train_test_split(train_val_data, 
+            #                             test_size=test_size,
+            #                             # train data can be randomly split
+            # )
+            
+            self.data = {"all_df":target_df,"train":train_val_data}
             self.data.update({"test":test_data})
+            # test_data.to_csv()
+        if K_fold == 0:
+            logger.warning("Cohort::Using ratio split.")
+            
+            train_data,val_data = train_test_split(train_val_data, 
+                                        test_size=test_size,
+                                        # train data can be randomly split
+            )
+            
+            self.data = {"all_df":target_df,"train":train_data}
+            self.data.update({"valid": val_data,
+                              "test":test_data})
+            # pdb.set_trace()
+
         else:
+            # DON'T DO K-FOLD CV THIS WAY
+            # raise NotImplementedError
+        
             logger.warning("Cohort::Using k-fold split rather than ratio.")
             from sklearn.model_selection import KFold
-            kf = KFold(n_splits=K_fold,shuffle=True,random_state=2022)
-            idx_lists = list(kf.split(target_df))
-            self.get_k_th_fold(target_df,idx_lists,label_name,i_th=0)
+            # pdb.set_trace()
+            kf = KFold(n_splits=K_fold,shuffle=True)
+            idx_lists = list(kf.split(train_val_data))
+            # self.get_k_th_fold(target_df,idx_lists,label_name,i_th=0)
+            self.get_k_th_fold(df=train_val_data,idx_lists=idx_lists,
+                               k_th_fold=0, test_data=test_data)
         
             
 
-    def get_k_th_fold(self,df:pd.DataFrame,idx_lists:list,target_label:str,i_th:int=0):
-            
-        df_train = df.iloc[idx_lists[i_th][0].tolist()]
-        df_test = df.iloc[idx_lists[i_th][1].tolist()]
+    def get_k_th_fold(self,df:pd.DataFrame,idx_lists:list, test_data, k_th_fold:int=0):
+        '''
+        #  TODO: 
+        '''
+        # pdb.set_trace()
+        df_train = df.iloc[idx_lists[k_th_fold][0].tolist()]
+        # df_test = df.iloc[idx_lists[i_th][1].tolist()]
+        df_valid = df.iloc[idx_lists[k_th_fold][1].tolist()]
+        df_test = test_data
 
-        self.data = {"all_df":df,"train":df_train,"test":df_test,"idxs":idx_lists}
-
+        self.data = {"train_val":df,"train":df_train, "valid":df_valid,
+                     "test":df_test,"idxs":idx_lists}
+        
+        # pdb.set_trace()
+    # get external dataset:
+    # self.data = {'train' your train split, 'val: your valid split', 'test' externally loaded test split}
     def get_task_datalist(self,phase:str="train"):
         """
         from a cohort select slides that have concept in concepts list, then build lists
@@ -152,6 +194,7 @@ class DataCohort:
             patch_list: list for patch-level training
             patch_nb:   list for patch numbers 
         """
+        # pdb.set_trace()
         target_df = self.data[phase]
         slide_list,patch_list,patch_nb = self.task_cohort.get_task_datalist(dataframe=target_df)
         return slide_list,patch_list,patch_nb
@@ -179,17 +222,26 @@ class DataCohort:
         #construct paras for dataloader 
         dataloader_para = {"batch_size":dataset_para.batch_size}
         if dataset_para.is_weight_sampler:
+            # pdb.set_trace()
             #logger.info(f"Using weight sampler with {dataset.label_dict}")
-            if len(dataset.data[0]) == 3:
-                L = [dataset.label_dict[l] for [_,_,l] in dataset.data]
+            if len(dataset.data[0]) == 3: # (folder, filename, label)
+                if dataset_para.additional_feature == 'Regression':
+                    L = [l for [_,_,l] in dataset.data]
+                    label_np = np.array(L)
+                    logger.info(f"No weight sampler for regression setting")
+                else:
+                    L = [dataset.label_dict[l] for [_,_,l] in dataset.data]
+                    label_np = np.array(L)
+                    logger.info(f"Cohort:: For weight sampler, the label distribution is {np.unique(label_np,return_counts=True)}")
+                    sampler = get_weight_sampler(dataset,label_np)
+                    dataloader_para.update({"sampler":sampler})
             elif len(dataset.data[0]) == 4:
                 L = [dataset.label_dict[l] for [_,_,_,l] in dataset.data]
+                label_np = np.array(L)
             else:
                 raise ValueError("The dataset is not correct.")
-            label_np = np.array(L)
-            logger.info(f"Cohort:: For weight sampler, the label distribution is {np.unique(label_np,return_counts=True)}")
-            sampler = get_weight_sampler(dataset,label_np)
-            dataloader_para.update({"sampler":sampler})
+            
+            
         else:
             dataloader_para.update({"shuffle":dataset_para.is_shuffle})
         if dataset_para.num_workers >1:

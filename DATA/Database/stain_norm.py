@@ -459,5 +459,6 @@ def naive_normalize(image):
     returnimage *= 255
     # Replace white pixels
     returnimage[whitemask] = image[whitemask]
+
     return returnimage.astype(np.uint8)
  

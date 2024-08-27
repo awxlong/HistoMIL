@@ -9,7 +9,7 @@ from HistoMIL.DATA.Slide.collector.data_collector import pre_process_wsi_collect
 def cohort_pre_processing(df:pd.DataFrame,
                             data_locs,
                             collector_paras,                            
-                            concepts:list=["slide","tissue","patch",],
+                            concepts:list=["slide","tissue","patch","tissue"],
                             fast_process:bool=True,force_calc:bool=False,):
     folders = df['folder'].values.tolist()
     fnames = df["filename"].values.tolist()

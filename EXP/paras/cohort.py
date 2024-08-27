@@ -25,14 +25,15 @@ class CohortParas(object):
         self.local_cohort_concepts_para:CollectorParas=DEFAULT_CONCEPT_PARAS #::CollectorParas:: paras for local cohort
         self.update_localcohort:bool=False #::bool:: if update local cohort
 
-        # task_cohort: get slide info from database
+        # task_cohor t: get slide info from database
         # task related meta info
         self.task_name:str = None       #::str:: name of the task
         self.update_taskcohort:bool=True #::bool:: if update task cohort
         self.taskcohort_concepts_para:CollectorParas=DEFAULT_CONCEPT_PARAS
         # label csv
-        self.cohort_file:str=None  #::str:: csv file for possible label 
-        self.cohort_data_file:str=None  #::str:: csv file for possible data matrix link with pid (GeneExpressionProfile)
+        self.cohort_file:str=None  #::str:: synthethized csv file containing concepts [slide, tissue, patch and features]
+        self.cohort_task_file:str=None  #::str:: csv file for possible data matrix link with pid (GeneExpressionProfile)
+        self.task_file:str=None         #::str:: AWX: csv file containing labels 
         
         self.pid_name:str=None     #"PatientID"  #::str:: category name for PatientID
         self.targets:list=None     #  ["target1","target2"]  #::list::  list of labels can read from csv
@@ -45,3 +46,4 @@ class CohortParas(object):
         self.label_dict:dict={"label1":0,"label2":1}  #::dict:: a dict for possible labels and related int
         self.category_nb:int=len(self.label_dict.keys())  #::int:: number of classes
         self.is_shuffle:bool=True  #::bool:: if shuffle the cohort level(or shuffle in df)
+        self.in_domain_split_seed = 42

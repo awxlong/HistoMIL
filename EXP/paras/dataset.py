@@ -44,3 +44,10 @@ class DatasetParas(object):
     }
     #----> for additional data process
     method_additional_paras:dict=None
+
+    ### for additional feature extraction of algorithms like CAMIL
+    additional_feature:str = None 
+
+    ### for additional marking of cv fold
+    current_fold:str = None
+

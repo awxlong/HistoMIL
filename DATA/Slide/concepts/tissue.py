@@ -27,7 +27,7 @@ from HistoMIL.DATA.Slide.collector.items  import Items
 # pre-defined paras
 from HistoMIL.EXP.paras.slides import TissueParas
 
-
+import pdb
 #############################################################################
 #               Main Source
 #############################################################################
@@ -69,6 +69,7 @@ class TissueMask(Items):
         self.mask_img = img_otsu
         # Find and filter contours
         if paras.to_contours:
+            # pdb.set_trace()
             self.mask2contours(slide,paras)
     
     def read(self):
@@ -137,9 +138,9 @@ class TissueMask(Items):
         # get paras
         
         patch_size = paras.ref_patch_size #["ref_patch_size"]
-        filter_params = paras.filter_params #["filter_params"].copy()
+        filter_params = {'a_t':100,'a_h': 16, 'max_n_holes':8} # paras.filter_params #["filter_params"].copy()
         # calc actual patch size
-        scale,scaled_patch_area = slide.meta.get_scaled_area(patch_size,
+        scale, scaled_patch_area = slide.meta.get_scaled_area(patch_size,
                                                             level_nb=self.seg_level)
         
         filter_params['a_t'] = filter_params['a_t'] * scaled_patch_area
@@ -159,7 +160,7 @@ class TissueMask(Items):
             contour_ids = set(paras.keep_ids) - set(paras.exclude_ids)
         else:
             contour_ids = set(np.arange(len(contours_tissue))) - set(paras.exclude_ids)
-        
+        # pdb.set_trace()
         # direct set seg out item
         self.contours_tissue = [contours_tissue[i] for i in contour_ids]
         self.holes_tissue = [holes_tissue[i] for i in contour_ids]

@@ -14,7 +14,7 @@ from HistoMIL.MODEL.Image.MIL.utils import FeatureNet
 ########################################################################################
 class PClassifier(nn.Module):
     def __init__(self, feature_size, output_class,dropout_r=0.0):
-        super(PClassifier, self).__init__()
+        super().__init__()
     
         #self.fc = nn.Linear(feature_size, output_class)
 
@@ -39,7 +39,7 @@ class PClassifier(nn.Module):
 # https://github.com/binli123/dsmil-wsi/blob/ee7010be9dcc4b608ea980c9f10da59d845a4b0c/dsmil.py
 class BClassifier(nn.Module):
     def __init__(self, input_size, output_class, dropout_r=0.0): # K, L, N
-        super(BClassifier, self).__init__()
+        super().__init__()
         self.q = nn.Linear(input_size, 128)
         self.v = nn.Sequential(
             nn.Dropout(dropout_r),
@@ -76,7 +76,7 @@ class BClassifier(nn.Module):
 
 class DSMIL(torch.nn.Module):
     def __init__(self,paras:DSMILParas):
-        super(DSMIL, self).__init__()
+        super().__init__()
         self.paras = paras
         self.feature_extractor = FeatureNet(model_name=paras.encoder_name,
                                             pretrained=paras.encoder_pretrained)

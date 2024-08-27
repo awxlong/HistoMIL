@@ -1,0 +1,3 @@
+,PatientID,folder,filename,slide,tissue,patch,feature,slide_nb,tissue_nb,patch_nb,feature_nb
+0,TCGA-AA-A03J,219576f3-3c71-44f8-a23d-addde6ef33dc,TCGA-AA-A03J-01Z-00-DX1.4E57E86E-ADEE-4837-9F91-E9CA141F7ACC.svs,True,True,True,True,1,1,44009,44009
+1,TCGA-AZ-4682,a42f83a9-22ec-4666-8147-a72df2cdb033,TCGA-AZ-4682-01Z-00-DX1.abca2345-ed4a-4f64-af1d-0e60f81b1288.svs,True,True,True,True,1,1,46818,46818

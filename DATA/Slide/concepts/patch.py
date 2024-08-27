@@ -27,6 +27,8 @@ from HistoMIL.DATA.Slide.concepts.utils import isInContours,set_contour_check_fn
 from HistoMIL.DATA.FileIO.h5_worker import patchCoordsStorage
 
 from HistoMIL.EXP.paras.slides import PatchParas
+
+import pdb
 ##############################################################################
 #             main code
 ###############################################################################
@@ -48,6 +50,10 @@ class Patches(Items):
     def loc(self):
         folder = str(self.wsi_loc.parent).split("/")[-1]
         fname  = self.wsi_loc.name
+        subdir = self.db_loc.abs_loc("patch")+f"{self.paras.patch_size[0]}_{self.paras.step_size}/"
+        if not os.path.exists(subdir):
+            os.makedirs(subdir)
+            logger.info(f" Built {subdir}")
         return Path(self.db_loc.abs_loc("patch")+f"/{self.paras.patch_size[0]}_{self.paras.step_size}/{folder}.{fname}.h5")
 
     def calc(self,slide:WholeSlideImage,tissue:TissueMask,paras:PatchParas):
@@ -89,6 +95,7 @@ class Patches(Items):
         if os.path.isfile(self.patch_loc) and not force_calc:
             self.read()
         else:
+            # pdb.set_trace()
             self.slide = slide
             self.tissue = tissue
             self.calc(slide = slide,
@@ -347,6 +354,7 @@ class Patches(Items):
 
         if self.tissue.contours_tissue is None or len(self.tissue.contours_tissue)<1:
             logger.debug("Patch:: No contour tissue is recognised..")
+            # pdb.set_trace()
             return None
         # Start processing
         n_contours = len(self.tissue.contours_tissue)
@@ -370,6 +378,7 @@ class Patches(Items):
             if len(coord_dict) > 0:
                 #print(coord_dict, attr_dict)
                 is_init = self._save_step(is_init,h5worker, coord_dict, attr_dict)
+        # pdb.set_trace()
         logger.debug("Patch:: Patching H5 Done..")
         self.slide.close()
         self.read()     

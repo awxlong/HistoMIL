@@ -28,11 +28,12 @@ from HistoMIL.DATA.Cohort.location import Locations
 
 from HistoMIL.EXP.paras.slides import DEFAULT_CONCEPT_PARAS,CollectorParas
 
-DEFAULT_CONCEPT_DICT = {"slide":WholeSlideImage,
+DEFAULT_CONCEPT_DICT = {"slide":WholeSlideImage, # comment out slide if you don't have slides but have everything else
                         "tissue":TissueMask,
                         "patch":Patches,
                         "feature":Features,
                   }
+                  
 
 # default possible concepts for a cohort
 default_concept_keys = list(DEFAULT_CONCEPT_DICT.keys())
@@ -42,6 +43,7 @@ default_concept_keys = list(DEFAULT_CONCEPT_DICT.keys())
 ##############################################################################
 DEFAULT_CONCEPT_TYPE = DEFAULT_CONCEPT_DICT.keys()
 
+import pdb
 class WSICollector(DataCollector):
     
     def __init__(self,db_loc:Locations,
@@ -131,10 +133,11 @@ class WSICollector(DataCollector):
         elif name == "tissue":
             self.tissue.get(self.slide,force_calc=force_calc)
         elif name == "patch":
+            # pdb.set_trace()
             self.patch.get(self.slide,self.tissue,force_calc=force_calc)
         elif name == "feature":
             self.feature.get(self.slide,self.patch,force_calc=force_calc)
-
+        ### TODO: elif name == 'adj_matrix'
     def release(self,name:str,idx:str="default"):
         self.__delattr__(name)
     

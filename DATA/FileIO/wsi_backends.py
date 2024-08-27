@@ -23,6 +23,8 @@ from matplotlib.image import thumbnail
 import openslide
 import tifffile
 
+import pdb
+
 class WSI_backends:
     """base class for backends that interface with slides on disk"""
 
@@ -75,6 +77,8 @@ def select_backends(loc:Path):
         return OpenSlideBackend(loc = str(loc))
     elif format in [".tiff",".tif"]:
         return TifffilesBackend(loc = str(loc))
+    
+    
 
 
 ###############################################################################
@@ -114,6 +118,7 @@ class OpenSlideBackend(WSI_backends):
 
         img = self.handler.read_region(coords, patch_level, patch_size).convert('RGB')
         img = np.array(img) # Convert to np array for processing
+        # pdb.set_trace()
         return img
 
     def get_thumbnail(self, size:tuple):

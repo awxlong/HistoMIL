@@ -6,9 +6,17 @@ from typing import Callable
 import attr
 from HistoMIL import logger
 from HistoMIL.DATA.Slide.concepts.WholeSlideImage import WholeSlideImage 
-
+import torch
 from HistoMIL.DATA.Database.data_aug import naive_transforms,only_naive_transforms
 
+def get_available_device():
+    if torch.cuda.is_available():
+        return "cuda"
+    elif torch.backends.mps.is_available():
+        return "mps"
+    else:
+        return "cpu"
+    
 
 ##############################################################################
 #           para for slide
@@ -111,7 +119,7 @@ class FeatureParas(object):
     out_dim = None
     #-----> for inference part 
 
-    device:str = "cuda"
+    device:str = get_available_device() # torch.device("cuda" if torch.cuda.is_available() else "cpu") # "cuda"
     trans:Callable = only_naive_transforms
     
     batch_size:int = 32
@@ -121,7 +129,7 @@ class FeatureParas(object):
     with_semantic_shifts:bool = False
 
 ##############################################################################
-#           para for collectorß
+#           para for collector
 ##############################################################################
 @attr.s(auto_attribs=True)
 class CollectorParas(object):

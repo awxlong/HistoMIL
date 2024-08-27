@@ -2,6 +2,7 @@
 Integrate informtion from CSV files
 """
 import random
+import pdb
 from HistoMIL.EXP.paras.cohort import CohortParas
 import numpy as np
 from HistoMIL import logger
@@ -55,7 +56,7 @@ class Cohort:
         filenames = []
         folders   = []
         P_id      = []
-
+        
         p = Path(slide_root)
         for f in p.rglob(pattern):
             filenames.append(f.name)
@@ -73,8 +74,10 @@ class Cohort:
             data_dict.update({name:zero_list})
         #return pd.DataFrame(data_dict)
         self.table.df = pd.DataFrame(data_dict)
+        # pdb.set_trace()
 
     def add_concept_to_df(self,concepts):
+        # pdb.set_trace()
         for name in concepts:
             if name not in self.table.df.keys():
                 zero_list = [0 for i in range(self.table.df.shape[0])]
@@ -97,9 +100,11 @@ class Cohort:
             folder = self.table.df["folder"][i]
             fname = self.table.df["filename"][i]
             C = WSICollector(db_loc=data_locs,wsi_loc=folder+"/"+fname,paras=self.concept_paras)
+            
             for name in concepts:
                 # feature need to specify model_name
                 C_flag,C_nb = C.with_saved_data(name=name)
+                # pdb.set_trace()
                 #print(f" {fname} concept {name} is {C_flag}")
                 self.table.df[name][i]=C_flag
                 self.table.df[name+"_nb"][i]=C_nb
@@ -124,6 +129,7 @@ class Cohort:
         data_dict = {
                 "PatientID":P_id,
         }
+        # pdb.set_trace()
         for name in labels_name:
             data_dict.update({name:table.df[name].values.tolist()})
         
@@ -152,6 +158,7 @@ class Cohort:
         out:
             folders,filenames,label,patch_nb:: 4 lists for creating dataloader
         """
+        # pdb.set_trace()
         for name in concepts:
             df = df [df[name]>0]
         #df=self.cohort_df[[self.cohort_df[name]>0] for name in concepts]
@@ -159,8 +166,13 @@ class Cohort:
         folders = df['folder'].values.tolist()
         filenames = df["filename"].values.tolist()
         label = df[label_name].values.tolist()
+        # pdb.set_trace()
         patch_nb = df["patch_nb"].values.tolist()
-        label = [l[0] for l in label]
+        if len(label_name) == 1:
+            label = [l[0] for l in label]
+        elif len(label_name) > 1:
+            # pdb.set_trace()
+            label = [l[1] for l in label]
         slide_list = [[f,n,l] for f,n,l in zip(folders,filenames,label)]
         patch_list = [[f,n,i,l] for f,n,l,p_nb in zip(folders,filenames,label,patch_nb) for i in range(p_nb) ]
         logger.debug(f"Cohort::in data file list df:{df.keys()}, folders{len(folders)},patch nb = {len(patch_list)}")
@@ -231,8 +243,12 @@ class LocalCohort(Cohort):
             usbale_concepts:list: list of concepts that have data
         """
         df = self.table.df
-        for name in usbale_concepts:
-            df = df[df[name]==True]
+        # pdb.set_trace()
+        # usbale_concepts = ['feature']
+
+        for name in usbale_concepts: #
+            df = df[df[name]==True] # 
+        # pdb.set_trace()
         return df
 
 
@@ -274,7 +290,7 @@ class TaskCohort(Cohort):
         self.task_name = task_name
         self.concepts = task_concepts
 
-        self.task_file = cohort_paras.cohort_file
+        self.task_file = cohort_paras.task_file # AWX: define self.task file as task file containing label instead of cohort file containing concepts 
         self.pid_name = cohort_paras.pid_name
         self.labels_name = cohort_paras.targets
 
@@ -294,13 +310,18 @@ class TaskCohort(Cohort):
         """
         # get source table from a file
         source_table = tableWorker(loc = Path(f"{str(self.idx_root)}/{self.task_file}"))
-        source_table.read_table()
+        source_table.read_table() # source table is the table with g0-arrest labels
         # merge source table with local table
         # add source hospital name
-        content_names = self.cohort_paras.task_additional_idx+self.labels_name
-        patinet_df = self.sort_patientID(table = source_table,pid_name=self.pid_name,labels_name=content_names)
-        self.table.df = self.merge_with_PID( df_1=local_df,
-                                            df_2=patinet_df)
+        if self.cohort_paras.task_additional_idx:
+            content_names = self.cohort_paras.task_additional_idx+self.labels_name # self.cohort_paras.task_additional_idx are additional column indeces (not names) i guess; self.task_additional_idx:str, fixed by specifying gene2k_env.cohort_para.task_additional_idx = ["slide_nb" ,"tissue_nb", "patch_nb" ,"feature_nb"] # AN: have to specify this
+        else:
+            content_names = self.labels_name 
+        # pdb.set_trace()
+        patinet_df = self.sort_patientID(table = source_table,pid_name=self.pid_name,labels_name=content_names) # gets rid of randomness when train-validation-test split
+        self.table.df = self.merge_with_PID(df_1=local_df,
+                                            df_2=patinet_df).drop_duplicates()
+        # pdb.set_trace()
         # write to file
         self.save()
 
@@ -323,6 +344,7 @@ class TaskCohort(Cohort):
         assert label_idx in self.labels_name
         df = self.table.df
         c_nb = df[concept_name+"_nb"].values.tolist()
+        # pdb.set_trace()
         label = df[label_idx].values.tolist()
         all_cat = []
         for l_type  in set(label):
