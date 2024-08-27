@@ -5,7 +5,7 @@
 
 HistoMIL is a Python package for handling histopathology whole-slide images using multiple instance learning (MIL) techniques. With HistoMIL, you can create MIL datasets, train, cross-validate, evaluate MIL models, make MIL predictions on new slide images and perform interpretability analysis:
 
-![Pipeline](https://github.com/awxlong/HistoMIL/blob/jupyter/figs/pipeline.png)
+![Pipeline](https://github.com/awxlong/HistoMIL/blob/main/figs/pipeline.png)
 
 A sample of scripts submitted to the Sun Grid Engine scheduler executing each of the above steps in the pipeline using HistoMIL can be found at:  https://github.com/awxlong/scripts_g0_arrest. 
 
