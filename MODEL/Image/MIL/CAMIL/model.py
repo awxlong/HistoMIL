@@ -1,12 +1,8 @@
 """
-Implementation of abmil with/without gradient accumulation
-
-most code copy from 
-https://github.com/szc19990412/TransMIL
+IMPLEMENTATION OF CAMIL ADAPTED FROM https://github.com/olgarithmics/ICLR_CAMIL
 """
 import numpy as np
 import sys
-sys.path.append('/Users/awxlong/Desktop/my-studies/hpc_exps/')
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -14,18 +10,13 @@ import torch.nn.functional as F
 from HistoMIL.MODEL.Image.MIL.utils import FeatureNet, BaseAggregator, PPEG, NystromTransformerLayer, NystromAttention
 from HistoMIL.MODEL.Image.MIL.CAMIL.paras import CAMILParas
 from HistoMIL import logger
-######################################################################################
-#        pytorch module to define structure
-######################################################################################
+
 import math
 import pdb
 
 from torch.cuda.amp import autocast
 from torch.autograd import Function
 from torch.utils.checkpoint import checkpoint
-
-### IMPLEMENTATION ADAPTED FROM https://github.com/olgarithmics/ICLR_CAMIL
-
 
 
 # sparse_to_dense = SparseToDense.apply
@@ -287,7 +278,8 @@ class CustomAttention(nn.Module):
     #     return self.compute_attention_scores(inputs)
     
     def forward(self, inputs, sparse_adj_matrix):
-        # Cast input to float16
+        # Cast input to float16 for mixed-precision training. Can comment this out if 
+        # you're sure model weights are not in float16
         inputs = inputs.to(torch.float16)
 
         # Compute Q and K
@@ -297,6 +289,7 @@ class CustomAttention(nn.Module):
         k = k.squeeze(0) # [#patches, 256]
         # pdb.set_trace()
         dk = k.size(-1) ** 0.5 
+        
         # Get indices of non-zero elements in sparse_adj_matrix
         indices = sparse_adj_matrix._indices()
         
