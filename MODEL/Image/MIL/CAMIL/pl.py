@@ -1,5 +1,5 @@
 """
-pytorch-lightning wrapper for the DTFD-MODEL
+pytorch-lightning wrapper for CAMIL
 """
 
 #---->
