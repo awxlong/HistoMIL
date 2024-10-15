@@ -86,66 +86,6 @@ def create_img_model(
         return model_class(paras=model_para)
 
     
-
-def _deprecated_create_img_model_(train_paras:PLTrainerParas,
-                     dataset_paras:DatasetParas,
-                     optloss_paras:OptLossParas,
-                     model_para):
-    """
-    create img pl model
-    """
-    #--------> get model paras
-    model_name = train_paras.model_name
-    #--------> create model
-    if model_name in aviliable_mil_models.keys():
-        if model_name == "ABMIL":
-            from HistoMIL.MODEL.Image.MIL.ABMIL.pl import pl_ABMIL
-            pl_model = pl_ABMIL(data_paras=dataset_paras,
-                            opt_paras=optloss_paras,
-                            trainer_paras=train_paras,
-                            model_para=model_para)
-        elif model_name == "TransMIL":
-            from HistoMIL.MODEL.Image.MIL.TransMIL.pl import pl_TransMIL
-            # pl_model = pl_TransMIL(data_paras=dataset_paras,
-            #                 opt_paras=optloss_paras,
-            #                 trainer_paras=train_paras,
-            #                 model_para=model_para)
-            pl_model = pl_TransMIL(paras=model_para)
-            
-        elif model_name == "DSMIL":
-            from HistoMIL.MODEL.Image.MIL.DSMIL.pl import pl_DSMIL
-            pl_model = pl_DSMIL(data_paras=dataset_paras,
-                            opt_paras=optloss_paras,
-                            trainer_paras=train_paras,
-                            model_para=model_para)
-        elif model_name == 'Transformer':
-            from HistoMIL.MODEL.Image.MIL.Transformer.pl import pl_Transformer
-            # pdb.set_trace()
-            pl_model = pl_Transformer(paras=model_para)
-            # pdb.set_trace()
-        elif model_name == 'AttentionMIL':
-            from HistoMIL.MODEL.Image.MIL.AttentionMIL.pl import pl_AttentionMIL
-
-            pl_model = pl_AttentionMIL(dataset_paras=dataset_paras, 
-                                       paras=model_para)
-            # pdb.set_trace()
-        elif model_name == 'CAMIL':
-            from HistoMIL.MODEL.Image.MIL.CAMIL.pl import pl_CAMIL
-            pl_model = pl_CAMIL(paras=model_para)
-        elif model_name == 'DTFD-MIL':
-            from HistoMIL.MODEL.Image.MIL.DTFD_MIL.pl import pl_DTFDMIL
-            pl_model = pl_DTFDMIL(paras=model_para)
-        elif model_name == 'GraphTransformer':
-            from HistoMIL.MODEL.Image.MIL.GraphTransformer.pl import pl_GraphTransformer
-            pl_model = pl_GraphTransformer(paras=model_para)
-        elif model_name == 'TransMILMultimodal':
-            from HistoMIL.MODEL.Image.MIL.TransMILMultimodal.pl import pl_TransMILMultimodal
-            pl_model = pl_TransMILMultimodal(paras=model_para)
-
-    else:
-        raise ValueError("model name not availiable")
-    return pl_model
-
     
 def create_img_mode_paras(train_paras:PLTrainerParas,):
     #--------> get model paras
