@@ -188,37 +188,3 @@ if __name__ == "__main__":
 ## SAMPLE COMMAND FOR CALLING THIS FUNCTION
 # ## specify gigapath
 # python HistoMIL/Notebooks/pre_processing.py --exp-name 'preprocessing-debug' --project-name 'g0-arrest' --wandb-entity-name 'cell-x' --localcohort-name 'CRC' --task-name 'g0-arrest' --pid-name 'PatientID' --targets-name 'g0_arrest' --cohort-dir '/Users/awxlong/Desktop/my-studies/hpc_exps/' --split-ratio 0.99 0.01 --step-size 224 --backbone-name 'prov-gigapath'
-
-
-
-# #################----> for ssl
-    # preprocess_env.trainer_para.method_type = "patch_learning"
-    # preprocess_env.trainer_para.model_name = "moco" # 
-    # from HistoMIL.MODEL.Image.SSL.paras import SSLParas
-    # preprocess_env.trainer_para.model_para = SSLParas()
-    # preprocess_env.trainer_para.model_para.ssl_dataset_para.batch_size = 16
-    # preprocess_env.trainer_para.model_para.ssl_dataset_para.label_dict = {"HRD":0,"HRP":1}
-    # preprocess_env.trainer_para.model_para.ssl_dataset_para.example_file = "example/example.png"
-    # preprocess_env.trainer_para.model_para.ssl_dataset_para.is_weight_sampler = True
-    # preprocess_env.trainer_para.model_para.ssl_dataset_para.force_balance_val = True
-    # preprocess_env.trainer_para.model_para.ssl_dataset_para.add_dataloader = {
-    #                                                     "pin_memory":True,
-    #                                                     "drop_last":True,
-    #                                                     }
-
-    # from HistoMIL.DATA.Database.data_aug import SSL_DataAug
-    # # specifu data aug or use default can be found at paras
-    # preprocess_env.trainer_para.model_para.ssl_dataset_para.img_size = (512,512)
-    # add_data_aug_paras = preprocess_env.trainer_para.model_para.ssl_dataset_para.add_data_aug_paras
-    # trans_factory = SSL_DataAug(**add_data_aug_paras)
-    # preprocess_env.trainer_para.model_para.ssl_dataset_para.transfer_fn = trans_factory.get_trans_fn
-    # #----------------> trainer or analyzer
-    # preprocess_env.trainer_para.label_format = "int"#"one_hot" 
-    # preprocess_env.trainer_para.additional_pl_paras={
-    #                 #---------> paras for pytorch lightning trainner
-    #                 "accumulate_grad_batches":16, # mil need accumulated grad
-    #                 "accelerator":"auto",#accelerator='gpu', devices=1,
-    #             }
-    # #preprocess_env.trainer_para.with_logger = None #without wandb to debug
-    #--------------------------> init machine and person
-    #--------------------------> init machine and person

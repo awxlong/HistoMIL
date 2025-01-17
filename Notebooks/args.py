@@ -1,5 +1,4 @@
 import argparse
-# import datetime
 import os
 import random 
 import numpy as np
@@ -15,37 +14,8 @@ def seed_everything(seed=42):
     torch.backends.cudnn.deterministic = True
     torch.backends.cudnn.benchmark = False
 
-def get_args_machine_config():
-    parser = argparse.ArgumentParser()
-
-    parser.add_argument(
-        "--cohort-name", type=str, help="Name of the cohort, e.g., BRCA for breast cancer")
-    parser.add_argument(
-        "--data-dir", type=str, help="Directory to WSI data where subdirectories will be created")
-    parser.add_argument(
-        "--exp-dir", type=str, help="Directory to experiment-related files. Directory MUST be the parent directory which has the HistoMIL package")
-    parser.add_argument(
-        "--seed", type=int, default=42, help="Seed to ensure reproducibility")
-    parser.add_argument(
-        "--id", type=str, default='0001', help="Unique ID of the user")
-    parser.add_argument(
-        "--username", default='draco',type=str, help="Unique name of the experimenter")
-    parser.add_argument(
-        "--api-dir", default='/Users/awxlong/Desktop/my-studies/hpc_exps/HistoMIL/',type=str, help="Directory where API.env for storing API keys is saved")
+### Helper functions to parse arguments
     
-    args = parser.parse_args()
-
-    # pdb.set_trace()
-    assert args.data_dir.endswith(os.path.sep)
-    assert args.exp_dir.endswith(os.path.sep)
-
-    # args.conf_version = args.data_dir.split(os.path.sep)[-2]
-    # args.name = args.name + f"-{args.conf_version}"
-
-    seed_everything(args.seed)
-
-    return args
-
 def dict_type(string):
     try:
         value = ast.literal_eval(string)
@@ -84,6 +54,35 @@ def str2bool(v):
         return False
     else:
         raise argparse.ArgumentTypeError('Boolean value expected.')
+    
+
+def get_args_machine_config():
+    parser = argparse.ArgumentParser()
+
+    parser.add_argument(
+        "--cohort-name", type=str, help="Name of the cohort, e.g., BRCA for breast cancer")
+    parser.add_argument(
+        "--data-dir", type=str, help="Directory to WSI data where subdirectories will be created")
+    parser.add_argument(
+        "--exp-dir", type=str, help="Directory to experiment-related files. Directory MUST be the parent directory which has the HistoMIL package")
+    parser.add_argument(
+        "--seed", type=int, default=42, help="Seed to ensure reproducibility")
+    parser.add_argument(
+        "--id", type=str, default='0001', help="Unique ID of the user")
+    parser.add_argument(
+        "--username", default='draco',type=str, help="Unique name of the experimenter")
+    parser.add_argument(
+        "--api-dir", default='/Users/awxlong/Desktop/my-studies/hpc_exps/HistoMIL/',type=str, help="Directory where API.env for storing API keys is saved")
+    
+    args = parser.parse_args()
+
+    # pdb.set_trace()
+    assert args.data_dir.endswith(os.path.sep)
+    assert args.exp_dir.endswith(os.path.sep)
+
+    seed_everything(args.seed)
+
+    return args
     
 def get_args_split_array_job():
     parser = argparse.ArgumentParser()
@@ -126,12 +125,7 @@ def get_args_split_array_job():
 
     args = parser.parse_args()
 
-    
-    # assert args.data_dir.endswith(os.path.sep)
     assert args.cohort_dir.endswith(os.path.sep)
-
-    # args.conf_version = args.data_dir.split(os.path.sep)[-2]
-    # args.name = args.name + f"-{args.conf_version}"
 
     seed_everything(args.seed)
 
@@ -181,10 +175,7 @@ def get_args_preprocessing():
 
     parser.add_argument(
         "--seed", type=int, default=42, help="Seed to ensure reproducibility")
-    # parser.add_argument(
-    #     "--id", type=str, default='0001', help="Unique ID of the user")
-    # parser.add_argument(
-    #     "--username", default='draco',type=str, help="Unique name of the experimenter")
+    
     parser.add_argument(
         "--api-dir",type=str, help="Directory where API.env for storing API keys is saved")
     parser.add_argument(
@@ -195,11 +186,7 @@ def get_args_preprocessing():
     args = parser.parse_args()
 
     
-    # assert args.data_dir.endswith(os.path.sep)
     assert args.cohort_dir.endswith(os.path.sep)
-
-    # args.conf_version = args.data_dir.split(os.path.sep)[-2]
-    # args.name = args.name + f"-{args.conf_version}"
 
     seed_everything(args.seed)
 
