@@ -1,5 +1,6 @@
 """
-Preprocessing the WSIs, which include tissue segmentation, patching (also called tiling or tessellation) and feature extraction
+Preprocessing the WSIs, which include tissue segmentation, patching 
+(also called tiling or tessellation) and feature extraction
 """
 ### Setting path for HistoMIL
 import os
@@ -14,7 +15,6 @@ torch.multiprocessing.set_sharing_strategy('file_system') # avoid multiprocessin
 import warnings
 warnings.filterwarnings("ignore", category=DeprecationWarning) # stop skimage warning
 import imageio.core.util
-import skimage 
 def ignore_warnings(*args, **kwargs):
     pass
 imageio.core.util._precision_warn = ignore_warnings
@@ -26,14 +26,13 @@ import timm
 from HistoMIL.EXP.paras.env import EnvParas
 from HistoMIL.EXP.workspace.experiment import Experiment
 from HistoMIL import logger
-from HistoMIL.DATA.Database.data_aug import only_naive_transforms_tensor, no_transforms, only_naive_transforms, naive_transforms
+from HistoMIL.DATA.Database.data_aug import only_naive_transforms_tensor, naive_transforms
 import logging
 logger.setLevel(logging.INFO)
 
 from args import get_args_preprocessing
 from huggingface_hub import login
 from dotenv import load_dotenv
-from torchvision import transforms
 
 STR_TO_TRANSFORMATIONS = {
     'only_naive_transforms_tensor': only_naive_transforms_tensor,
@@ -73,8 +72,6 @@ def get_available_device():
         return "cpu"
 
 device = get_available_device()
-
-# device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     
 
 def create_model_from_backbones(model_key):

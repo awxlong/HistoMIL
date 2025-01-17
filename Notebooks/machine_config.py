@@ -1,10 +1,11 @@
 """
-config local machine and user with all files of a cohort
+Configure local machine and user with all files of a cohort
 """
 # changing to HistoMIL's directory
 import os
 import sys
 sys.path.append(os.getcwd())
+
 # HistoMIL relevant packages
 from HistoMIL.DATA.Cohort.location import Locations
 from HistoMIL.EXP.workspace.env import Machine
@@ -15,7 +16,6 @@ from args import get_args_machine_config
 
 # Login and starting experiment-related API calls, e.g., HugginFace and WandB
 from dotenv import load_dotenv
-# from huggingface_hub import login
 
 def setup_config(args):
         localcohort_name = args.cohort_name # e.g. "BRCA" for breast cancer
