@@ -1,5 +1,6 @@
 """
-Preprocessing the WSIs, which include tissue segmentation, patching (also called tiling or tessellation) and feature extraction
+Represents the WSI as a weighted adjacency matrix, following the protocol in
+CAMIL https://arxiv.org/abs/2305.05314
 """
 ### Setting path for HistoMIL
 import os
@@ -14,27 +15,18 @@ torch.multiprocessing.set_sharing_strategy('file_system') # avoid multiprocessin
 import warnings
 warnings.filterwarnings("ignore", category=DeprecationWarning) # stop skimage warning
 import imageio.core.util
-import skimage 
 def ignore_warnings(*args, **kwargs):
     pass
 imageio.core.util._precision_warn = ignore_warnings
 import pickle
-import timm
-
 
 # HistoMIL imports
 from HistoMIL.EXP.paras.env import EnvParas
-from HistoMIL.EXP.workspace.experiment import Experiment
 from HistoMIL import logger
-from HistoMIL.DATA.Database.data_aug import only_naive_transforms_tensor, no_transforms, only_naive_transforms
 import logging
 logger.setLevel(logging.INFO)
 
 from args import get_args_preprocessing
-from huggingface_hub import login
-from dotenv import load_dotenv
-from torchvision import transforms
-
 
 import h5py
 from sklearn.metrics import pairwise_distances, pairwise_distances_chunked
@@ -60,9 +52,6 @@ def get_available_device():
         return "cpu"
 
 device = get_available_device()
-
-# device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    
 
 def save_hdf5(output_path, asset_dict, attr_dict=None, mode='a'):
     file = h5py.File(output_path, mode)
@@ -103,16 +92,6 @@ def compute_distances_in_chunks(X, chunk_size=1000):
         distances[start:end, :] = chunk
     return distances
 
-# def compute_distances_in_batches(X, batch_size=1000, dtype=np.float32):
-#     # X = X.astype(dtype)  
-#     n = X.shape[0]
-#     distances = np.zeros((n, n), dtype=dtype)
-#     for i in range(0, n, batch_size):
-#         end = min(i + batch_size, n)
-#         distances[i:end] = pairwise_distances(X[i:end], X, metric='euclidean')
-#         yield distances # will distances have full rows such that argsort would be done in an entire row
-#     # return distances
-
 def compute_distances_in_batches(X, batch_size=1000, dtype=np.float32):
     # X = X.astype(dtype)  
     n = X.shape[0]
@@ -128,20 +107,6 @@ def compute_adj_coords(wsi_coords, wsi_feats, wsi_name, adj_coord_save_path, adj
         # output_path_file = data_locs.abs_loc('feature') + f'{encoder}_adj_dictionary/{wsi_name}.h5'
         if not os.path.exists(f'{adj_matrix_save_path}{wsi_name}.pt') or force_recalc: 
              
-            # patch_distances = pairwise_distances(wsi_coords, metric='euclidean', n_jobs=1) # array of shape (num_nodes, num_nodes)
-            # pdb.set_trace()
-            # wsi_coords = wsi_coords.astype(np.int32)
-            # patch_distances = compute_distances_in_chunks(wsi_coords)
-            # pdb.set_trace()
-            # patch_distances = compute_distances_in_batches(wsi_coords)
-            # pdb.set_trace()
-            # neighbor_indices = np.argsort(patch_distances, axis=1)[:, :16]
-            # n_rows, _ = patch_distances.shape
-            # n_neighbors = 16
-            # neighbor_indices = np.empty((n_rows, n_neighbors), dtype=np.int32)
-            # for i in range(n_rows):
-            #     sorted_indices = np.argsort(patch_distances[i])
-            #     neighbor_indices[i] = sorted_indices[:n_neighbors]
             chunk_size = 4096
             n_neighbors = 16
             neighbor_indices = np.empty((wsi_coords.shape[0], n_neighbors), dtype=np.int32)
@@ -172,11 +137,7 @@ def compute_adj_coords(wsi_coords, wsi_feats, wsi_name, adj_coord_save_path, adj
             values = np.reshape(values, (wsi_coords.shape[0], neighbor_indices.shape[1]))
             
             coords = np.array(coords)
-            
-            # asset_dict = {'adj_coords': coords, 'similarities': values, 'indices': neighbor_indices}
-
-            # save_hdf5(adj_coord_save_path, asset_dict, attr_dict=None)
-
+        
             ### compute adjacency matrix
             values = np.nan_to_num(values)
 
@@ -212,8 +173,6 @@ def compute_adj_coords(wsi_coords, wsi_feats, wsi_name, adj_coord_save_path, adj
             logger.info(f'Adjacency matrix stored at {adj_matrix_save_path}')
         else:
              logger.info(f'Adjacency matrix already exists at: {adj_matrix_save_path}{wsi_name}.pt')
-        # return np.array(coords), values, neighbor_indices, sparse_matrix
-
 
 
 def preprocess_adj_matrices(args):

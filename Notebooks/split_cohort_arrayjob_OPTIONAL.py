@@ -1,5 +1,5 @@
 """
-Preprocessing the WSIs, which include tissue segmentation, patching (also called tiling or tessellation) and feature extraction
+Preprocessing the WSIs in parallel
 """
 ### Setting path for HistoMIL
 import os
@@ -131,5 +131,3 @@ def main():
 if __name__ == "__main__":
     main()
 
-
-## SAMPLE COMMAND FOR CALLING THIS FUNCTION
