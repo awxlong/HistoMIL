@@ -19,7 +19,7 @@ from dotenv import load_dotenv
 
 def setup_config(args):
         localcohort_name = args.cohort_name # e.g. "BRCA" for breast cancer
-        data_dir = f"{args.data_dir}{localcohort_name}/" # e.g. /SAN/ugi/WSI_Trans/DATA/BRCA/
+        data_dir = f"{args.data_dir}{localcohort_name}/" # e.g. /cluster_home_dir/WSI_Trans/DATA/BRCA/
 
         
         #--------------------------> init machine and person
@@ -54,8 +54,7 @@ def setup_config(args):
         user = Person(id=args.id)
         user.name = args.username
         user.wandb_api_key = os.getenv("WANDB_API_KEY")
-        # hf_api_key = os.getenv("HF_READ_KEY")
-        # login(token=hf_api_key) # no need to initalize this now 
+        
         # pdb.set_trace()
         # save as pickle
         loc = exp_locs.abs_loc("user")

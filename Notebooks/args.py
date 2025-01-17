@@ -146,8 +146,6 @@ def get_args_preprocessing():
     parser.add_argument(
         "--task-name", type=str, help="Name describing task, e.g., g0-arrest")
     ### Dataset arguments
-    # parser.add_argument(
-    #     "--cohort-file-dir", type=str, help="Directory to file describing the slides' directories and associated labels")
     parser.add_argument(
         "--pid-name", type=str, default='PatientID', help="Column name of patient ID, e.g. PatientID")
     parser.add_argument(
@@ -182,6 +180,9 @@ def get_args_preprocessing():
         "--array-job-idx",type=int, default=None, help="Index of the split dataset file. OPTIONAL, this is for array job submission in the cluster")
     parser.add_argument(
         "--k-fold", default=0, type=int, help='Number of folds for cross-validation, e.g. 3 for 3-fold cross-validation. Default is 0, no cross-validation')
+    
+    parser.add_argument(
+        "--adj_matrix", action="store_true", help='Raise this flag to compute weighted adjacency matrix for WSIs')
     
     args = parser.parse_args()
 
