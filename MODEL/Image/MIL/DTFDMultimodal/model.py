@@ -1,28 +1,18 @@
 """
-Implementation of abmil with/without gradient accumulation
+Implementation of DTFD-MIL with multimodal fusion using 
+late fusion from https://github.com/mahmoodlab/PathomicFusion
+adapting MIL algorithm from https://github.com/hrzhang1123/DTFD-MIL/blob/main/Main_DTFD_MIL.py
 
-most code copy from 
-https://github.com/szc19990412/TransMIL
 """
-import numpy as np
-import sys
-sys.path.append('/Users/awxlong/Desktop/my-studies/hpc_exps/')
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 #-----------> external network modules 
-from HistoMIL.MODEL.Image.MIL.utils import FeatureNet, BaseAggregator, PPEG, NystromTransformerLayer
+from HistoMIL.MODEL.Image.MIL.utils import BaseAggregator
 from HistoMIL.MODEL.Image.MIL.DTFD_MIL.paras import DTFD_MILParas
-from HistoMIL import logger
-######################################################################################
-#        pytorch module to define structure
-######################################################################################
 
 import pdb
 
-
-### IMPLEMENTATION COPIED FROM https://github.com/Dootmaan/DTFD-MIL.PyTorch/blob/main/train_DTFT-MIL.py
-### OR https://github.com/hrzhang1123/DTFD-MIL/blob/main/Main_DTFD_MIL.py
 
 
 class Classifier_1fc(nn.Module):
@@ -130,10 +120,7 @@ class DTFD_MIL(BaseAggregator):
         self.attention = Attention_Gated(paras.mDim).to(paras.device)# .to(paras.device)
         self.dimReduction = DimReduction(paras.input_dim, paras.mDim, numLayer_Res=paras.numLayer_Res)# .to(paras.device)
         self.attCls = Attention_with_Classifier(L=paras.mDim, num_cls=paras.num_cls, droprate=paras.droprate_2)# .to(paras.device)
-        # self.attCls = self.attCls.to(paras.device)
-        # self.classifier = self.classifier.to(paras.device)
-        # self.attention = self.attention.to(paras.device)
-        # self.dimReduction = self.dimReduction.to(paras.device)
+        
         
     def forward(self, x):
         inputs, clinical_features, labels = x

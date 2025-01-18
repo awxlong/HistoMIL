@@ -2,9 +2,7 @@
 Transformer with pretrained weights originally implemented from HistoBistro:
 https://github.com/peng-lab/HistoBistro/tree/main
 """
-import os
-import sys
-sys.path.append('/Users/awxlong/Desktop/my-studies/hpc_exps/')
+
 import numpy as np
 from einops import repeat
 import torch
@@ -13,7 +11,6 @@ import torch.nn.functional as F
 #-----------> external network modules 
 from HistoMIL.MODEL.Image.MIL.utils import Attention, FeedForward, PreNorm, FeatureNet
 from HistoMIL.MODEL.Image.MIL.Transformer.paras import TransformerParas
-# from HistoMIL import logger
 
 import pdb
 class BaseAggregator(nn.Module):
@@ -175,12 +172,7 @@ class Transformer(BaseAggregator):
 
 
 if __name__ == "__main__":
-    # model_config = {'heads': 8, 
-    #             'dim_head': 64, 
-    #             'dim': 512, 
-    #             'mlp_dim': 512, 
-    #             'input_dim':768,
-    #             'num_classes':1}
+    
     default_paras = TransformerParas(input_dim=1024, \
                                     # pretrained_weights_dir='/Users/awxlong/Desktop/my-studies/hpc_exps/HistoMIL/MODEL/Image/MIL/Transformer/pretrained_weights/',
                                     pretrained_weights=None, \
@@ -193,8 +185,3 @@ if __name__ == "__main__":
     y = model.infer(rand_tensor)
 
     pdb.set_trace()
-    
-    # pdb.set_trace()
-    # Load the modified state dictionary into your model
-    # model.load_state_dict(new_state_dict)
-    # pdb.set_trace()

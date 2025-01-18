@@ -1,28 +1,16 @@
 """
-CLAM copied from https://github.com/mahmoodlab/CLAM/blob/master/models/model_clam.py
+CLAM adapted from https://github.com/mahmoodlab/CLAM/blob/master/models/model_clam.py
 """
-import os
-import sys
-sys.path.append('/Users/awxlong/Desktop/my-studies/hpc_exps/')
-# import numpy as np
-from einops import repeat
-from typing import Optional
+
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 #-----------> external network modules 
-from HistoMIL.MODEL.Image.MIL.utils import MILAttention, FeatureNet
 from HistoMIL.MODEL.Image.MIL.CLAM.paras import CLAMParas
-# from HistoMIL import logger
 import numpy as np
 
 import pdb
-class BaseAggregator(nn.Module):
-    def __init__(self):
-        pass
 
-    def forward(self):
-        pass
 """
 Attention Network without Gating (2 fc layers)
 args:
@@ -260,17 +248,10 @@ class CLAM(nn.Module):
         return logits, Y_prob, Y_hat, A_raw
 
 if __name__ == "__main__":
-    
+    ### Testing CLAM
     default_paras = CLAMParas()
-    # default_paras.pretrained_weights_dir = '/Users/awxlong/Desktop/my-studies/hpc_exps/HistoMIL/MODEL/Image/MIL/Transformer/pretrained_weights/'
-    # default_paras.selective_finetuning = False
     rand_tensor = torch.rand(1, 1, 1024) # have to squeeze the batch dimension
     model = CLAM(default_paras)
     y = model(rand_tensor)
     pdb.set_trace()
 
-    
-    # pdb.set_trace()
-    # Load the modified state dictionary into your model
-    # model.load_state_dict(new_state_dict)
-    # pdb.set_trace()

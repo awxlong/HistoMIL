@@ -1,5 +1,5 @@
 """
-pre-defined parameters for TransMIL model
+Default hyperparameters for DTFD-MIL with multimodal fusion
 """
 import torch.nn as nn
 import attr 

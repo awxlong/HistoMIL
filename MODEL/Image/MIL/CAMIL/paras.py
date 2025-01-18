@@ -1,7 +1,7 @@
 """
-pre-defined parameters for CAMIL model
+Default hyperparameters for CAMIL https://github.com/olgarithmics/ICLR_CAMIL/
 """
-# import torch.nn as nn
+
 import attr 
 import torch
 #---->
@@ -35,7 +35,6 @@ class CAMILParas:
     lr_scheduler = 'ReduceLROnPlateau'
     lr_scheduler_config:dict = {'factor':0.2,
                                 'mode': 'min',
-                                # 'monitor':'loss_val'
                                 } 
 
 def to_coo(sparse_tensor):
@@ -43,7 +42,7 @@ def to_coo(sparse_tensor):
 
 def custom_camil_collate(batch):
     '''
-    custom batching for sparse tensors, working with computational histopathology 
+    Custom batching for sparse tensors, working with computational histopathology 
     '''
     data_inputs = torch.stack([item[0] for item in batch])
     adj_matrices = [item[1] for item in batch]

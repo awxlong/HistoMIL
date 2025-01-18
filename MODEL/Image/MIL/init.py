@@ -1,3 +1,6 @@
+'''
+Initialization of available MIL models
+'''
 from HistoMIL.MODEL.Image.MIL.ABMIL.model import ABMIL
 from HistoMIL.MODEL.Image.MIL.TransMIL.model import TransMIL
 from HistoMIL.MODEL.Image.MIL.TransMILMultimodal.model import TransMILMultimodal

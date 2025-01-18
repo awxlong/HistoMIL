@@ -1,15 +1,11 @@
 """
-pre-defined parameters for (pretrained) transformer model loaded from https://github.com/peng-lab/HistoBistro/tree/main
-"""
+Default hyperparameters for CLAM https://github.com/mahmoodlab/CLAM
+""" 
 
 import attr 
 import torch
 import torch.nn as nn
-import torch.optim as optim
-import torch.optim.lr_scheduler as lr_scheduler
 
-#---->
-import pdb
 def get_available_device():
     if torch.cuda.is_available():
         return "cuda"

@@ -1,17 +1,12 @@
 """
-Implementation of abmil with/without gradient accumulation
-
-most code copy from 
+Implementation of TransMIL outputing regression logits instead of 
+sigmoid() probabilities.
 https://github.com/szc19990412/TransMIL
 """
 import numpy as np
-import sys
-sys.path.append('/Users/awxlong/Desktop/my-studies/hpc_exps/')
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-#-----------> external network modules 
-# from HistoMIL.MODEL.Image.Modules.NystromAttention import NystromAttention
 from HistoMIL.MODEL.Image.MIL.utils import FeatureNet, BaseAggregator, PPEG, NystromTransformerLayer
 from HistoMIL.MODEL.Image.MIL.TransMILRegression.paras import TransMILRegressionParas
 from HistoMIL import logger

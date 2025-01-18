@@ -1,24 +1,15 @@
 """
-Implementation of abmil with/without gradient accumulation
-
-most code copy from 
+Implementation of TransMIL with multimodal fusion via late fusion
 https://github.com/szc19990412/TransMIL and https://github.com/AIRMEC/HECTOR/blob/main/model.py and https://github.com/mahmoodlab/CLAM/blob/master/models/model_clam.py
 """
 import numpy as np
-import sys
-sys.path.append('/Users/awxlong/Desktop/my-studies/hpc_exps/')
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-#-----------> external network modules 
-# from HistoMIL.MODEL.Image.Modules.NystromAttention import NystromAttention
+
 from HistoMIL.MODEL.Image.MIL.utils import FeatureNet, BaseAggregator, PPEG, NystromTransformerLayer
 from HistoMIL.MODEL.Image.MIL.TransMILMultimodal.paras import TransMILMultimodalParas
-from HistoMIL import logger
-import matplotlib.pyplot as plt
-######################################################################################
-#        pytorch module to define structure
-######################################################################################
+
 
 import pdb
 
@@ -39,73 +30,6 @@ class FC_block(nn.Module):
         x = self.drop(x)
         return x
     
-
-# class FeatureEncoding(nn.Module):
-#     def __init__(self, idx_continuous=3, taxonomy_in=2, embedding_dim=64, depth=1, act_fct='relu', dropout=True, p_dropout=0.25):
-#         super().__init__()
-#         '''
-#         args:
-#         idx_continuous:int - if your feature vector has a mix of continuous and categorical (binary) features, specify the upper bound idx of continuous features, and the rest of the feature vector are categorical (binary) features
-#         taxonomy_in:int - number of categories, e.g., 2 for binary
-
-#         returns:
-#         a joint continuous-categorical feature embedding for clinical features
-        
-#         '''
-
-#         self.idx_continuous = idx_continuous
-#         act_fcts = {'relu': nn.ReLU(),
-#         'elu' : nn.ELU(),
-#         'tanh': nn.Tanh(),
-#         'selu': nn.SELU(),
-#         }
-#         dropout_module = nn.AlphaDropout(p_dropout) if act_fct=='selu' else nn.Dropout(p_dropout)
-
-#         self.categorical_embedding = nn.Embedding(taxonomy_in, embedding_dim)
-#         self.continuous_embedding = nn.Linear(self.idx_continuous, embedding_dim)
-#         fc_layers_categorical = []
-#         fc_layers_continuous = []
-#         for d in range(depth):
-#             ### forward categorical
-#             fc_layers_categorical.append(nn.Linear(embedding_dim//(2**d), embedding_dim//(2**(d+1))))
-#             fc_layers_categorical.append(dropout_module if dropout else nn.Identity())
-#             fc_layers_categorical.append(act_fcts[act_fct])
-#             ### forward continuous
-#             fc_layers_continuous.append(nn.Linear(embedding_dim//(2**d), embedding_dim//(2**(d+1))))
-#             fc_layers_continuous.append(dropout_module if dropout else nn.Identity())
-#             fc_layers_continuous.append(act_fcts[act_fct])
-            
-
-
-#         self.fc_layers_categorical = nn.Sequential(*fc_layers_categorical)
-#         self.fc_layers_continuous = nn.Sequential(*fc_layers_continuous)
-#     def forward(self, x):
-#         '''
-#         x is a tensor consisting of a mix of continuous and categorical features.  
-#         '''
-#         if x.dim() == 1:
-#             x = x.unsqueeze(0)  # Add batch dimension if input is 1D
-        
-#         continuous_x, categorical_x = x[:, :self.idx_continuous], x[:, self.idx_continuous:] 
-#         # pdb.set_trace()
-#         categorical_x = categorical_x.long()
-#         # categorical embeddings
-#         categorical_x = self.categorical_embedding(categorical_x)
-#         categorical_x = self.fc_layers_categorical(categorical_x) # (1, num_categorical, emb_dim//2)
-#         # continuous embeddings
-#         continuous_x = self.continuous_embedding(continuous_x)
-#         continuous_x = self.fc_layers_continuous(continuous_x)
-
-#         if continuous_x.dim() == 2:
-#             continuous_x = continuous_x.unsqueeze(0) # (1, 1, emb_dim//2)
-
-
-#         # concatenate continuous and categorical variables, i don't need to pass them 
-#         # through a combined forward layer
-#         x = torch.cat((continuous_x, categorical_x), dim=1) # (1, 1 + num_categorical, emb_dim//2)
-#         # Mean pooling
-#         x = torch.mean(x, dim=1, keepdim=True).squeeze(0) # (1, emb_dim//2)
-#         return x
     
 class FeatureEncoding(nn.Module):
     def __init__(self, idx_continuous=27, embedding_dim=64, depth=1, act_fct='relu', dropout=True, p_dropout=0.25):
@@ -462,35 +386,5 @@ class TransMILMultimodal(BaseAggregator):
         clinical_integrated_gradients = self.integrated_gradients(x, clinical_features) # main comp. bottleneck
         # pdb.set_trace()
         return logits, Y_prob, Y_hat, A_raw, clinical_integrated_gradients
-    
-    
-
-# if __name__ == "__main__":
-    
-#     default_paras = TransMILMultimodalParas()
-#     # rand_tensor = torch.rand(1, 1, 1024)
-#     rand_img_tensor = torch.rand(1, 421, 1024) 
-#     rand = torch.Tensor([0.5, 0.8, 0.9, 1, 0, 1, 1, 0])
-#     rand = torch.rand((1, 27))
-#     # binary = (rand >= 0.5).long()
-#     model = TransMILMultimodal(default_paras)
-#     encoder = FeatureEncoding(idx_continuous=27)
-#     attn_modality = Attn_Modality_Gated()
-#     y = encoder(rand)
-#     # y = attn_modality(rand_img_tensor, y)
-#     temp = model(rand_img_tensor, rand)
-#     grads = model.integrated_gradients(rand_img_tensor, rand)
-#     # Convert integrated gradients to numpy for plotting
-#     integrated_grads_np = grads.cpu().detach().numpy()
-#     integrated_grads_np = integrated_grads_np[0]
-#     # pdb.set_trace()
-#     # Plotting
-#     plt.bar(range(len(integrated_grads_np)), integrated_grads_np)
-#     plt.xlabel('Clinical Feature Index')
-#     plt.ylabel('Integrated Gradient Value')
-#     plt.title('Feature Importance via Integrated Gradients')
-#     plt.show()
-#     pdb.set_trace()
-
     
     

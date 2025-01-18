@@ -1,28 +1,18 @@
 """
 AttentionMIL Ilse et al. (2018) https://arxiv.org/abs/1802.04712 
-copied from https://github.com/peng-lab/HistoBistro/blob/main/models/aggregators/attentionmil.py
+Adapted from https://github.com/peng-lab/HistoBistro/blob/main/models/aggregators/attentionmil.py
 """
-import os
-import sys
-sys.path.append('/Users/awxlong/Desktop/my-studies/hpc_exps/')
-# import numpy as np
-from einops import repeat
+
 from typing import Optional
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+
 #-----------> external network modules 
-from HistoMIL.MODEL.Image.MIL.utils import MILAttention, FeatureNet
+from HistoMIL.MODEL.Image.MIL.utils import MILAttention, FeatureNet, BaseAggregator
 from HistoMIL.MODEL.Image.MIL.AttentionMIL.paras import AttentionMILParas
-# from HistoMIL import logger
-
 import pdb
-class BaseAggregator(nn.Module):
-    def __init__(self):
-        pass
 
-    def forward(self):
-        pass
 
 class AttentionMIL(BaseAggregator):
     def __init__(
@@ -160,30 +150,14 @@ class AttentionMIL(BaseAggregator):
         return logits, Y_prob, Y_hat, A_raw 
     
 
-def test_attentionmil():
-    attentionmil = AttentionMIL(num_classes=2, input_dim=1024)
-    input_tensor = torch.rand(1, 1, 1024)
-    output = attentionmil(input_tensor)
-    assert torch.equal(torch.tensor(output.size()), torch.tensor([1, 2]))
 if __name__ == "__main__":
-    # # model_config = {'heads': 8, 
-    # #             'dim_head': 64, 
-    # #             'dim': 512, 
-    # #             'mlp_dim': 512, 
-    # #             'input_dim':768,
-    # #             'num_classes':1}
+   ### Debugging AttentionMIL
     default_paras = AttentionMILParas(input_dim=1024, \
                                     encoder_name='pre-calculated', 
                                     num_classes=1)
-    # default_paras.pretrained_weights_dir = '/Users/awxlong/Desktop/my-studies/hpc_exps/HistoMIL/MODEL/Image/MIL/Transformer/pretrained_weights/'
-    # default_paras.selective_finetuning = False
+    
     rand_tensor = torch.rand(1, 421, 1024) 
+
     model = AttentionMIL(default_paras)
 
-    # pdb.set_trace()
-
     y = model.infer(rand_tensor)
-    pdb.set_trace()
-    # Load the modified state dictionary into your model
-    # model.load_state_dict(new_state_dict)
-    # pdb.set_trace()

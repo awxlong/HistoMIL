@@ -2,214 +2,150 @@
 pytorch-lightning wrapper for the DTFD-MODEL
 """
 
-#---->
-import pytorch_lightning as pl
+from typing import override  
+import os
 import pandas as pd
-import pytorch_lightning as pl
-
 import seaborn as sns
 import torch
-import torchmetrics
 import wandb
 from matplotlib import pyplot as plt
-#---->
-from HistoMIL import logger
-# from HistoMIL.MODEL.Image.PL_protocol.MIL import pl_MIL
-# from HistoMIL.EXP.paras.dataset import DatasetParas
-# from HistoMIL.EXP.paras.optloss import OptLossParas
-# from HistoMIL.EXP.paras.trainer import PLTrainerParas
-
 from HistoMIL.MODEL.Image.MIL.DTFD_MIL.paras import DTFD_MILParas
 from HistoMIL.MODEL.Image.MIL.DTFD_MIL.model import DTFD_MIL
-from HistoMIL.MODEL.Image.MIL.utils import  get_loss, get_optimizer, get_scheduler
+from pytorch_lightning.utilities import rank_zero_only  # for saving a single model in a multi-gpu setting
+from HistoMIL.MODEL.Image.Pl_protocol.BaseMIL import BaseMIL
 
-from pytorch_lightning.utilities import rank_zero_only # for saving a single model in a multi-gpu setting
-import os
-import pdb
-#---->
-####################################################################################
-#      pl protocol class
-####################################################################################
+class pl_DTFD_MIL(BaseMIL):
+    def __init__(self, paras: DTFD_MILParas):
+        """
+        Initialize the DTFD-MIL model with late fusion for clinical features.
 
-class pl_DTFD_MIL(pl.LightningModule):
-    def __init__(self, paras:DTFD_MILParas):
-        super().__init__()
-        self.automatic_optimization = False
-        self.paras = paras
-        self.model = DTFD_MIL(paras)# 
+        Args:
+            paras (DTFD_MILParas): Model-specific parameters.
+        """
+        super().__init__(model_paras=paras)
+        self.automatic_optimization = False  # Disable automatic optimization
+        self.accumulation_steps = 8  # Gradient accumulation steps
+        self.accumulation_count = 0  # Counter for gradient accumulation
+        self.best_auroc_val = 0  # For manual model checkpointing
 
-        self.criterion = get_loss(paras.criterion
-                                 ) if paras.task == "binary" else get_loss(paras.criterion)
-        self.save_hyperparameters()
+    def _create_model(self):
+        """
+        Create and return the DTFD-MIL model with late fusion.
+        """
+        return DTFD_MIL(self.paras)
 
-        self.lr = paras.lr
-        self.weight_decay = paras.weight_decay
-
-        self.acc_train = torchmetrics.Accuracy(task=paras.task, num_classes=paras.num_cls)
-        self.acc_val = torchmetrics.Accuracy(task=paras.task, num_classes=paras.num_cls)
-        self.acc_test = torchmetrics.Accuracy(task=paras.task, num_classes=paras.num_cls)
-
-        self.auroc_val = torchmetrics.AUROC(
-            task=paras.task,
-            num_classes=paras.num_cls,
-        )
-        self.auroc_test = torchmetrics.AUROC(
-            task=paras.task,
-            num_classes=paras.num_cls,
-        )
-
-        self.f1_val = torchmetrics.F1Score(
-            task=paras.task,
-            num_classes=paras.num_cls,
-        )
-        self.f1_test = torchmetrics.F1Score(
-            task=paras.task,
-            num_classes=paras.num_cls,
-        )
-
-        self.precision_val = torchmetrics.Precision(
-            task=paras.task,
-            num_classes=paras.num_cls,
-        )
-        self.precision_test = torchmetrics.Precision(
-            task=paras.task,
-            num_classes=paras.num_cls,
-        )
-
-        self.recall_val = torchmetrics.Recall(
-            task=paras.task,
-            num_classes=paras.num_cls,
-        )
-        self.recall_test = torchmetrics.Recall(
-            task=paras.task,
-            num_classes=paras.num_cls,
-        )
-
-        self.specificity_val = torchmetrics.Specificity(
-            task=paras.task,
-            num_classes=paras.num_cls,
-        )
-        self.specificity_test = torchmetrics.Specificity(
-            task=paras.task,
-            num_classes=paras.num_cls,
-        )
-
-        self.cm_val = torchmetrics.ConfusionMatrix(task=paras.task, num_classes=paras.num_cls)
-        self.cm_test = torchmetrics.ConfusionMatrix(
-            task=paras.task, num_classes=paras.num_cls
-        )
-        # For gradient accumulation
-        self.accumulation_steps = 8
-        self.accumulation_count = 0
-
-        # for manual model checkpointing
-        self.best_auroc_val = 0
-
-    def forward(self, x):
-        slide_pseudo_feat, slide_sub_preds, slide_sub_labels, gSlidePred = self.model(x)
-        # pdb.set_trace()
+    @override
+    def forward(self, x, clinical_features=None):
+        """
+        Forward pass for DTFD-MIL with late fusion. Overrides BaseMIL.forward to handle clinical features.
+        """
+        slide_pseudo_feat, slide_sub_preds, slide_sub_labels, gSlidePred = self.model(x, clinical_features)
         return slide_pseudo_feat, slide_sub_preds, slide_sub_labels, gSlidePred
 
+    @override
     def configure_optimizers(self):
-        trainable_parameters = list(self.model.classifier.parameters()) + \
-                               list(self.model.attention.parameters()) + \
-                               list(self.model.dimReduction.parameters())
+        """
+        Configure optimizers and schedulers for DTFD-MIL.
+        Overrides BaseMIL.configure_optimizers to handle multiple optimizers.
+        """
+        trainable_parameters = (
+            list(self.model.classifier.parameters()) +
+            list(self.model.attention.parameters()) +
+            list(self.model.dimReduction.parameters())
+        )
 
-        optimizer0 = torch.optim.Adam(trainable_parameters, lr=self.paras.lr, weight_decay=self.paras.weight_decay)
-        optimizer1 = torch.optim.Adam(self.model.attCls.parameters(), lr=self.paras.lr, weight_decay=self.paras.weight_decay)
-       
+        optimizer0 = torch.optim.Adam(trainable_parameters, lr=self.lr, weight_decay=self.wd)
+        optimizer1 = torch.optim.Adam(self.model.attCls.parameters(), lr=self.lr, weight_decay=self.wd)
+
         scheduler0 = torch.optim.lr_scheduler.MultiStepLR(optimizer0, [25], gamma=self.paras.lr_decay_ratio)
         scheduler1 = torch.optim.lr_scheduler.MultiStepLR(optimizer1, [25], gamma=self.paras.lr_decay_ratio)
-        
-        return [optimizer0, optimizer1], [scheduler0, scheduler1]
-   
 
+        return [optimizer0, optimizer1], [scheduler0, scheduler1]
+
+    @override
     def training_step(self, batch, batch_idx):
-        # pdb.set_trace()
-        # Get the optimizers
+        """
+        Training step for DTFD-MIL with late fusion. Overrides BaseMIL.training_step to handle manual optimization and gradient accumulation.
+        """
         opt0, opt1 = self.optimizers()
-        
-        # Enable gradient computation if it's not already enabled
+
+        # Enable gradient computation
         torch.set_grad_enabled(True)
-        
-        # Forward pass with autocast for mixed precision
+
+        # Forward pass with mixed precision
         with torch.cuda.amp.autocast():
-            inputs, labels = batch  # 
-            
-            slide_pseudo_feat, slide_sub_preds, slide_sub_labels, gSlidePred = self.forward(batch)
-        
-            # pdb.set_trace()
+            inputs, clinical_features, labels = batch  # Unpack batch with clinical features
+            slide_pseudo_feat, slide_sub_preds, slide_sub_labels, gSlidePred = self.forward(inputs, clinical_features)
+
             labels = labels.unsqueeze(1)
             slide_sub_labels = slide_sub_labels.unsqueeze(1)
-            
-            ### first loss optimization and logging
+
+            # Compute losses
             loss0 = self.criterion(slide_sub_preds, slide_sub_labels.float()).mean()
-            ### second loss optimization and logging
             loss1 = self.criterion(gSlidePred, labels.float()).mean()
+
         # Gradient accumulation for the first optimizer
         self.manual_backward(loss0 / self.accumulation_steps, retain_graph=True)
-        
+
         # Gradient accumulation for the second optimizer
         self.manual_backward(loss1 / self.accumulation_steps, retain_graph=True)
-        
+
         self.accumulation_count += 1
-        
-        # Perform optimization step if we've accumulated enough gradients
+
+        # Perform optimization step if accumulation steps are completed
         if self.accumulation_count == self.accumulation_steps:
             # Clip gradients
             self.clip_gradients(opt0, gradient_clip_val=self.paras.grad_clipping, gradient_clip_algorithm="norm")
             self.clip_gradients(opt1, gradient_clip_val=self.paras.grad_clipping, gradient_clip_algorithm="norm")
-            
+
             # Step optimizers
             opt0.step()
             opt1.step()
-            
+
             # Zero gradients
             opt0.zero_grad()
             opt1.zero_grad()
-            
+
             # Reset accumulation count
             self.accumulation_count = 0
-        
+
         # Log losses
         self.log('train_loss_0', loss0, on_step=True, on_epoch=True, prog_bar=True)
         self.log('train_loss_1', loss1, on_step=True, on_epoch=True, prog_bar=True)
-        # Log training acc
+
+        # Log training accuracy
         probs = torch.sigmoid(slide_sub_preds)
         preds = torch.round(probs)
         self.acc_train(preds, slide_sub_labels.float())
-        
-        return {"loss0": loss0, "loss1": loss1}
-        
 
+        return {"loss0": loss0, "loss1": loss1}
+
+    @override
     def validation_step(self, batch, batch_idx):
+        """
+        Validation step for DTFD-MIL with late fusion. Overrides BaseMIL.validation_step to handle custom validation logic.
+        """
         self.model.classifier.eval()
         self.model.dimReduction.eval()
         self.model.attention.eval()
         self.model.attCls.eval()
-        # pdb.set_trace()
 
-        # pdb.set_trace()
-        inputs, labels = batch  # 
+        inputs, clinical_features, labels = batch  # Unpack batch with clinical features
         with torch.no_grad():
-            slide_pseudo_feat, slide_sub_preds, slide_sub_labels, gSlidePred = self.forward(batch)
-
+            slide_pseudo_feat, slide_sub_preds, slide_sub_labels, gSlidePred = self.forward(inputs, clinical_features)
 
         labels = labels.unsqueeze(1)
-        # pdb.set_trace()
         loss = self.criterion(gSlidePred, labels.float()).mean()
-        # print(y)
         probs = torch.sigmoid(gSlidePred)
         preds = torch.round(probs)
-         
-        # the model's predictions is glidepred
+
+        # Log metrics
         self.acc_val(probs, labels)
         self.auroc_val(probs, labels)
         self.f1_val(probs, labels)
         self.precision_val(probs, labels)
         self.recall_val(probs, labels)
         self.specificity_val(probs, labels)
-        # pdb.set_trace()
         self.cm_val(probs, labels)
 
         self.log("loss_val", loss, prog_bar=True)
@@ -218,40 +154,41 @@ class pl_DTFD_MIL(pl.LightningModule):
         self.log("f1_val", self.f1_val, prog_bar=True, on_step=False, on_epoch=True)
         self.log("precision_val", self.precision_val, prog_bar=False, on_step=False, on_epoch=True)
         self.log("recall_val", self.recall_val, prog_bar=False, on_step=False, on_epoch=True)
-        self.log(
-            "specificity_val", self.specificity_val, prog_bar=False, on_step=False, on_epoch=True
-        )
+        self.log("specificity_val", self.specificity_val, prog_bar=False, on_step=False, on_epoch=True)
+
     @rank_zero_only
     def save_best_model(self, auroc_val):
+        """
+        Save the best model based on validation AUROC.
+        """
         if isinstance(auroc_val, torch.Tensor):
             auroc_val = auroc_val.item()
         elif hasattr(auroc_val, 'compute'):
             auroc_val = auroc_val.compute().item()
-        # pdb.set_trace()
+
         if auroc_val >= self.best_auroc_val:
             self.best_auroc_val = auroc_val
             epoch = self.trainer.current_epoch
-            # pdb.set_trace()
-            filename = self.trainer.checkpoint_callback.filename # .format() + f"{epoch:02d}-{self.best_auroc_val:.2f}.ckpt"
-            filename = filename.format(epoch=epoch, auroc_val=self.best_auroc_val) + ".ckpt"
-            filepath = os.path.join(self.trainer.checkpoint_callback.dirpath, \
-                                    filename)
+            filename = self.trainer.checkpoint_callback.filename.format(epoch=epoch, auroc_val=self.best_auroc_val) + ".ckpt"
+            filepath = os.path.join(self.trainer.checkpoint_callback.dirpath, filename)
             self.trainer.save_checkpoint(filepath)
             print(f"Saved new best model: {filepath}")
-            
+
             # Update the best model path in the ModelCheckpoint callback
             self.trainer.checkpoint_callback.best_model_path = filepath
-            # pdb.set_trace()   
             self.trainer.checkpoint_callback.best_model_score = torch.tensor(auroc_val)
+
+    @override
     def on_validation_epoch_end(self):
+        """
+        Log validation confusion matrix and save the best model.
+        """
         if self.global_step != 0:
             cm = self.cm_val.compute()
-
-            # normalise the confusion matrix
             norm = cm.sum(axis=1, keepdims=True)
             normalized_cm = cm / norm
 
-            # log to wandb
+            # Log confusion matrix to wandb
             plt.clf()
             cm = sns.heatmap(normalized_cm.cpu(), annot=cm.cpu(), cmap='rocket_r', vmin=0, vmax=1)
             wandb.log({"confusion_matrix_val": wandb.Image(cm)})
@@ -259,32 +196,26 @@ class pl_DTFD_MIL(pl.LightningModule):
         self.cm_val.reset()
         self.save_best_model(self.auroc_val)
 
-    def on_test_epoch_start(self) -> None:
-        # save test outputs in dataframe per test dataset
-        
-        column_names = ['patient', 'ground_truth', 'prediction', 'probs', 'correct']
-        self.outputs = pd.DataFrame(columns=column_names)
-
+    @override
     def test_step(self, batch, batch_idx, dataloader_idx=0):
+        """
+        Test step for DTFD-MIL with late fusion. Overrides BaseMIL.test_step to handle custom test logic.
+        """
         self.model.classifier.eval()
         self.model.dimReduction.eval()
         self.model.attention.eval()
         self.model.attCls.eval()
-        # pdb.set_trace()
-        inputs, labels = batch  # 
-        with torch.no_grad():
-            slide_pseudo_feat, slide_sub_preds, slide_sub_labels, gSlidePred = self.forward(batch)
 
+        inputs, clinical_features, labels = batch  # Unpack batch with clinical features
+        with torch.no_grad():
+            slide_pseudo_feat, slide_sub_preds, slide_sub_labels, gSlidePred = self.forward(inputs, clinical_features)
 
         labels = labels.unsqueeze(1)
-
-        
-        
         loss = self.criterion(gSlidePred, labels.float()).mean()
-
         probs = torch.sigmoid(gSlidePred)
         preds = torch.round(probs)
-        
+
+        # Log metrics
         self.acc_test(probs, labels)
         self.auroc_test(probs, labels)
         self.f1_test(probs, labels)
@@ -297,40 +228,52 @@ class pl_DTFD_MIL(pl.LightningModule):
         self.log("acc_test", self.acc_test, prog_bar=True, on_step=False, on_epoch=True)
         self.log("auroc_test", self.auroc_test, prog_bar=True, on_step=False, on_epoch=True)
         self.log("f1_test", self.f1_test, prog_bar=True, on_step=False, on_epoch=True)
-        self.log(
-            "precision_test", self.precision_test, prog_bar=False, on_step=False, on_epoch=True
-        )
+        self.log("precision_test", self.precision_test, prog_bar=False, on_step=False, on_epoch=True)
         self.log("recall_test", self.recall_test, prog_bar=False, on_step=False, on_epoch=True)
-        self.log(
-            "specificity_test", self.specificity_test, prog_bar=False, on_step=False, on_epoch=True
-        )
+        self.log("specificity_test", self.specificity_test, prog_bar=False, on_step=False, on_epoch=True)
 
+        # Save test outputs
         outputs = pd.DataFrame(
-            data=[
-                [
-                 labels.item(),
-                 preds.item(),
-                 torch.sigmoid(gSlidePred.squeeze()).item(), (labels == preds).int().item()]
-            ],
-            columns=[ 'ground_truth', 'prediction', 'probs', 'correct']
+            data=[[labels.item(), preds.item(), torch.sigmoid(gSlidePred.squeeze()).item(), (labels == preds).int().item()]],
+            columns=['ground_truth', 'prediction', 'probs', 'correct']
         )
         self.outputs = pd.concat([self.outputs, outputs], ignore_index=True)
 
+    @override
     def on_test_epoch_end(self):
-        # if self.global_step != 0:
+        """
+        Log test confusion matrix at the end of the test epoch.
+        """
         cm = self.cm_test.compute()
-
-        # normalise the confusion matrix
         norm = cm.sum(axis=1, keepdims=True)
         normalized_cm = cm / norm
 
-        # log to wandb
+        # Log confusion matrix to wandb
         plt.clf()
         cm = sns.heatmap(normalized_cm.cpu(), annot=cm.cpu(), cmap='rocket_r', vmin=0, vmax=1)
         wandb.log({"confusion_matrix_test": wandb.Image(cm)})
 
         self.cm_test.reset()
 
+    @override
     def lr_scheduler_step(self, scheduler, optimizer_idx, metric):
+        """
+        Step the learning rate scheduler.
+        """
         scheduler.step()
+
+    @override
+    def infer_step(self, batch):
+        """
+        Inference step for DTFD-MIL with late fusion. Overrides BaseMIL.infer_step to handle custom inference logic.
+        """
+        self.model.classifier.eval()
+        self.model.dimReduction.eval()
+        self.model.attention.eval()
+        self.model.attCls.eval()
+
+        with torch.no_grad():
+            inputs, clinical_features, labels = batch  # Unpack batch with clinical features
+            logits, Y_prob, Y_hat, A_raw = self.model.infer(inputs, clinical_features)
+        return logits, Y_prob, Y_hat, A_raw
 

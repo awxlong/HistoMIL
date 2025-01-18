@@ -1,20 +1,13 @@
 """
-pre-defined parameters for (pretrained) transformer model loaded from https://github.com/peng-lab/HistoBistro/tree/main
+Default hyperparameters of Graph Transformer  https://github.com/vkola-lab/tmi2022
 """
 
 import attr 
-import torch
-import torch.nn as nn
-
-
 #---->
 import pdb
 
 @attr.s(auto_attribs=True)
 class GraphTransformerParas:
-    """
-    include all parameters to create a Transformer
-    """
     #------> parameters for model
     encoder_name="pre-calculated"# or name of encoder",
     encoder_pretrained:bool = True # or False
@@ -44,5 +37,4 @@ class GraphTransformerParas:
     lr_scheduler_config:dict = {'milestones':[20], 
                                 'gamma':0.1} 
     
-DEFAULT_GRAPHTRANSFORMER_PARAS = GraphTransformerParas()
     

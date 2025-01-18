@@ -1,5 +1,5 @@
 """
-pre-defined parameters for TransMIL model
+Default hyperparameters for TransMIL model
 """
 import torch.nn as nn
 import attr 

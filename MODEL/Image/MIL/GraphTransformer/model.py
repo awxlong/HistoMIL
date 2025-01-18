@@ -1,21 +1,15 @@
 """
-Transformer with pretrained weights originally implemented from HistoBistro:
-https://github.com/peng-lab/HistoBistro/tree/main
+Implementation of Graph Transformer from https://github.com/vkola-lab/tmi2022
+Our implementation doesn't require torch-geometric
 """
 import os
-import sys
-sys.path.append('/Users/awxlong/Desktop/my-studies/hpc_exps/')
 import numpy as np
-from einops import repeat
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-#-----------> external network modules 
-from HistoMIL.MODEL.Image.MIL.utils import Attention, FeedForward, PreNorm, FeatureNet
 from HistoMIL.MODEL.Image.MIL.GraphTransformer.paras import GraphTransformerParas
 from HistoMIL.MODEL.Image.MIL.GraphTransformer.utils import VisionTransformer, GCNBlock
 from torch import Tensor
-# from HistoMIL import logger
 
 import pdb
 class BaseAggregator(nn.Module):
@@ -24,7 +18,7 @@ class BaseAggregator(nn.Module):
 
     def forward(self):
         pass
-# from torch_geometric.nn import GCNConv, DenseGraphConv, dense_mincut_pool
+
 from torch.nn import Linear
 from typing import Optional, Tuple
 
@@ -34,11 +28,9 @@ def _rank3_trace(x: Tensor) -> Tensor:
 
 def _rank3_diag(x: Tensor) -> Tensor:
     '''
-    dafuq is this function? it's putting the values of x as the diagnoal entries of the identity matrix
+    What is this function? it's putting the values of x as the diagnoal entries of the identity matrix
     '''
     # pdb.set_trace()
-    # eye = torch.eye(x.size(1)).type_as(x)
-    # out = eye * x.unsqueeze(2).expand(x.size(0), x.size(1), x.size(1))
     # Create a sparse identity matrix
     indices = torch.arange(x.size(1), dtype=torch.long, device=x.device).unsqueeze(0).expand(2, x.size(1))
     values = x[0] # x is (1, #patches, #features) # torch.ones(x.size(1), dtype=x.dtype, device=x.device)
@@ -84,9 +76,7 @@ def dense_mincut_pool(
     # pdb.set_trace()
     d_flat = d_flat.to_dense()
     d = _rank3_diag(d_flat)
-    # pdb.set_trace()
-    # mincut_den = _rank3_trace(
-    #     torch.matmul(torch.matmul(s.transpose(1, 2), d), s))
+
     mincut_den = _rank3_trace(
         torch.matmul(torch.matmul(s_traspose, d[0]), s))
     mincut_loss = -(mincut_num / mincut_den)
@@ -110,6 +100,7 @@ def dense_mincut_pool(
     out_adj = (out_adj / d) / d.transpose(1, 2)
 
     return out, out_adj, mincut_loss, ortho_loss
+
 class GraphTransformer(nn.Module):
     def __init__(self, paras:GraphTransformerParas):
         super().__init__()
@@ -130,20 +121,11 @@ class GraphTransformer(nn.Module):
 
 
     def forward(self,node_feat,adj,graphcam_flag=False):
-        # node_feat, labels = self.PrepareFeatureLabel(batch_graph)
-        # cls_loss=node_feat.new_zeros(self.num_layers)
-        # rank_loss=node_feat.new_zeros(self.num_layers-1)
+        
         X = node_feat # (1, #of nodes, #of features)
         mask = torch.ones((1, X.shape[1]), device=X.device) # (1, #of nodes)
-        # p_t=[]
-        # pred_logits=0
-        # visualize_tools=[]
-        # visualize_tools1=[labels.cpu()]
-        # embeds=0
-        # concats=[]
         
-        # layer_acc=[]
-                
+    
         X = mask.unsqueeze(2) * X
         # pdb.set_trace()
         X = self.conv1(X, adj, mask)
@@ -168,12 +150,6 @@ class GraphTransformer(nn.Module):
         X = torch.cat([cls_token, X], dim=1)
 
         out = self.transformer(X) # unnormalized, thus use BCEwithLogits
-
-        # # loss
-        # loss = self.criterion(out, labels)
-        # loss = loss + mc1 + o1
-        # # pred
-        # pred = out.data.max(1)[1] # taking max, therefore i'd use 
 
         if graphcam_flag:
             print('GraphCAM enabled')
@@ -211,15 +187,7 @@ class GraphTransformer(nn.Module):
         A_raw = s
         if graphcam_flag:
             s_matrix = torch.argmax(s[0], dim=1)
-            # from os import path
-            # os.makedirs('graphcam', exist_ok=True)
-            # torch.save(s_matrix, path.join('graphcam', 's_matrix.pt'))
-            # torch.save(s[0], path.join('graphcam', 's_matrix_ori.pt'))
-            
-            # if path.exists(path.join('graphcam', 'att_1.pt')):
-            #     os.remove(path.join('graphcam', 'att_1.pt'))
-            #     os.remove(path.join('graphcam', 'att_2.pt'))
-            #     os.remove(path.join('graphcam', 'att_3.pt'))
+        
     
         X, adj, mc1, o1 = dense_mincut_pool(X, adj, s, mask)
         b, _, _ = X.shape

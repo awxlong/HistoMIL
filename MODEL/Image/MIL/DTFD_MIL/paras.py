@@ -1,5 +1,5 @@
 """
-pre-defined parameters for TransMIL model
+Default hyperaparameters for DTFD-MIL
 """
 import torch.nn as nn
 import attr 
@@ -32,8 +32,6 @@ class DTFD_MILParas:
     droprate_2:float = 0
     numLayer_Res:int = 0
     grad_clipping:int = 5
-    
-
 
     ### OPTIMIZER CONFIGURATIONS
     task:str = 'binary'

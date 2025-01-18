@@ -1,5 +1,6 @@
 """
-pre-defined parameters for (pretrained) transformer model loaded from https://github.com/peng-lab/HistoBistro/tree/main
+Default hyperparameters for (pretrained) transformer
+model loaded from https://github.com/peng-lab/HistoBistro/tree/main
 """
 
 import attr 
@@ -49,17 +50,4 @@ class TransformerParas:
                                 'eta_min':1e-6} # assumes cosine annealing
     
     selective_finetuning = False
-    # def __attrs_post_init__(self):
-    #     super().__init__()
-    #     # pdb.set_trace()
-    #     if self.pretrained_weights is not None:
-    #         print(f"Using pretrained weights: {self.pretrained_weights}")
-    #         # Load the pretrained weights here
-    #     else:
-    #         print("No pretrained weights specified. Initializing with random weights.")
-
-
-
-
-
-DEFAULT_TRANSFORMER_PARAS = TransformerParas()
+    

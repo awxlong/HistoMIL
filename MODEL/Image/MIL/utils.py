@@ -1,5 +1,10 @@
 """
-Hacked together from https://github.com/lucidrains
+These are helper functions to implement several MIL algorithms, such as
+Transformer layers, scalable alternatives to attention like Nystrom attention,
+multimodal fusion's attention gated mechanisms.
+
+Repos which are used include https://github.com/lucidrains, https://github.com/peng-lab/HistoBistro/tree/main,
+https://github.com/mahmoodlab/PathomicFusion/blob/master/fusion.py and https://github.com/AIRMEC/HECTOR/blob/main/model.py
 """
 
 import torch

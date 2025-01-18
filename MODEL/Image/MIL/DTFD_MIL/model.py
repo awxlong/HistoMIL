@@ -1,8 +1,7 @@
 """
-Implementation of abmil with/without gradient accumulation
+### IMPLEMENTATION COPIED FROM https://github.com/Dootmaan/DTFD-MIL.PyTorch/blob/main/train_DTFT-MIL.py
+### OR https://github.com/hrzhang1123/DTFD-MIL/blob/main/Main_DTFD_MIL.py
 
-most code copy from 
-https://github.com/szc19990412/TransMIL
 """
 import numpy as np
 import sys
@@ -19,10 +18,6 @@ from HistoMIL import logger
 ######################################################################################
 
 import pdb
-
-
-### IMPLEMENTATION COPIED FROM https://github.com/Dootmaan/DTFD-MIL.PyTorch/blob/main/train_DTFT-MIL.py
-### OR https://github.com/hrzhang1123/DTFD-MIL/blob/main/Main_DTFD_MIL.py
 
 
 class Classifier_1fc(nn.Module):
@@ -169,10 +164,6 @@ class DTFD_MIL(BaseAggregator):
     
     def infer(self, x):
         inputs, labels = x
-
-        # inputs = inputs.to(self.paras.device)
-        # labels = labels.to(self.paras.device)
-        # inputs= self.encoder(x) #[B, n, 1024]
 
         slide_sub_preds=[]
         # slide_sub_labels=[]
