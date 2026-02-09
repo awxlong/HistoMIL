@@ -1,9 +1,6 @@
-# PathoInsightMIL (elaborated upon HistoMIL)
-![HistoMIL](https://github.com/secrierlab/HistoMIL/blob/main/logo.png)
+# PathoInsightMIL (elaborated upon HistoMIL originally by Dr. Shi Pan - Secrier Lab - UCL Genetics Institute)
 
-### Original Author: Shi Pan, Secrier Lab - UCL Genetics Institute
-
-HistoMIL is a Python package for handling histopathology whole-slide images using multiple instance learning (MIL) techniques. With HistoMIL, you can create MIL datasets, train, cross-validate, evaluate MIL models, make MIL predictions on new slide images and perform interpretability analysis:
+PathoInsightMIL is a Python package for handling histopathology whole-slide images using multiple instance learning (MIL) techniques. You can create MIL datasets, train, cross-validate, evaluate MIL models, make MIL predictions on new slide images and perform interpretability analysis:
 
 ![Pipeline](https://github.com/awxlong/HistoMIL/blob/main/figs/pipeline.png)
 
